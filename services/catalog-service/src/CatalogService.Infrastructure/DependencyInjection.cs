@@ -16,7 +16,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetValue<string>("MongoDB:ConnectionString")
                                ?? "mongodb://localhost:27017";
         var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName")
-                           ?? MongoCollectionSettings.DatabaseName;
+                           ?? Persistence.MongoCollectionSettings.DatabaseName;
 
         services.AddSingleton<IMongoClient>(_ => new MongoClient(connectionString));
 

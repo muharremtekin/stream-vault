@@ -4,7 +4,7 @@ using UserService.Domain.Entities;
 
 namespace UserService.Application.Mappings;
 
-public class MappingProfile : Profile
+public class MappingProfile : AutoMapper.Profile
 {
     public MappingProfile()
     {

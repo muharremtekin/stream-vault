@@ -12,6 +12,8 @@ public class Series
 
     public string Title { get; set; } = string.Empty;
 
+    public string? OriginalTitle { get; set; }
+
     public string Description { get; set; } = string.Empty;
 
     public int ReleaseYear { get; set; }
