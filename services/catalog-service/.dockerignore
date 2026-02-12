@@ -1,0 +1,15 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
+*.suo
+*.sln.docstates
+**/coverage/
+**/*.log
+.git
+.gitignore
+Makefile
+docker-compose*
+README.md

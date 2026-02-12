@@ -28,7 +28,7 @@
 - [x] JwtTokenService: token üretimi ve doğrulama implementasyonu
 - [x] BCryptPasswordHasher: Hash ve Verify implementasyonu
 - [x] Refresh token endpoint: yeni access token üretimi, eski token'ı revoke etme
-- [ ] Postman/curl ile uçtan uca test
+- [x] Postman/curl ile uçtan uca test
 
 ### 2.3 Profil Yönetimi
 - [x] CreateProfileHandler: max 5 profil sınırı validasyonu
@@ -109,24 +109,24 @@
 
 ## 5. Docker & Entegrasyon
 
-- [ ] Tüm Dockerfile'ların build edilmesi
-- [ ] `docker compose up` ile tüm sistemin 60 saniye içinde ayağa kalkması
-- [ ] Servisler arası ağ iletişiminin çalışması
-- [ ] Volume mount'ların doğru çalışması
-- [ ] Environment variable'ların doğru geçmesi
+- [x] Tüm Dockerfile'ların build edilmesi
+- [x] `docker compose up` ile tüm sistemin 60 saniye içinde ayağa kalkması
+- [x] Servisler arası ağ iletişiminin çalışması
+- [x] Volume mount'ların doğru çalışması
+- [x] Environment variable'ların doğru geçmesi
 
 ### 5.1 Uçtan Uca Test Akışı
-- [ ] Register → kullanıcı oluşturuldu (201)
-- [ ] Login → JWT token alındı (200)
-- [ ] Refresh → yeni access token alındı (200)
-- [ ] GET /api/users/me → kullanıcı bilgisi (200)
-- [ ] POST profile → profil oluşturuldu (201)
-- [ ] GET /api/catalog/movies → film listesi sayfalı (200)
-- [ ] GET /api/catalog/genres → türler listelendi (200)
-- [ ] POST watchlist → watchlist'e eklendi (201)
-- [ ] DELETE watchlist → watchlist'ten çıkarıldı (204)
-- [ ] Auth olmadan korumalı endpoint → 401
-- [ ] Rate limit aşımı → 429
+- [x] Register → kullanıcı oluşturuldu (201)
+- [x] Login → JWT token alındı (200)
+- [x] Refresh → yeni access token alındı (200)
+- [x] GET /api/users/me → kullanıcı bilgisi (200)
+- [x] POST profile → profil oluşturuldu (201)
+- [x] GET /api/catalog/movies → film listesi sayfalı (200)
+- [x] GET /api/catalog/genres → türler listelendi (200)
+- [x] POST watchlist → watchlist'e eklendi (201)
+- [x] DELETE watchlist → watchlist'ten çıkarıldı (204)
+- [x] Auth olmadan korumalı endpoint → 401
+- [x] Rate limit aşımı → 429
 
 ## 6. Cross-Cutting Concerns
 

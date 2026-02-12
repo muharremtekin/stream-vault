@@ -1,5 +1,6 @@
 using CatalogService.Domain.ValueObjects;
 using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Conventions;
 
 namespace CatalogService.Infrastructure.Persistence;
 
@@ -10,6 +11,13 @@ public static class BsonMappingConfiguration
     public static void Configure()
     {
         if (_configured) return;
+
+        // Register camelCase convention so BSON fields match MongoDB indexes
+        var conventionPack = new ConventionPack
+        {
+            new CamelCaseElementNameConvention()
+        };
+        ConventionRegistry.Register("camelCase", conventionPack, _ => true);
 
         BsonClassMap.RegisterClassMap<Duration>(cm =>
         {

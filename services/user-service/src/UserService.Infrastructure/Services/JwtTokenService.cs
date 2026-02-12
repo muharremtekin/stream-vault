@@ -35,7 +35,7 @@ public class JwtTokenService : ITokenService
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new("role", user.Role.ToString())
         };
 
         var expiresInMinutes = int.Parse(

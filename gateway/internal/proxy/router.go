@@ -75,9 +75,8 @@ func (rt *Router) Handler() http.Handler {
 
 	for _, route := range rt.routes {
 		r := route // capture loop variable
-		pattern := r.PathPrefix + "/"
 
-		mux.HandleFunc(pattern, func(w http.ResponseWriter, req *http.Request) {
+		handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			addr, err := rt.resolver.Resolve(r.ServiceName)
 			if err != nil {
 				log.Error().Err(err).Str("service", r.ServiceName).Msg("service resolution failed")
@@ -94,6 +93,10 @@ func (rt *Router) Handler() http.Handler {
 
 			proxy.ServeHTTP(w, req)
 		})
+
+		// Register both with and without trailing slash to avoid 301 redirects.
+		mux.Handle(r.PathPrefix+"/", handler)
+		mux.Handle(r.PathPrefix, handler)
 	}
 
 	return mux

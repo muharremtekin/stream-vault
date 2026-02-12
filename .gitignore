@@ -13,6 +13,7 @@ Thumbs.db
 
 # Go
 gateway/tmp/
+gateway/gateway
 
 # .NET
 **/bin/

@@ -10,7 +10,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5001:5001"
+      - "5001:8080"
 
   catalog-service:
     environment:
