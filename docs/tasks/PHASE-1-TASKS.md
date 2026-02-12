@@ -50,35 +50,35 @@
 ## 3. Catalog Service — Çalışır Hale Getirme
 
 ### 3.1 MongoDB Bağlantısı
-- [ ] MongoDB bağlantısını doğrula
-- [ ] Collection'ların ve index'lerin otomatik oluşturulmasını sağla
-- [ ] BsonClassMap konfigürasyonlarını ekle
+- [x] MongoDB bağlantısını doğrula
+- [x] Collection'ların ve index'lerin otomatik oluşturulmasını sağla
+- [x] BsonClassMap konfigürasyonlarını ekle
 
 ### 3.2 Movie CRUD
-- [ ] CreateMovieHandler: film ekleme (Admin only)
-- [ ] GetMoviesHandler: sayfalama, filtreleme (genre, year), sıralama (rating, year, title)
-- [ ] GetContentByIdHandler: tekil film detayı
-- [ ] MoviesController endpoint'lerinin çalışması
+- [x] CreateMovieHandler: film ekleme (Admin only)
+- [x] GetMoviesHandler: sayfalama, filtreleme (genre, year), sıralama (rating, year, title)
+- [x] GetContentByIdHandler: tekil film detayı
+- [x] MoviesController endpoint'lerinin çalışması
 
 ### 3.3 Series CRUD
-- [ ] CreateSeriesHandler: dizi ekleme (Admin only)
-- [ ] AddEpisodeHandler: sezon/bölüm ekleme
-- [ ] Series listeleme ve detay endpoint'leri
-- [ ] SeriesController endpoint'lerinin çalışması
+- [x] CreateSeriesHandler: dizi ekleme (Admin only)
+- [x] AddEpisodeHandler: sezon/bölüm ekleme
+- [x] Series listeleme ve detay endpoint'leri
+- [x] SeriesController endpoint'lerinin çalışması
 
 ### 3.4 Genre & Filtreleme
-- [ ] GenreRepository: tüm türleri listeleme
-- [ ] GetByGenreHandler: slug ile tür bazlı içerik listeleme (movie + series karışık)
-- [ ] Genre başına contentCount hesaplama
-- [ ] GenresController endpoint'lerinin çalışması
+- [x] GenreRepository: tüm türleri listeleme
+- [x] GetByGenreHandler: slug ile tür bazlı içerik listeleme (movie + series karışık)
+- [x] Genre başına contentCount hesaplama
+- [x] GenresController endpoint'lerinin çalışması
 
 ### 3.5 Seed Data
-- [ ] CatalogSeeder'ı 20-30 gerçek film/dizi ile tamamla
-- [ ] En az 8-10 farklı genre ekle
-- [ ] Seed'in uygulama başlangıcında otomatik çalışmasını sağla (boş DB kontrolü ile)
+- [x] CatalogSeeder'ı 20-30 gerçek film/dizi ile tamamla
+- [x] En az 8-10 farklı genre ekle
+- [x] Seed'in uygulama başlangıcında otomatik çalışmasını sağla (boş DB kontrolü ile)
 
 ### 3.6 Consul Entegrasyonu
-- [ ] User Service ile aynı pattern: self-registration, health check, deregistration
+- [x] User Service ile aynı pattern: self-registration, health check, deregistration
 
 ## 4. API Gateway — Çalışır Hale Getirme
 

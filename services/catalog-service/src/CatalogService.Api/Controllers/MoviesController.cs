@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace CatalogService.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/catalog/[controller]")]
 public class MoviesController : ControllerBase
 {
     private readonly IMediator _mediator;

@@ -12,6 +12,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // BsonClassMap configuration (must run before any MongoDB operations)
+        BsonMappingConfiguration.Configure();
+
         // MongoDB configuration
         var connectionString = configuration.GetValue<string>("MongoDB:ConnectionString")
                                ?? "mongodb://localhost:27017";

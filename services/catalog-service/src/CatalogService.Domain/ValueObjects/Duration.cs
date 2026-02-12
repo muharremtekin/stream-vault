@@ -2,8 +2,8 @@ namespace CatalogService.Domain.ValueObjects;
 
 public sealed class Duration : IEquatable<Duration>
 {
-    public int Hours { get; }
-    public int Minutes { get; }
+    public int Hours { get; private set; }
+    public int Minutes { get; private set; }
 
     public Duration() { }
 
