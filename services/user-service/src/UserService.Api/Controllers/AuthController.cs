@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using UserService.Application.Commands.LoginUser;
+using UserService.Application.Commands.RefreshToken;
 using UserService.Application.Commands.RegisterUser;
 using UserService.Application.DTOs;
 
@@ -56,8 +57,9 @@ public class AuthController : ControllerBase
         [FromBody] RefreshTokenRequest request,
         CancellationToken cancellationToken)
     {
-        // TODO: Implement refresh token command via MediatR
-        return Ok();
+        var command = new RefreshTokenCommand(request.RefreshToken);
+        var result = await _mediator.Send(command, cancellationToken);
+        return Ok(result);
     }
 }
 

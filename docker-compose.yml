@@ -11,7 +11,6 @@ services:
     ports: ["5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U streamvault"]
       interval: 5s
@@ -56,11 +55,11 @@ services:
   # --- Application Services ---
   gateway:
     build: ./gateway
-    ports: ["8080:8080"]
+    ports: ["8081:8080"]
     environment:
-      - JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
-      - CONSUL_ADDRESS=consul:8500
-      - REDIS_URL=redis://redis:6379/0
+      - GATEWAY_JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
+      - GATEWAY_CONSUL_ADDRESS=consul:8500
+      - GATEWAY_RATELIMIT_REDIS_URL=redis://redis:6379/0
     depends_on:
       consul:
         condition: service_started
@@ -78,7 +77,8 @@ services:
       - Jwt__RefreshTokenExpirationDays=30
       - Consul__Address=http://consul:8500
       - ServiceRegistration__Name=user-service
-      - ServiceRegistration__Port=5001
+      - ServiceRegistration__Port=8080
+      - Service__Host=user-service
     depends_on:
       postgres:
         condition: service_healthy
@@ -93,7 +93,9 @@ services:
       - MongoDB__DatabaseName=streamvault_catalog
       - Consul__Address=http://consul:8500
       - ServiceRegistration__Name=catalog-service
-      - ServiceRegistration__Port=5002
+      - ServiceRegistration__Port=5100
+      - Service__Host=catalog-service
+      - Service__Port=5100
     depends_on:
       mongo:
         condition: service_healthy

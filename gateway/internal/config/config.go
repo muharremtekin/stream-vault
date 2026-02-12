@@ -67,6 +67,7 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("server.port", 8080)
 	v.SetDefault("server.read_timeout", 15*time.Second)
 	v.SetDefault("server.write_timeout", 15*time.Second)
+	v.SetDefault("jwt.secret", "")
 	v.SetDefault("jwt.issuer", "streamvault")
 	v.SetDefault("ratelimit.requests_per_second", 100.0)
 	v.SetDefault("ratelimit.burst", 200)

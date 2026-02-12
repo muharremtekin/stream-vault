@@ -32,6 +32,16 @@ func DefaultRoutes() []Route {
 			StripPrefix: false,
 		},
 		{
+			PathPrefix:  "/api/profile",
+			ServiceName: "user-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/api/watchlist",
+			ServiceName: "user-service",
+			StripPrefix: false,
+		},
+		{
 			PathPrefix:  "/api/catalog",
 			ServiceName: "catalog-service",
 			StripPrefix: false,

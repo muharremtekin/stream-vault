@@ -6,46 +6,46 @@
 
 ## 1. .NET Solution & Proje Dosyaları
 
-- [ ] User Service için `dotnet new sln` ile solution oluştur
-- [ ] 4 proje ekle: `UserService.Api`, `UserService.Application`, `UserService.Domain`, `UserService.Infrastructure`
-- [ ] Projeler arası referansları ekle (Api → Application → Domain, Infrastructure → Application)
-- [ ] NuGet paketlerini ekle: MediatR, FluentValidation, AutoMapper, EF Core (Npgsql), BCrypt.Net-Next, Swashbuckle
-- [ ] Catalog Service için `dotnet new sln` ile solution oluştur
-- [ ] 4 proje ekle: `CatalogService.Api`, `CatalogService.Application`, `CatalogService.Domain`, `CatalogService.Infrastructure`
-- [ ] NuGet paketlerini ekle: MediatR, FluentValidation, AutoMapper, MongoDB.Driver, Swashbuckle
-- [ ] Test projeleri oluştur: xUnit, Moq, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing
+- [x] User Service için `dotnet new sln` ile solution oluştur
+- [x] 4 proje ekle: `UserService.Api`, `UserService.Application`, `UserService.Domain`, `UserService.Infrastructure`
+- [x] Projeler arası referansları ekle (Api → Application → Domain, Infrastructure → Application)
+- [x] NuGet paketlerini ekle: MediatR, FluentValidation, AutoMapper, EF Core (Npgsql), BCrypt.Net-Next, Swashbuckle
+- [x] Catalog Service için `dotnet new sln` ile solution oluştur
+- [x] 4 proje ekle: `CatalogService.Api`, `CatalogService.Application`, `CatalogService.Domain`, `CatalogService.Infrastructure`
+- [x] NuGet paketlerini ekle: MediatR, FluentValidation, AutoMapper, MongoDB.Driver, Swashbuckle
+- [x] Test projeleri oluştur: xUnit, Moq, FluentAssertions, Microsoft.AspNetCore.Mvc.Testing
 
 ## 2. User Service — Çalışır Hale Getirme
 
 ### 2.1 Veritabanı & Migration
-- [ ] EF Core ile ilk migration oluştur (`dotnet ef migrations add InitialCreate`)
-- [ ] PostgreSQL bağlantısını doğrula
-- [ ] Migration'ın `docker compose up` sırasında otomatik uygulanmasını sağla
+- [x] EF Core ile ilk migration oluştur (`dotnet ef migrations add InitialCreate`)
+- [x] PostgreSQL bağlantısını doğrula
+- [x] Migration'ın `docker compose up` sırasında otomatik uygulanmasını sağla
 
 ### 2.2 Auth (Register + Login)
-- [ ] RegisterUserHandler: email benzersizlik kontrolü, BCrypt ile şifre hashleme, kullanıcı kaydetme
-- [ ] LoginUserHandler: email/şifre doğrulama, JWT access token + refresh token üretimi
-- [ ] JwtTokenService: token üretimi ve doğrulama implementasyonu
-- [ ] BCryptPasswordHasher: Hash ve Verify implementasyonu
-- [ ] Refresh token endpoint: yeni access token üretimi, eski token'ı revoke etme
+- [x] RegisterUserHandler: email benzersizlik kontrolü, BCrypt ile şifre hashleme, kullanıcı kaydetme
+- [x] LoginUserHandler: email/şifre doğrulama, JWT access token + refresh token üretimi
+- [x] JwtTokenService: token üretimi ve doğrulama implementasyonu
+- [x] BCryptPasswordHasher: Hash ve Verify implementasyonu
+- [x] Refresh token endpoint: yeni access token üretimi, eski token'ı revoke etme
 - [ ] Postman/curl ile uçtan uca test
 
 ### 2.3 Profil Yönetimi
-- [ ] CreateProfileHandler: max 5 profil sınırı validasyonu
-- [ ] GetUserProfilesHandler: kullanıcının profillerini listeleme
-- [ ] ProfileController endpoint'lerinin çalışması
+- [x] CreateProfileHandler: max 5 profil sınırı validasyonu
+- [x] GetUserProfilesHandler: kullanıcının profillerini listeleme
+- [x] ProfileController endpoint'lerinin çalışması
 
 ### 2.4 Watchlist
-- [ ] AddToWatchlistHandler: duplicate kontrolü (aynı içerik tekrar eklenemesin)
-- [ ] GetWatchlistHandler: profil bazlı watchlist listeleme
-- [ ] Watchlist silme endpoint'i
-- [ ] WatchlistController endpoint'lerinin çalışması
+- [x] AddToWatchlistHandler: duplicate kontrolü (aynı içerik tekrar eklenemesin)
+- [x] GetWatchlistHandler: profil bazlı watchlist listeleme
+- [x] Watchlist silme endpoint'i
+- [x] WatchlistController endpoint'lerinin çalışması
 
 ### 2.5 Consul Entegrasyonu
-- [ ] Startup'ta Consul'a self-registration implementasyonu
-- [ ] `/health` endpoint'inin health check olarak Consul'a kaydedilmesi
-- [ ] Graceful shutdown'da Consul'dan deregistration
-- [ ] Consul UI'da servisin "healthy" göründüğünü doğrula
+- [x] Startup'ta Consul'a self-registration implementasyonu
+- [x] `/health` endpoint'inin health check olarak Consul'a kaydedilmesi
+- [x] Graceful shutdown'da Consul'dan deregistration
+- [x] Consul UI'da servisin "healthy" göründüğünü doğrula
 
 ## 3. Catalog Service — Çalışır Hale Getirme
 

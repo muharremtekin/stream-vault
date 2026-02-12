@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using UserService.Application.Interfaces;
@@ -77,7 +78,7 @@ public class JwtTokenService : ITokenService
     public async Task<bool> ValidateRefreshToken(string token, CancellationToken cancellationToken = default)
     {
         var refreshToken = await _context.RefreshTokens
-            .FindAsync(new object[] { token }, cancellationToken);
+            .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
 
         if (refreshToken is null)
         {
@@ -85,5 +86,30 @@ public class JwtTokenService : ITokenService
         }
 
         return !refreshToken.IsRevoked && refreshToken.ExpiresAt > DateTime.UtcNow;
+    }
+
+    public async Task<Guid?> GetUserIdFromRefreshToken(string token, CancellationToken cancellationToken = default)
+    {
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
+
+        if (refreshToken is null || refreshToken.IsRevoked || refreshToken.ExpiresAt <= DateTime.UtcNow)
+        {
+            return null;
+        }
+
+        return refreshToken.UserId;
+    }
+
+    public async Task RevokeRefreshToken(string token, CancellationToken cancellationToken = default)
+    {
+        var refreshToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt => rt.Token == token, cancellationToken);
+
+        if (refreshToken is not null)
+        {
+            refreshToken.IsRevoked = true;
+            await _context.SaveChangesAsync(cancellationToken);
+        }
     }
 }

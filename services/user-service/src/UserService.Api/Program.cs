@@ -1,6 +1,8 @@
 using System.Text;
+using Consul;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using UserService.Api.Filters;
@@ -8,6 +10,7 @@ using UserService.Api.Middleware;
 using UserService.Application.Commands.RegisterUser;
 using UserService.Application.Mappings;
 using UserService.Infrastructure;
+using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,11 +115,38 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Consul service discovery
+builder.Services.AddSingleton<IConsulClient, ConsulClient>(_ =>
+    new ConsulClient(config =>
+    {
+        var consulAddress = builder.Configuration.GetValue<string>("Consul:Address")
+            ?? builder.Configuration.GetValue<string>("Consul:Host")
+            ?? "http://localhost:8500";
+        config.Address = new Uri(consulAddress);
+    }));
+
 // -------------------------------------------------------------------
 // App pipeline
 // -------------------------------------------------------------------
 
 var app = builder.Build();
+
+// Auto-apply EF Core migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    try
+    {
+        app.Logger.LogInformation("Applying database migrations...");
+        await dbContext.Database.MigrateAsync();
+        app.Logger.LogInformation("Database migrations applied successfully.");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "An error occurred while applying database migrations.");
+        throw;
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -142,12 +172,63 @@ app.MapHealthChecks("/health");
 // -------------------------------------------------------------------
 if (builder.Configuration.GetSection("Consul").Exists())
 {
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogInformation("Consul configuration found. Register this service with Consul for discovery.");
-    // TODO: Implement Consul registration via Consul .NET SDK
+    var lifetime = app.Lifetime;
+    var consulClient = app.Services.GetRequiredService<IConsulClient>();
+
+    var serviceName = builder.Configuration.GetValue<string>("Consul:ServiceName")
+        ?? builder.Configuration.GetValue<string>("ServiceRegistration:Name")
+        ?? "user-service";
+    var serviceId = $"{serviceName}-{Guid.NewGuid():N}";
+    var servicePort = builder.Configuration.GetValue<int>("Consul:ServicePort",
+        builder.Configuration.GetValue<int>("ServiceRegistration:Port", 8080));
+    var serviceHost = builder.Configuration.GetValue<string>("Service:Host") ?? "localhost";
+
+    var registration = new AgentServiceRegistration
+    {
+        ID = serviceId,
+        Name = serviceName,
+        Address = serviceHost,
+        Port = servicePort,
+        Tags = new[] { "user", "auth", "api", "v1" },
+        Check = new AgentServiceCheck
+        {
+            HTTP = $"http://{serviceHost}:{servicePort}/health",
+            Interval = TimeSpan.FromSeconds(10),
+            Timeout = TimeSpan.FromSeconds(5),
+            DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
+        }
+    };
+
+    lifetime.ApplicationStarted.Register(async () =>
+    {
+        try
+        {
+            await consulClient.Agent.ServiceRegister(registration);
+            app.Logger.LogInformation(
+                "Registered service '{ServiceName}' (ID: {ServiceId}) with Consul at {Address}:{Port}.",
+                serviceName, serviceId, serviceHost, servicePort);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to register with Consul. Service discovery may not work.");
+        }
+    });
+
+    lifetime.ApplicationStopping.Register(async () =>
+    {
+        try
+        {
+            await consulClient.Agent.ServiceDeregister(serviceId);
+            app.Logger.LogInformation("Deregistered service '{ServiceId}' from Consul.", serviceId);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to deregister from Consul.");
+        }
+    });
 }
 
-app.Run();
+await app.RunAsync();
 
 // Expose partial class for integration tests with WebApplicationFactory
 public partial class Program { }
