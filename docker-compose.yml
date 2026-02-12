@@ -57,7 +57,7 @@ services:
     build: ./gateway
     ports: ["8081:8080"]
     environment:
-      - GATEWAY_JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
+      - GATEWAY_JWT_SECRET=${JWT_SECRET:-StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!}
       - GATEWAY_CONSUL_ADDRESS=consul:8500
       - GATEWAY_RATELIMIT_REDIS_URL=redis://redis:6379/0
     depends_on:
@@ -71,8 +71,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_users;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD:-secret}
-      - Jwt__Secret=${JWT_SECRET:-super-secret-key-change-in-production}
-      - Jwt__Issuer=streamvault
+      - Jwt__Secret=${JWT_SECRET:-StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!}
+      - Jwt__Issuer=StreamVault.UserService
       - Jwt__AccessTokenExpirationMinutes=60
       - Jwt__RefreshTokenExpirationDays=30
       - Consul__Address=http://consul:8500

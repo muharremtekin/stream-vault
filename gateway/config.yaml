@@ -1,0 +1,29 @@
+server:
+  port: 8080
+  read_timeout: 15s
+  write_timeout: 15s
+
+jwt:
+  secret: "StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!"
+  issuer: "StreamVault.UserService"
+
+ratelimit:
+  requests_per_second: 100
+  burst: 200
+  redis_url: "redis://redis:6379/0"
+
+consul:
+  address: "consul:8500"
+  health_check_interval: 10s
+
+services:
+  user-service:
+    url: "http://user-service:8080"
+    health_path: "/health"
+  catalog-service:
+    url: "http://catalog-service:5100"
+    health_path: "/health"
+
+logging:
+  level: "info"
+  format: "json"

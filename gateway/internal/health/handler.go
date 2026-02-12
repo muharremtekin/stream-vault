@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -132,7 +133,10 @@ func (h *Handler) checkService(ctx context.Context, name string, svc config.Serv
 		healthPath = "/health"
 	}
 
-	healthURL := fmt.Sprintf("http://%s%s", addr, healthPath)
+	healthURL := addr + healthPath
+	if !strings.HasPrefix(addr, "http://") && !strings.HasPrefix(addr, "https://") {
+		healthURL = "http://" + addr + healthPath
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, healthURL, nil)
 	if err != nil {

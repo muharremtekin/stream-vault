@@ -11,14 +11,14 @@ import (
 // publicPrefixes lists URL path prefixes that bypass JWT authentication.
 var publicPrefixes = []string{
 	"/api/auth/",
+	"/api/catalog/",
 	"/health",
 }
 
 // Claims represents the expected JWT payload structure.
 type Claims struct {
 	jwt.RegisteredClaims
-	UserID string `json:"user_id"`
-	Role   string `json:"role"`
+	Role string `json:"role"`
 }
 
 // Auth returns middleware that validates JWT bearer tokens. Requests to public
@@ -46,7 +46,7 @@ func Auth(secret string, issuer string) func(http.Handler) http.Handler {
 			}
 
 			// Propagate identity to upstream services via headers.
-			r.Header.Set("X-User-Id", claims.UserID)
+			r.Header.Set("X-User-Id", claims.Subject)
 			r.Header.Set("X-User-Role", claims.Role)
 
 			next.ServeHTTP(w, r)

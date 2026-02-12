@@ -83,29 +83,29 @@
 ## 4. API Gateway — Çalışır Hale Getirme
 
 ### 4.1 Build & Dependency
-- [ ] `go mod tidy` ile dependency'leri çek
-- [ ] Projenin derlendiğini doğrula (`go build ./...`)
-- [ ] `config.yaml` dosyası oluştur
+- [x] `go mod tidy` ile dependency'leri çek
+- [x] Projenin derlendiğini doğrula (`go build ./...`)
+- [x] `config.yaml` dosyası oluştur
 
 ### 4.2 Reverse Proxy
-- [ ] User Service'e yönlendirmenin çalışması (/api/auth/*, /api/users/*)
-- [ ] Catalog Service'e yönlendirmenin çalışması (/api/catalog/*)
-- [ ] Request/response header'larının doğru iletilmesi
+- [x] User Service'e yönlendirmenin çalışması (/api/auth/*, /api/users/*)
+- [x] Catalog Service'e yönlendirmenin çalışması (/api/catalog/*)
+- [x] Request/response header'larının doğru iletilmesi
 
 ### 4.3 JWT Auth Middleware
-- [ ] Public route'ların auth bypass etmesi (/api/auth/register, /api/auth/login, /health)
-- [ ] Geçerli JWT ile X-User-Id ve X-User-Role header'larının eklenmesi
-- [ ] Geçersiz/eksik JWT'de 401 dönmesi
+- [x] Public route'ların auth bypass etmesi (/api/auth/register, /api/auth/login, /health)
+- [x] Geçerli JWT ile X-User-Id ve X-User-Role header'larının eklenmesi
+- [x] Geçersiz/eksik JWT'de 401 dönmesi
 
 ### 4.4 Rate Limiting
-- [ ] Redis bağlantısının çalışması
-- [ ] Token bucket algoritmasının IP bazlı çalışması
-- [ ] Limit aşımında 429 + Retry-After header dönmesi
+- [x] Redis bağlantısının çalışması
+- [x] Token bucket algoritmasının IP bazlı çalışması
+- [x] Limit aşımında 429 + Retry-After header dönmesi
 
 ### 4.5 Consul Discovery
-- [ ] Consul'dan servis adreslerini çözümleme
-- [ ] Round-robin load balancing
-- [ ] Health check aggregation endpoint'i (/health)
+- [x] Consul'dan servis adreslerini çözümleme
+- [x] Round-robin load balancing
+- [x] Health check aggregation endpoint'i (/health)
 
 ## 5. Docker & Entegrasyon
 
