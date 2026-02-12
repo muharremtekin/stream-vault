@@ -1,0 +1,27 @@
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+gateway/tmp/
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Docker
+docker-compose.local.yml

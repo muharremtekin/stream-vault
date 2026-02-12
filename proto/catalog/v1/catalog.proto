@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package catalog.v1;
+
+option go_package = "github.com/streamvault/proto/catalog/v1;catalogv1";
+option csharp_namespace = "StreamVault.Proto.Catalog.V1";
+
+service CatalogService {
+  rpc GetContentById(GetContentByIdRequest) returns (ContentResponse);
+  rpc GetContentList(GetContentListRequest) returns (ContentListResponse);
+}
+
+message GetContentByIdRequest {
+  string content_id = 1;
+}
+
+message ContentResponse {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string content_type = 4;
+  string thumbnail_url = 5;
+  int32 release_year = 6;
+}
+
+message GetContentListRequest {
+  repeated string content_ids = 1;
+}
+
+message ContentListResponse {
+  repeated ContentResponse items = 1;
+}

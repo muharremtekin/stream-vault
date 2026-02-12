@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamVault - Microservice Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #12121a;
+    --bg-card: #1a1a2e;
+    --bg-card-hover: #1f1f35;
+    --border: #2a2a3e;
+    --text-primary: #e8e8f0;
+    --text-secondary: #9898b0;
+    --text-muted: #6868880;
+    --accent-go: #00ADD8;
+    --accent-rust: #FF6B35;
+    --accent-dotnet: #512BD4;
+    --accent-green: #10b981;
+    --accent-yellow: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-pink: #ec4899;
+    --accent-cyan: #06b6d4;
+    --gradient-go: linear-gradient(135deg, #00ADD8, #00879B);
+    --gradient-rust: linear-gradient(135deg, #FF6B35, #CE5524);
+    --gradient-dotnet: linear-gradient(135deg, #512BD4, #3B1FA0);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 30% 50%, rgba(0,173,216,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 50%, rgba(255,107,53,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 30%, rgba(81,43,212,0.06) 0%, transparent 50%);
+    animation: pulse 8s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1) rotate(0deg); }
+    100% { transform: scale(1.05) rotate(2deg); }
+  }
+
+  .hero-content { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, #a0a0c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero .tagline {
+    font-size: 1.15rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-bottom: 30px;
+  }
+
+  .tech-badges {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .tech-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .tech-badge.go { background: rgba(0,173,216,0.12); color: var(--accent-go); border: 1px solid rgba(0,173,216,0.25); }
+  .tech-badge.rust { background: rgba(255,107,53,0.12); color: var(--accent-rust); border: 1px solid rgba(255,107,53,0.25); }
+  .tech-badge.dotnet { background: rgba(81,43,212,0.12); color: #7c5cfc; border: 1px solid rgba(81,43,212,0.25); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+
+  /* Section headers */
+  .section { margin-bottom: 64px; }
+
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-cyan);
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .section-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    max-width: 700px;
+    margin-bottom: 32px;
+  }
+
+  /* Architecture Overview Diagram */
+  .arch-diagram {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 48px;
+    overflow-x: auto;
+  }
+
+  .arch-layers {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 700px;
+  }
+
+  .arch-layer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .layer-label {
+    min-width: 120px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .layer-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  .layer-box {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .layer-box.client { background: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.25); color: var(--accent-pink); }
+  .layer-box.gateway { background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.25); color: var(--accent-cyan); }
+  .layer-box.go-svc { background: rgba(0,173,216,0.1); border-color: rgba(0,173,216,0.25); color: var(--accent-go); }
+  .layer-box.rust-svc { background: rgba(255,107,53,0.1); border-color: rgba(255,107,53,0.25); color: var(--accent-rust); }
+  .layer-box.dotnet-svc { background: rgba(81,43,212,0.1); border-color: rgba(81,43,212,0.25); color: #7c5cfc; }
+  .layer-box.infra { background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.25); color: var(--accent-green); }
+  .layer-box.data { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.25); color: var(--accent-yellow); }
+
+  .arch-arrow {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    padding: 4px 0;
+    margin-left: 136px;
+  }
+
+  /* Service Cards */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .service-card.go::before { background: var(--gradient-go); }
+  .service-card.rust::before { background: var(--gradient-rust); }
+  .service-card.dotnet::before { background: var(--gradient-dotnet); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .card-lang {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+
+  .card-lang.go { background: rgba(0,173,216,0.15); color: var(--accent-go); }
+  .card-lang.rust { background: rgba(255,107,53,0.15); color: var(--accent-rust); }
+  .card-lang.dotnet { background: rgba(81,43,212,0.15); color: #7c5cfc; }
+
+  .card-desc {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+
+  .card-section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .card-tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .card-tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    color: var(--text-secondary);
+  }
+
+  .card-endpoints {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .endpoint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .endpoint .method {
+    font-weight: 700;
+    min-width: 32px;
+    font-size: 0.62rem;
+  }
+
+  .endpoint .method.get { color: var(--accent-green); }
+  .endpoint .method.post { color: var(--accent-yellow); }
+  .endpoint .method.grpc { color: var(--accent-cyan); }
+  .endpoint .method.event { color: var(--accent-pink); }
+
+  /* Why section */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .why-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+
+  .why-card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .why-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .why-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 14px;
+  }
+
+  .why-icon.go-bg { background: rgba(0,173,216,0.12); }
+  .why-icon.rust-bg { background: rgba(255,107,53,0.12); }
+  .why-icon.dotnet-bg { background: rgba(81,43,212,0.12); }
+
+  /* Communication patterns */
+  .patterns-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .pattern-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+  }
+
+  .pattern-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .pattern-card .subtitle {
+    font-size: 0.78rem;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .pattern-card p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .pattern-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    background: rgba(255,255,255,0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* Roadmap */
+  .roadmap {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 19px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent-go), var(--accent-rust), var(--accent-dotnet), var(--accent-green));
+    border-radius: 2px;
+  }
+
+  .roadmap-item {
+    display: flex;
+    gap: 24px;
+    padding: 20px 0;
+    align-items: flex-start;
+  }
+
+  .roadmap-dot {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    z-index: 1;
+  }
+
+  .roadmap-dot.phase1 { background: rgba(0,173,216,0.2); color: var(--accent-go); border: 2px solid var(--accent-go); }
+  .roadmap-dot.phase2 { background: rgba(255,107,53,0.2); color: var(--accent-rust); border: 2px solid var(--accent-rust); }
+  .roadmap-dot.phase3 { background: rgba(81,43,212,0.2); color: #7c5cfc; border: 2px solid var(--accent-dotnet); }
+  .roadmap-dot.phase4 { background: rgba(16,185,129,0.2); color: var(--accent-green); border: 2px solid var(--accent-green); }
+
+  .roadmap-content h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .roadmap-content .duration {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .roadmap-content p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+  }
+
+  .roadmap-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+
+  .roadmap-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+  }
+
+  /* Data stores */
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .data-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .data-card .name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .data-card .role {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+  }
+
+  .data-card .icon {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 48px 40px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 2.2rem; }
+    .services-grid, .why-grid { grid-template-columns: 1fr; }
+    .patterns-grid { grid-template-columns: 1fr; }
+    .container { padding: 0 20px; }
+    .hero { padding: 50px 20px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>StreamVault</h1>
+    <p class="tagline">Netflix-tarzı Video Streaming Platformu — Microservice Mimari Tasarımı</p>
+    <div class="tech-badges">
+      <span class="tech-badge go">◆ Go — Yüksek Performans Servisleri</span>
+      <span class="tech-badge rust">◆ Rust — Kritik Altyapı</span>
+      <span class="tech-badge dotnet">◆ .NET — İş Mantığı Servisleri</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ARCHITECTURE DIAGRAM -->
+  <div class="section">
+    <div class="section-label">Genel Bakış</div>
+    <div class="section-title">Sistem Mimarisi</div>
+    <div class="section-desc">Katmanlı mimari: İstemciler → API Gateway → Microservice'ler → Data Stores. Servisler arası iletişim hem senkron (gRPC) hem asenkron (Event Bus) olarak gerçekleşir.</div>
+
+    <div class="arch-diagram">
+      <div class="arch-layers">
+        <div class="arch-layer">
+          <div class="layer-label">Clients</div>
+          <div class="layer-items">
+            <div class="layer-box client">Web (React)</div>
+            <div class="layer-box client">Mobile (iOS/Android)</div>
+            <div class="layer-box client">Smart TV</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ HTTPS / WebSocket ↓</div>
+        <div class="arch-layer">
+          <div class="layer-label">Edge Layer</div>
+          <div class="layer-items">
+            <div class="layer-box gateway">API Gateway (Go)</div>
+            <div class="layer-box gateway">CDN (CloudFront)</div>
+            <div class="layer-box gateway">Rate Limiter</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ gRPC / REST ↓</div>
+        <div class="arch-layer">
+          <div class="layer-label">Core Services</div>
+          <div class="layer-items">
+            <div class="layer-box dotnet-svc">User Svc (.NET)</div>
+            <div class="layer-box dotnet-svc">Catalog Svc (.NET)</div>
+            <div class="layer-box dotnet-svc">Subscription Svc (.NET)</div>
+            <div class="layer-box go-svc">Streaming Svc (Go)</div>
+            <div class="layer-box rust-svc">Encoding Svc (Rust)</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ gRPC + Events ↓</div>
+        <div class="arch-layer">
+          <div class="layer-label">Support Services</div>
+          <div class="layer-items">
+            <div class="layer-box go-svc">Search Svc (Go)</div>
+            <div class="layer-box rust-svc">Recommendation (Rust)</div>
+            <div class="layer-box go-svc">Notification Svc (Go)</div>
+            <div class="layer-box dotnet-svc">Analytics Svc (.NET)</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ ↓ ↓</div>
+        <div class="arch-layer">
+          <div class="layer-label">Infrastructure</div>
+          <div class="layer-items">
+            <div class="layer-box infra">RabbitMQ / NATS</div>
+            <div class="layer-box infra">Consul (Service Discovery)</div>
+            <div class="layer-box infra">Jaeger (Tracing)</div>
+            <div class="layer-box infra">Prometheus + Grafana</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↓ ↓ ↓</div>
+        <div class="arch-layer">
+          <div class="layer-label">Data Layer</div>
+          <div class="layer-items">
+            <div class="layer-box data">PostgreSQL</div>
+            <div class="layer-box data">MongoDB</div>
+            <div class="layer-box data">Redis</div>
+            <div class="layer-box data">Elasticsearch</div>
+            <div class="layer-box data">MinIO (S3)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY EACH LANGUAGE -->
+  <div class="section">
+    <div class="section-label">Teknoloji Seçimleri</div>
+    <div class="section-title">Neden Bu Dil Bu Serviste?</div>
+    <div class="section-desc">Her dil en güçlü olduğu yerde kullanılıyor — gerçek şirketler de polyglot microservice mimarisini böyle kurar.</div>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon go-bg">⚡</div>
+        <h3>Go — Networking & Concurrency</h3>
+        <p>API Gateway, Streaming ve Search servisleri Go ile. Goroutine'ler sayesinde binlerce eşzamanlı bağlantıyı düşük bellek kullanımıyla yönetir. Netflix'in kendi Zuul gateway'i de benzer pattern'ler kullanır.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon rust-bg">🔒</div>
+        <h3>Rust — CPU-Intensive & Safety</h3>
+        <p>Video encoding ve recommendation engine Rust ile. Zero-cost abstraction ile C seviyesinde performans, memory safety garantisi ile crash-free çalışma. FFmpeg binding'leri ile video işleme, ndarray ile ML inference.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon dotnet-bg">🏗️</div>
+        <h3>.NET — Business Logic & CRUD</h3>
+        <p>User, Catalog, Subscription ve Analytics servisleri .NET ile. Entity Framework + Clean Architecture ile hızlı geliştirme. MediatR, FluentValidation gibi mature ekosistem. Gerçek dünyada iş mantığı için ideal.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICE DETAILS -->
+  <div class="section">
+    <div class="section-label">Servis Detayları</div>
+    <div class="section-title">9 Microservice — Detaylı Tasarım</div>
+    <div class="section-desc">Her servisin kendi veritabanı, kendi deployment'ı ve kendi API kontratı var (Database per Service pattern).</div>
+
+    <div class="services-grid">
+
+      <!-- API Gateway -->
+      <div class="service-card go">
+        <div class="card-header">
+          <div class="card-title">🌐 API Gateway</div>
+          <span class="card-lang go">GO</span>
+        </div>
+        <div class="card-desc">Tüm isteklerin giriş noktası. JWT doğrulama, rate limiting, request routing, load balancing ve response caching. Circuit breaker pattern ile downstream servis hatalarını yönetir.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">gin / chi</span>
+          <span class="card-tech">golang-jwt</span>
+          <span class="card-tech">go-redis</span>
+          <span class="card-tech">consul-api</span>
+          <span class="card-tech">opentelemetry</span>
+        </div>
+        <div class="card-section-label">Öğrenilecek Pattern'ler</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method grpc">PAT</span> API Gateway Pattern</div>
+          <div class="endpoint"><span class="method grpc">PAT</span> Circuit Breaker</div>
+          <div class="endpoint"><span class="method grpc">PAT</span> Rate Limiting (Token Bucket)</div>
+          <div class="endpoint"><span class="method grpc">PAT</span> Service Discovery</div>
+        </div>
+      </div>
+
+      <!-- User Service -->
+      <div class="service-card dotnet">
+        <div class="card-header">
+          <div class="card-title">👤 User Service</div>
+          <span class="card-lang dotnet">.NET</span>
+        </div>
+        <div class="card-desc">Kullanıcı kaydı, kimlik doğrulama, profil yönetimi, izleme geçmişi ve watchlist. JWT token üretimi burada yapılır. Birden fazla profil desteği (Netflix tarzı).</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">ASP.NET Core 8</span>
+          <span class="card-tech">EF Core</span>
+          <span class="card-tech">MediatR</span>
+          <span class="card-tech">FluentValidation</span>
+          <span class="card-tech">PostgreSQL</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method post">POST</span> /api/auth/register</div>
+          <div class="endpoint"><span class="method post">POST</span> /api/auth/login</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/users/{id}/profiles</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/users/{id}/watch-history</div>
+          <div class="endpoint"><span class="method post">POST</span> /api/users/{id}/watchlist</div>
+        </div>
+      </div>
+
+      <!-- Catalog Service -->
+      <div class="service-card dotnet">
+        <div class="card-header">
+          <div class="card-title">🎬 Catalog Service</div>
+          <span class="card-lang dotnet">.NET</span>
+        </div>
+        <div class="card-desc">Film/dizi metadata yönetimi: başlık, açıklama, oyuncular, türler, sezonlar, bölümler. İçerik ekleme/güncelleme admin API'si. Kategori ve etiket sistemi.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">ASP.NET Core 8</span>
+          <span class="card-tech">MongoDB.Driver</span>
+          <span class="card-tech">AutoMapper</span>
+          <span class="card-tech">MediatR (CQRS)</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method get">GET</span> /api/catalog/movies</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/catalog/series/{id}/seasons</div>
+          <div class="endpoint"><span class="method post">POST</span> /api/catalog/content (Admin)</div>
+          <div class="endpoint"><span class="method event">EVT</span> ContentAdded → Search, Recommendation</div>
+        </div>
+      </div>
+
+      <!-- Subscription Service -->
+      <div class="service-card dotnet">
+        <div class="card-header">
+          <div class="card-title">💳 Subscription Service</div>
+          <span class="card-lang dotnet">.NET</span>
+        </div>
+        <div class="card-desc">Abonelik planları (Basic, Standard, Premium), ödeme entegrasyonu, fatura yönetimi. Plan değişikliği, iptal ve yenileme iş akışları. Stripe benzeri mock payment.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">ASP.NET Core 8</span>
+          <span class="card-tech">EF Core</span>
+          <span class="card-tech">PostgreSQL</span>
+          <span class="card-tech">Hangfire (Jobs)</span>
+          <span class="card-tech">Saga Pattern</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method get">GET</span> /api/plans</div>
+          <div class="endpoint"><span class="method post">POST</span> /api/subscriptions</div>
+          <div class="endpoint"><span class="method post">POST</span> /api/subscriptions/{id}/cancel</div>
+          <div class="endpoint"><span class="method event">EVT</span> SubscriptionChanged → User, Notification</div>
+        </div>
+      </div>
+
+      <!-- Streaming Service -->
+      <div class="service-card go">
+        <div class="card-header">
+          <div class="card-title">▶️ Streaming Service</div>
+          <span class="card-lang go">GO</span>
+        </div>
+        <div class="card-desc">Video akışının kalbi. HLS/DASH manifest üretimi, adaptive bitrate, chunk serving. İzleme pozisyonu takibi (kaldığın yerden devam). Concurrent viewer yönetimi ve DRM token kontrolü.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">Go net/http</span>
+          <span class="card-tech">HLS Protocol</span>
+          <span class="card-tech">Redis (sessions)</span>
+          <span class="card-tech">MinIO (S3)</span>
+          <span class="card-tech">gRPC</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method get">GET</span> /stream/{id}/manifest.m3u8</div>
+          <div class="endpoint"><span class="method get">GET</span> /stream/{id}/chunk/{quality}/{seg}</div>
+          <div class="endpoint"><span class="method post">POST</span> /stream/{id}/progress</div>
+          <div class="endpoint"><span class="method grpc">gRPC</span> ValidateAccess(userId, contentId)</div>
+        </div>
+      </div>
+
+      <!-- Encoding Service -->
+      <div class="service-card rust">
+        <div class="card-header">
+          <div class="card-title">🔄 Encoding Service</div>
+          <span class="card-lang rust">RUST</span>
+        </div>
+        <div class="card-desc">Video transcoding pipeline. Upload edilen ham videoyu birden fazla kaliteye (360p→4K) ve formata dönüştürür. Thumbnail üretimi, subtitle extraction. İş kuyruğu ile async processing.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">Actix-web / Axum</span>
+          <span class="card-tech">FFmpeg (binding)</span>
+          <span class="card-tech">tokio (async)</span>
+          <span class="card-tech">MinIO SDK</span>
+          <span class="card-tech">RabbitMQ</span>
+        </div>
+        <div class="card-section-label">İş Akışı</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method event">EVT</span> ContentUploaded → Start Pipeline</div>
+          <div class="endpoint"><span class="method grpc">STEP</span> Validate → Transcode → Segment → Upload</div>
+          <div class="endpoint"><span class="method event">EVT</span> EncodingCompleted → Catalog, Notification</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/jobs/{id}/status</div>
+        </div>
+      </div>
+
+      <!-- Search Service -->
+      <div class="service-card go">
+        <div class="card-header">
+          <div class="card-title">🔍 Search Service</div>
+          <span class="card-lang go">GO</span>
+        </div>
+        <div class="card-desc">Full-text arama, otomatik tamamlama, filtre ve facet desteği. Elasticsearch üzerine kurulu. Catalog Service'ten gelen event'lerle index'i güncel tutar (CQRS read model).</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">Go Elasticsearch client</span>
+          <span class="card-tech">gin</span>
+          <span class="card-tech">NATS (events)</span>
+          <span class="card-tech">Redis (cache)</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method get">GET</span> /api/search?q=inception&genre=sci-fi</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/search/autocomplete?q=inc</div>
+          <div class="endpoint"><span class="method event">EVT</span> ContentAdded → Re-index</div>
+        </div>
+      </div>
+
+      <!-- Recommendation Service -->
+      <div class="service-card rust">
+        <div class="card-header">
+          <div class="card-title">🎯 Recommendation Engine</div>
+          <span class="card-lang rust">RUST</span>
+        </div>
+        <div class="card-desc">Kişiselleştirilmiş içerik önerileri. Collaborative filtering + content-based hibrit yaklaşım. İzleme geçmişi, puanlamalar ve benzer kullanıcı davranışlarından öğrenir.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">Axum</span>
+          <span class="card-tech">ndarray</span>
+          <span class="card-tech">Redis (feature store)</span>
+          <span class="card-tech">PostgreSQL</span>
+          <span class="card-tech">gRPC (tonic)</span>
+        </div>
+        <div class="card-section-label">Endpoints</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method get">GET</span> /api/recommendations/{userId}</div>
+          <div class="endpoint"><span class="method get">GET</span> /api/recommendations/similar/{contentId}</div>
+          <div class="endpoint"><span class="method grpc">gRPC</span> GetHomePageSections(userId)</div>
+          <div class="endpoint"><span class="method event">EVT</span> WatchCompleted → Update Model</div>
+        </div>
+      </div>
+
+      <!-- Notification Service -->
+      <div class="service-card go">
+        <div class="card-header">
+          <div class="card-title">🔔 Notification Service</div>
+          <span class="card-lang go">GO</span>
+        </div>
+        <div class="card-desc">Email, push notification ve in-app bildirimler. Yeni içerik, abonelik değişikliği, izleme önerileri. Template engine ile dinamik mesajlar. Event-driven, tamamen asenkron.</div>
+        <div class="card-section-label">Teknolojiler</div>
+        <div class="card-tech-list">
+          <span class="card-tech">Go</span>
+          <span class="card-tech">RabbitMQ consumer</span>
+          <span class="card-tech">WebSocket (gorilla)</span>
+          <span class="card-tech">SMTP / FCM mock</span>
+          <span class="card-tech">MongoDB</span>
+        </div>
+        <div class="card-section-label">Event'ler</div>
+        <div class="card-endpoints">
+          <div class="endpoint"><span class="method event">EVT</span> SubscriptionChanged → Email</div>
+          <div class="endpoint"><span class="method event">EVT</span> NewContentAdded → Push</div>
+          <div class="endpoint"><span class="method event">EVT</span> EncodingCompleted → Admin Alert</div>
+          <div class="endpoint"><span class="method get">GET</span> /ws/notifications (WebSocket)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- COMMUNICATION PATTERNS -->
+  <div class="section">
+    <div class="section-label">İletişim</div>
+    <div class="section-title">Servisler Arası İletişim Pattern'leri</div>
+    <div class="section-desc">Gerçek dünya microservice'lerinde en kritik konu: servisler birbirleriyle nasıl konuşur?</div>
+
+    <div class="patterns-grid">
+      <div class="pattern-card">
+        <h3>Senkron — gRPC</h3>
+        <div class="subtitle">Anlık cevap gereken yerler</div>
+        <p>Gateway → Servisler arası doğrulama, Streaming → Subscription erişim kontrolü. Proto dosyaları paylaşımlı repo'da tutulur. Deadline propagation ve retry policy ile resilience sağlanır.</p>
+      </div>
+      <div class="pattern-card">
+        <h3>Asenkron — Event Bus</h3>
+        <div class="subtitle">RabbitMQ / NATS ile event-driven</div>
+        <p><code>ContentUploaded</code>, <code>EncodingCompleted</code>, <code>WatchCompleted</code> gibi domain event'leri. Eventual consistency kabul edilir. Dead letter queue ile hata yönetimi. Outbox pattern ile güvenilir event publishing.</p>
+      </div>
+      <div class="pattern-card">
+        <h3>Saga Pattern</h3>
+        <div class="subtitle">Dağıtık transaction yönetimi</div>
+        <p>Subscription oluşturma: Ödeme al → Abonelik aktifle → Erişim izni ver → Bildirim gönder. Her adım başarısız olursa compensating action çalışır. Choreography-based saga ile loosely coupled.</p>
+      </div>
+      <div class="pattern-card">
+        <h3>CQRS + Event Sourcing</h3>
+        <div class="subtitle">Okuma ve yazma ayrımı</div>
+        <p>Catalog Service'te içerik yazılır (MongoDB) → Event publish → Search Service'te Elasticsearch index güncellenir. Farklı okuma modelleri farklı sorgu ihtiyaçlarını karşılar. Search Service bir read projection'dır.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA STORES -->
+  <div class="section">
+    <div class="section-label">Veri Katmanı</div>
+    <div class="section-title">Polyglot Persistence</div>
+    <div class="section-desc">Her servis kendi veritabanı teknolojisini kullanır — doğru iş için doğru araç.</div>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="icon">🐘</div>
+        <div class="name">PostgreSQL</div>
+        <div class="role">User, Subscription, Recommendation — İlişkisel veri, ACID garantisi</div>
+      </div>
+      <div class="data-card">
+        <div class="icon">🍃</div>
+        <div class="name">MongoDB</div>
+        <div class="role">Catalog, Notification — Esnek şema, nested document'lar</div>
+      </div>
+      <div class="data-card">
+        <div class="icon">⚡</div>
+        <div class="name">Redis</div>
+        <div class="role">Session, Cache, Rate Limit — In-memory, sub-ms latency</div>
+      </div>
+      <div class="data-card">
+        <div class="icon">🔎</div>
+        <div class="name">Elasticsearch</div>
+        <div class="role">Search Service — Full-text search, aggregation</div>
+      </div>
+      <div class="data-card">
+        <div class="icon">📦</div>
+        <div class="name">MinIO (S3)</div>
+        <div class="role">Video dosyaları, thumbnail'ler — Object storage</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVELOPMENT ROADMAP -->
+  <div class="section">
+    <div class="section-label">Geliştirme Planı</div>
+    <div class="section-title">4 Fazlı Yol Haritası</div>
+    <div class="section-desc">Adım adım, her faz öncekinin üzerine inşa eder. İlk faz 2 haftada çalışan bir MVP verir.</div>
+
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-dot phase1">1</div>
+        <div class="roadmap-content">
+          <h3>Foundation — Temel Altyapı & İlk 3 Servis</h3>
+          <div class="duration">~2-3 Hafta</div>
+          <p>Docker Compose ile tüm altyapıyı ayağa kaldır. User Service (.NET), Catalog Service (.NET) ve API Gateway (Go) ile başla. JWT auth, basit CRUD, service discovery. Servislerin birbirleriyle konuştuğunu gör.</p>
+          <div class="roadmap-tags">
+            <span class="roadmap-tag">Docker Compose</span>
+            <span class="roadmap-tag">JWT Auth</span>
+            <span class="roadmap-tag">REST API</span>
+            <span class="roadmap-tag">PostgreSQL</span>
+            <span class="roadmap-tag">MongoDB</span>
+            <span class="roadmap-tag">Consul</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot phase2">2</div>
+        <div class="roadmap-content">
+          <h3>Core Streaming — Video Pipeline</h3>
+          <div class="duration">~2-3 Hafta</div>
+          <p>Streaming Service (Go) ve Encoding Service (Rust) ekle. Video upload → transcode → HLS segment → serve akışını kur. gRPC ile servisler arası iletişim. RabbitMQ ile event-driven encoding pipeline.</p>
+          <div class="roadmap-tags">
+            <span class="roadmap-tag">gRPC + Proto</span>
+            <span class="roadmap-tag">RabbitMQ</span>
+            <span class="roadmap-tag">HLS Streaming</span>
+            <span class="roadmap-tag">FFmpeg</span>
+            <span class="roadmap-tag">MinIO</span>
+            <span class="roadmap-tag">Async Pipeline</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot phase3">3</div>
+        <div class="roadmap-content">
+          <h3>Smart Features — Arama, Öneri, Abonelik</h3>
+          <div class="duration">~2-3 Hafta</div>
+          <p>Search Service (Go + Elasticsearch), Recommendation Engine (Rust) ve Subscription Service (.NET) ekle. CQRS pattern, Saga pattern, collaborative filtering. Sistemin "akıllı" hale gelmesi.</p>
+          <div class="roadmap-tags">
+            <span class="roadmap-tag">Elasticsearch</span>
+            <span class="roadmap-tag">CQRS</span>
+            <span class="roadmap-tag">Saga Pattern</span>
+            <span class="roadmap-tag">Collaborative Filtering</span>
+            <span class="roadmap-tag">Outbox Pattern</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot phase4">4</div>
+        <div class="roadmap-content">
+          <h3>Production-Ready — Observability & Resilience</h3>
+          <div class="duration">~1-2 Hafta</div>
+          <p>Notification Service, distributed tracing (Jaeger), metrics (Prometheus + Grafana), centralized logging (ELK), health checks, circuit breakers. Chaos testing ile sistemin dayanıklılığını test et.</p>
+          <div class="roadmap-tags">
+            <span class="roadmap-tag">Jaeger Tracing</span>
+            <span class="roadmap-tag">Prometheus</span>
+            <span class="roadmap-tag">Grafana Dashboard</span>
+            <span class="roadmap-tag">Health Checks</span>
+            <span class="roadmap-tag">Circuit Breaker</span>
+            <span class="roadmap-tag">Chaos Testing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  StreamVault — Microservice Öğrenme Projesi Mimari Tasarımı • Go + Rust + .NET
+</div>
+
+</body>
+</html>

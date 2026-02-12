@@ -1,0 +1,19 @@
+version: '3.8'
+
+# Local development overrides
+services:
+  gateway:
+    environment:
+      - LOG_LEVEL=debug
+
+  user-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5001:5001"
+
+  catalog-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5002:5002"

@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # --- Infrastructure ---
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: streamvault_users
+      POSTGRES_USER: ${POSTGRES_USER:-streamvault}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    ports: ["5432:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U streamvault"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_DATABASE: streamvault_catalog
+    ports: ["27017:27017"]
+    volumes:
+      - mongo_data:/data/db
+      - ./infrastructure/mongo/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    volumes:
+      - ./infrastructure/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  consul:
+    image: hashicorp/consul:1.17
+    ports:
+      - "8500:8500"     # UI
+      - "8600:8600/udp" # DNS
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+
+  # --- Application Services ---
+  gateway:
+    build: ./gateway
+    ports: ["8080:8080"]
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key-change-in-production}
+      - CONSUL_ADDRESS=consul:8500
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      consul:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  user-service:
+    build: ./services/user-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_users;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD:-secret}
+      - Jwt__Secret=${JWT_SECRET:-super-secret-key-change-in-production}
+      - Jwt__Issuer=streamvault
+      - Jwt__AccessTokenExpirationMinutes=60
+      - Jwt__RefreshTokenExpirationDays=30
+      - Consul__Address=http://consul:8500
+      - ServiceRegistration__Name=user-service
+      - ServiceRegistration__Port=5001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+  catalog-service:
+    build: ./services/catalog-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MongoDB__ConnectionString=mongodb://mongo:27017
+      - MongoDB__DatabaseName=streamvault_catalog
+      - Consul__Address=http://consul:8500
+      - ServiceRegistration__Name=catalog-service
+      - ServiceRegistration__Port=5002
+    depends_on:
+      mongo:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  mongo_data:
+  consul_data:
