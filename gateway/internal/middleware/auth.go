@@ -34,14 +34,14 @@ func Auth(secret string, issuer string) func(http.Handler) http.Handler {
 
 			tokenString, ok := extractBearerToken(r)
 			if !ok {
-				http.Error(w, `{"error":"missing or malformed authorization header"}`, http.StatusUnauthorized)
+				WriteErrorResponse(w, http.StatusUnauthorized, "missing or malformed authorization header")
 				return
 			}
 
 			claims, err := parseToken(tokenString, secret, issuer)
 			if err != nil {
 				log.Warn().Err(err).Str("path", r.URL.Path).Msg("jwt validation failed")
-				http.Error(w, `{"error":"invalid or expired token"}`, http.StatusUnauthorized)
+				WriteErrorResponse(w, http.StatusUnauthorized, "invalid or expired token")
 				return
 			}
 

@@ -29,33 +29,23 @@ public class ExceptionHandlingMiddleware
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var (statusCode, message, errors) = exception switch
+        var (statusCode, message) = exception switch
         {
             ValidationException validationEx => (
                 HttpStatusCode.BadRequest,
-                "Validation failed.",
-                validationEx.Errors.Select(e => new { e.PropertyName, e.ErrorMessage }).ToArray() as object
-            ),
+                string.Join("; ", validationEx.Errors.Select(e => e.ErrorMessage))),
             KeyNotFoundException keyNotFoundEx => (
                 HttpStatusCode.NotFound,
-                keyNotFoundEx.Message,
-                (object)null!
-            ),
+                keyNotFoundEx.Message),
             ArgumentException argEx => (
                 HttpStatusCode.BadRequest,
-                argEx.Message,
-                (object)null!
-            ),
+                argEx.Message),
             InvalidOperationException invalidOpEx => (
                 HttpStatusCode.Conflict,
-                invalidOpEx.Message,
-                (object)null!
-            ),
+                invalidOpEx.Message),
             _ => (
                 HttpStatusCode.InternalServerError,
-                "An unexpected error occurred.",
-                (object)null!
-            )
+                "An unexpected error occurred.")
         };
 
         if (statusCode == HttpStatusCode.InternalServerError)
@@ -73,13 +63,13 @@ public class ExceptionHandlingMiddleware
         var response = new
         {
             status = (int)statusCode,
+            error = statusCode.ToString(),
             message,
-            errors,
-            traceId = context.TraceIdentifier
+            timestamp = DateTime.UtcNow
         };
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        await context.Response.WriteAsync(JsonSerializer.Serialize(response, jsonOptions));
+        await context.Response.WriteAsJsonAsync(response, jsonOptions);
     }
 }
 

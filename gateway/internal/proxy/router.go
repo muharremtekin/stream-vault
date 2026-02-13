@@ -5,6 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/streamvault/gateway/internal/discovery"
+	"github.com/streamvault/gateway/internal/middleware"
 )
 
 // Route maps a URL path prefix to an upstream service.
@@ -80,14 +81,14 @@ func (rt *Router) Handler() http.Handler {
 			addr, err := rt.resolver.Resolve(r.ServiceName)
 			if err != nil {
 				log.Error().Err(err).Str("service", r.ServiceName).Msg("service resolution failed")
-				http.Error(w, `{"error":"service unavailable"}`, http.StatusBadGateway)
+				middleware.WriteErrorResponse(w, http.StatusBadGateway, "service unavailable")
 				return
 			}
 
 			proxy, err := rt.manager.GetProxy(addr, r.StripPrefix, r.PathPrefix)
 			if err != nil {
 				log.Error().Err(err).Str("address", addr).Msg("failed to create reverse proxy")
-				http.Error(w, `{"error":"bad gateway"}`, http.StatusBadGateway)
+				middleware.WriteErrorResponse(w, http.StatusBadGateway, "bad gateway")
 				return
 			}
 

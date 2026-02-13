@@ -35,7 +35,7 @@ func DefaultCORSOptions() CORSOptions {
 			"Content-Type",
 			"X-Requested-With",
 		},
-		ExposedHeaders:   []string{"X-Request-Id"},
+		ExposedHeaders:   []string{"X-Request-Id", "X-Correlation-Id"},
 		AllowCredentials: false,
 		MaxAge:           86400,
 	}

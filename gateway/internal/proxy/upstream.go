@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"github.com/streamvault/gateway/internal/middleware"
 )
 
 // UpstreamManager maintains a pool of reverse proxies keyed by upstream
@@ -23,18 +24,73 @@ type UpstreamManager struct {
 }
 
 // NewUpstreamManager creates an UpstreamManager with a sensible default
-// transport configuration.
+// transport configuration. GET/HEAD requests are automatically retried on
+// 502/503 errors or network failures.
 func NewUpstreamManager() *UpstreamManager {
-	transport := &http.Transport{
+	baseTransport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 20,
 		IdleConnTimeout:     90 * time.Second,
 	}
 
+	retryTransport := &RetryTransport{
+		Base:       baseTransport,
+		MaxRetries: 2,
+		BaseDelay:  500 * time.Millisecond,
+	}
+
 	return &UpstreamManager{
 		proxies:   make(map[string]*httputil.ReverseProxy),
-		Transport: transport,
+		Transport: retryTransport,
 	}
+}
+
+// RetryTransport wraps an http.RoundTripper and retries idempotent requests
+// (GET, HEAD) on 502/503 errors or network failures with exponential backoff.
+type RetryTransport struct {
+	Base       http.RoundTripper
+	MaxRetries int
+	BaseDelay  time.Duration
+}
+
+// RoundTrip implements http.RoundTripper with retry logic for safe methods.
+func (rt *RetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	// Only retry idempotent methods to avoid duplicate side effects.
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
+		return rt.Base.RoundTrip(req)
+	}
+
+	var resp *http.Response
+	var err error
+
+	for attempt := 0; attempt <= rt.MaxRetries; attempt++ {
+		if attempt > 0 {
+			delay := rt.BaseDelay * time.Duration(1<<(attempt-1))
+			log.Warn().
+				Int("attempt", attempt).
+				Str("path", req.URL.Path).
+				Dur("delay", delay).
+				Msg("retrying upstream request")
+			time.Sleep(delay)
+		}
+
+		resp, err = rt.Base.RoundTrip(req)
+		if err != nil {
+			continue // network error, retry
+		}
+
+		// Only retry on 502 Bad Gateway or 503 Service Unavailable.
+		if resp.StatusCode == http.StatusBadGateway || resp.StatusCode == http.StatusServiceUnavailable {
+			if attempt < rt.MaxRetries {
+				resp.Body.Close()
+				continue
+			}
+		}
+
+		return resp, nil
+	}
+
+	return resp, err
 }
 
 // GetProxy returns a reverse proxy for the given upstream address. If
@@ -92,9 +148,7 @@ func (um *UpstreamManager) GetProxy(address string, stripPrefix bool, pathPrefix
 				Str("path", r.URL.Path).
 				Msg("upstream request failed")
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadGateway)
-			_, _ = w.Write([]byte(`{"error":"upstream service unavailable"}`))
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "upstream service unavailable")
 		},
 		ModifyResponse: func(resp *http.Response) error {
 			log.Debug().

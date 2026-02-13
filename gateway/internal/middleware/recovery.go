@@ -25,9 +25,7 @@ func Recovery() func(http.Handler) http.Handler {
 						Str("stack", string(stack)).
 						Msg("recovered from panic")
 
-					w.Header().Set("Content-Type", "application/json")
-					w.WriteHeader(http.StatusInternalServerError)
-					_, _ = w.Write([]byte(`{"error":"internal server error"}`))
+					WriteErrorResponse(w, http.StatusInternalServerError, "internal server error")
 				}
 			}()
 

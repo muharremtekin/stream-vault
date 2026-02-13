@@ -72,10 +72,11 @@ func main() {
 	}
 
 	// ---- Middleware Chain ----
-	// Order: recovery -> logging -> cors -> ratelimit -> auth -> proxy
+	// Order: recovery -> correlation -> logging -> cors -> ratelimit -> auth -> proxy
 	// The outermost middleware executes first.
 	handler := applyMiddleware(topMux,
 		middleware.Recovery(),
+		middleware.CorrelationID(),
 		middleware.Logging(),
 		middleware.CORS(middleware.DefaultCORSOptions()),
 		rateLimitMiddleware,

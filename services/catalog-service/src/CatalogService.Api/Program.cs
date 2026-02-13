@@ -6,8 +6,19 @@ using CatalogService.Infrastructure.Seed;
 using Consul;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+builder.Host.UseSerilog((context, loggerConfig) =>
+{
+    loggerConfig
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(new RenderedCompactJsonFormatter());
+});
 
 // ---------------------------------------------------------------------------
 // Services
@@ -70,6 +81,8 @@ var app = builder.Build();
 // Pipeline
 // ---------------------------------------------------------------------------
 
+app.UseCorrelationId();
+app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
 
 if (app.Environment.IsDevelopment())

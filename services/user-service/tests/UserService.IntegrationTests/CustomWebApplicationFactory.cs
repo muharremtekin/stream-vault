@@ -30,10 +30,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextDescriptor);
             }
 
-            // Add in-memory database for testing
+            // Add in-memory database for testing (name outside lambda so all scopes share it)
+            var dbName = "TestDatabase_" + Guid.NewGuid();
             services.AddDbContext<UserDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDatabase_" + Guid.NewGuid());
+                options.UseInMemoryDatabase(dbName);
             });
 
             // Ensure the database is created

@@ -70,7 +70,7 @@ func Logging() func(http.Handler) http.Handler {
 				Int("response_bytes", rec.bytesWritten).
 				Str("client_ip", r.RemoteAddr).
 				Str("user_agent", r.UserAgent()).
-				Str("request_id", r.Header.Get("X-Request-Id")).
+				Str("correlation_id", r.Header.Get("X-Correlation-Id")).
 				Msg("request completed")
 		})
 	}

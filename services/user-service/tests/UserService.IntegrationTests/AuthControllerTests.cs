@@ -114,4 +114,55 @@ public class AuthControllerTests : IClassFixture<CustomWebApplicationFactory>
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Register_WithInvalidPassword_ShouldReturn400BadRequest()
+    {
+        // Arrange — weak password: too short, no uppercase, no digit, no special char
+        var command = new RegisterUserCommand(
+            $"weakpass_{Guid.NewGuid():N}@example.com",
+            "weak");
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/api/auth/register", command);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Register_ThenLogin_FullFlow_ShouldReturnConsistentUserData()
+    {
+        // Arrange
+        var email = $"flow_{Guid.NewGuid():N}@example.com";
+        var password = "P@ssword123!";
+
+        // Act — register
+        var registerResponse = await _client.PostAsJsonAsync(
+            "/api/auth/register",
+            new RegisterUserCommand(email, password));
+
+        Assert.Equal(HttpStatusCode.Created, registerResponse.StatusCode);
+
+        var registerContent = await registerResponse.Content
+            .ReadFromJsonAsync<AuthResponseDto>(JsonOptions);
+        Assert.NotNull(registerContent);
+
+        // Act — login
+        var loginResponse = await _client.PostAsJsonAsync(
+            "/api/auth/login",
+            new LoginUserCommand(email, password));
+
+        Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
+
+        var loginContent = await loginResponse.Content
+            .ReadFromJsonAsync<AuthResponseDto>(JsonOptions);
+        Assert.NotNull(loginContent);
+
+        // Assert — consistent user data
+        Assert.Equal(registerContent.User.Email, loginContent.User.Email);
+        Assert.Equal(registerContent.User.Id, loginContent.User.Id);
+        Assert.NotEmpty(loginContent.AccessToken);
+        Assert.NotEmpty(loginContent.RefreshToken);
+    }
 }

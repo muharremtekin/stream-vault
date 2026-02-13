@@ -131,30 +131,30 @@
 ## 6. Cross-Cutting Concerns
 
 ### 6.1 Logging
-- [ ] User Service: Serilog entegrasyonu, JSON formatında structured logging
-- [ ] Catalog Service: Serilog entegrasyonu
-- [ ] Gateway: zerolog zaten skeleton'da var, çalıştığını doğrula
-- [ ] Correlation ID: her request'e unique ID atanması, servisler arası iletilmesi
+- [x] User Service: Serilog entegrasyonu, JSON formatında structured logging
+- [x] Catalog Service: Serilog entegrasyonu
+- [x] Gateway: zerolog zaten skeleton'da var, çalıştığını doğrula
+- [x] Correlation ID: her request'e unique ID atanması, servisler arası iletilmesi
 
 ### 6.2 Error Handling
-- [ ] User Service: ExceptionHandlingMiddleware'in tüm exception türlerini yakalaması
-- [ ] Catalog Service: aynı pattern
-- [ ] Gateway: timeout ve retry mekanizması
-- [ ] Tüm servislerde tutarlı hata response formatı: `{ status, error, message, timestamp }`
+- [x] User Service: ExceptionHandlingMiddleware'in tüm exception türlerini yakalaması
+- [x] Catalog Service: aynı pattern
+- [x] Gateway: timeout ve retry mekanizması
+- [x] Tüm servislerde tutarlı hata response formatı: `{ status, error, message, timestamp }`
 
 ## 7. Test & Kalite
 
 ### 7.1 Unit Tests
-- [ ] RegisterUserHandlerTests: başarılı kayıt, duplicate email, geçersiz input
-- [ ] LoginUserHandlerTests: başarılı giriş, yanlış şifre, olmayan kullanıcı
-- [ ] JwtTokenServiceTests: token üretimi, doğrulama, süresi dolmuş token
-- [ ] CreateMovieHandlerTests: başarılı oluşturma, geçersiz input
-- [ ] Gateway middleware testleri: auth, rate limit, cors
-- [ ] Hedef: minimum %60 code coverage
+- [x] RegisterUserHandlerTests: başarılı kayıt, duplicate email, geçersiz input
+- [x] LoginUserHandlerTests: başarılı giriş, yanlış şifre, olmayan kullanıcı
+- [x] JwtTokenServiceTests: token üretimi, doğrulama, süresi dolmuş token
+- [x] CreateMovieHandlerTests: başarılı oluşturma, geçersiz input
+- [x] Gateway middleware testleri: auth, rate limit, cors
+- [x] Hedef: minimum %60 code coverage
 
 ### 7.2 Integration Tests
-- [ ] AuthControllerTests: register + login akışı, WebApplicationFactory ile
-- [ ] CustomWebApplicationFactory: test DB konfigürasyonu (in-memory veya test container)
+- [x] AuthControllerTests: register + login akışı, WebApplicationFactory ile
+- [x] CustomWebApplicationFactory: test DB konfigürasyonu (in-memory veya test container)
 
 ## 8. Dokümantasyon
 

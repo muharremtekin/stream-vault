@@ -10,9 +10,20 @@ using UserService.Api.Middleware;
 using UserService.Application.Commands.RegisterUser;
 using UserService.Application.Mappings;
 using UserService.Infrastructure;
+using Serilog;
+using Serilog.Formatting.Compact;
 using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+builder.Host.UseSerilog((context, loggerConfig) =>
+{
+    loggerConfig
+        .ReadFrom.Configuration(context.Configuration)
+        .Enrich.FromLogContext()
+        .WriteTo.Console(new RenderedCompactJsonFormatter());
+});
 
 // -------------------------------------------------------------------
 // Services
@@ -131,9 +142,10 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(_ =>
 
 var app = builder.Build();
 
-// Auto-apply EF Core migrations
-using (var scope = app.Services.CreateScope())
+// Auto-apply EF Core migrations (skip for in-memory/testing environments)
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
     try
     {
@@ -157,6 +169,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseCorrelationId();
+app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
 
 app.UseCors("AllowAll");
