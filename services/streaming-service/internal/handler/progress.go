@@ -45,6 +45,11 @@ func (h *ProgressHandler) SaveProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if req.PositionSeconds < 0 {
+		WriteErrorResponse(w, http.StatusBadRequest, "position_seconds must not be negative")
+		return
+	}
+
 	if err := h.service.SaveProgress(r.Context(), userID, contentID, req.PositionSeconds, req.DurationSeconds); err != nil {
 		WriteErrorResponse(w, http.StatusInternalServerError, "failed to save progress")
 		return

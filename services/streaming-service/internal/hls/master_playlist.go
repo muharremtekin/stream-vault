@@ -16,7 +16,7 @@ func GenerateMasterPlaylist(contentId string, profiles []QualityProfile) string 
 		bandwidth := p.BitrateKbps * 1000
 		b.WriteString(fmt.Sprintf("#EXT-X-STREAM-INF:BANDWIDTH=%d,RESOLUTION=%dx%d,NAME=\"%s\"\n",
 			bandwidth, p.Width, p.Height, p.Label))
-		b.WriteString(fmt.Sprintf("%s/playlist.m3u8\n", p.Label))
+		b.WriteString(fmt.Sprintf("/stream/%s/%s/playlist.m3u8\n", contentId, p.Label))
 		b.WriteString("\n")
 	}
 

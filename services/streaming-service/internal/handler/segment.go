@@ -57,5 +57,7 @@ func (h *SegmentHandler) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.WriteHeader(http.StatusOK)
-	io.Copy(w, reader)
+	if _, err := io.Copy(w, reader); err != nil {
+		log.Warn().Err(err).Str("key", key).Msg("error streaming segment to client")
+	}
 }

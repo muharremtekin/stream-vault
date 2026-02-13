@@ -35,6 +35,10 @@ func NewUploadHandler(store storage.Storage, pub messaging.Publisher, uploadCfg 
 
 func (h *UploadHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	userID := r.Header.Get("X-User-Id")
+	if userID == "" {
+		WriteErrorResponse(w, http.StatusUnauthorized, "user identification required")
+		return
+	}
 
 	reader, err := r.MultipartReader()
 	if err != nil {

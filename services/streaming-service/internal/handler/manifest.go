@@ -117,7 +117,9 @@ func (h *ManifestHandler) MediaPlaylist(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Length", formatInt64(info.Size))
 	w.Header().Set("Cache-Control", "no-cache")
 	w.WriteHeader(http.StatusOK)
-	io.Copy(w, reader)
+	if _, err := io.Copy(w, reader); err != nil {
+		log.Warn().Err(err).Str("key", key).Msg("error streaming media playlist to client")
+	}
 }
 
 func formatInt64(n int64) string {
