@@ -47,6 +47,16 @@ func DefaultRoutes() []Route {
 			ServiceName: "catalog-service",
 			StripPrefix: false,
 		},
+		{
+			PathPrefix:  "/api/stream",
+			ServiceName: "streaming-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/stream",
+			ServiceName: "streaming-service",
+			StripPrefix: false,
+		},
 	}
 }
 

@@ -48,6 +48,13 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "encoding.results.streaming",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "bindings": [
@@ -82,6 +89,39 @@
       "destination_type": "queue",
       "routing_key": "dead-letter",
       "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "encoding.results.streaming",
+      "destination_type": "queue",
+      "routing_key": "job.completed",
+      "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "encoding.results.streaming",
+      "destination_type": "queue",
+      "routing_key": "job.failed",
+      "arguments": {}
+    }
+  ],
+  "users": [
+    {
+      "name": "streamvault",
+      "password_hash": "huoJBc1z8gJ0NurvF2zdSsoFSCZfTqArloTbB+hD73jKxJSS",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "permissions": [
+    {
+      "user": "streamvault",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
     }
   ],
   "policies": [],

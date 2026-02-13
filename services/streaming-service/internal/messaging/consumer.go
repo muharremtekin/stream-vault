@@ -1,0 +1,129 @@
+package messaging
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+
+	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
+
+	"github.com/streamvault/streaming-service/internal/config"
+)
+
+type EncodingResult struct {
+	JobID       string           `json:"job_id"`
+	ContentID   string           `json:"content_id"`
+	Status      string           `json:"status"`
+	Outputs     []EncodingOutput `json:"outputs"`
+	Duration    int64            `json:"duration_seconds"`
+	Error       string           `json:"error_message,omitempty"`
+	CompletedAt string           `json:"completed_at"`
+}
+
+type EncodingOutput struct {
+	Quality      string `json:"quality"`
+	Width        int    `json:"width"`
+	Height       int    `json:"height"`
+	BitrateKbps  int    `json:"bitrate_kbps"`
+	SegmentCount int    `json:"segment_count"`
+	PlaylistPath string `json:"playlist_path"`
+}
+
+type Consumer struct {
+	conn        *amqp.Connection
+	channel     *amqp.Channel
+	redisClient *redis.Client
+	queueName   string
+	prefetch    int
+	done        chan struct{}
+}
+
+func NewConsumer(conn *amqp.Connection, cfg config.RabbitMQConfig, redisClient *redis.Client) (*Consumer, error) {
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, fmt.Errorf("opening rabbitmq channel for consumer: %w", err)
+	}
+
+	if err := ch.Qos(cfg.Prefetch, 0, false); err != nil {
+		return nil, fmt.Errorf("setting consumer prefetch: %w", err)
+	}
+
+	return &Consumer{
+		conn:        conn,
+		channel:     ch,
+		redisClient: redisClient,
+		queueName:   cfg.ResultQueue,
+		prefetch:    cfg.Prefetch,
+		done:        make(chan struct{}),
+	}, nil
+}
+
+func (c *Consumer) Start(ctx context.Context) {
+	msgs, err := c.channel.Consume(
+		c.queueName,
+		"streaming-consumer",
+		false, // auto-ack
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,
+	)
+	if err != nil {
+		log.Error().Err(err).Str("queue", c.queueName).Msg("failed to start consuming")
+		return
+	}
+
+	log.Info().Str("queue", c.queueName).Msg("consumer started")
+
+	for {
+		select {
+		case msg, ok := <-msgs:
+			if !ok {
+				log.Warn().Msg("consumer channel closed")
+				return
+			}
+			c.handleResult(ctx, msg)
+		case <-c.done:
+			return
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (c *Consumer) Stop() {
+	close(c.done)
+	if c.channel != nil {
+		c.channel.Close()
+	}
+}
+
+func (c *Consumer) handleResult(ctx context.Context, msg amqp.Delivery) {
+	var result EncodingResult
+	if err := json.Unmarshal(msg.Body, &result); err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal encoding result")
+		msg.Nack(false, false)
+		return
+	}
+
+	log.Info().
+		Str("job_id", result.JobID).
+		Str("content_id", result.ContentID).
+		Str("status", result.Status).
+		Msg("received encoding result")
+
+	if result.Status == "completed" {
+		key := fmt.Sprintf("stream-info:%s", result.ContentID)
+		data, _ := json.Marshal(result)
+		if err := c.redisClient.Set(ctx, key, data, 0).Err(); err != nil {
+			log.Error().Err(err).Str("content_id", result.ContentID).Msg("failed to cache stream info")
+			msg.Nack(false, true)
+			return
+		}
+		log.Info().Str("content_id", result.ContentID).Msg("stream info cached")
+	}
+
+	msg.Ack(false)
+}

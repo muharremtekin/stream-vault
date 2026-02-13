@@ -17,3 +17,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5002:5100"
+
+  streaming-service:
+    environment:
+      - STREAMING_LOGGING_LEVEL=debug
+    ports:
+      - "5003:5003"
+      - "50051:50051"

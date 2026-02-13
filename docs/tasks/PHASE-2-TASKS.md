@@ -28,7 +28,7 @@
 
 ### 1.3 Docker Compose Güncellemeleri
 - [x] `rabbitmq_data` ve `minio_data` volume'larını ekle
-- [ ] Streaming Service container tanımı ekle (port: 5003, 50051)
+- [x] Streaming Service container tanımı ekle (port: 5003, 50051)
 - [ ] Encoding Service container tanımı ekle (CPU: 2.0, RAM: 2G limiti)
 - [x] Servis bağımlılıklarını (depends_on + condition) doğru kur
 - [x] Environment variable'ları ekle (MINIO, RABBITMQ, REDIS, CONSUL)
@@ -50,73 +50,73 @@
 ## 3. Streaming Service (Go)
 
 ### 3.1 Proje Kurulumu & Temel Yapı
-- [ ] Go projesi oluştur (`services/streaming-service/`)
-- [ ] `go.mod` oluştur, dependency'leri ekle (minio-go, go-redis, amqp091-go, grpc, consul api)
-- [ ] `internal/config/config.go` — Viper ile config.yaml + env var yükleme
-- [ ] `cmd/streaming/main.go` — HTTP + gRPC server bootstrap
-- [ ] Dockerfile oluştur (multi-stage build)
-- [ ] Makefile oluştur (build, test, lint)
-- [ ] `/health` endpoint'i (MinIO, Redis bağlantı durumu)
+- [x] Go projesi oluştur (`services/streaming-service/`)
+- [x] `go.mod` oluştur, dependency'leri ekle (minio-go, go-redis, amqp091-go, grpc, consul api)
+- [x] `internal/config/config.go` — Viper ile config.yaml + env var yükleme
+- [x] `cmd/streaming/main.go` — HTTP + gRPC server bootstrap
+- [x] Dockerfile oluştur (multi-stage build)
+- [x] Makefile oluştur (build, test, lint)
+- [x] `/health` endpoint'i (MinIO, Redis bağlantı durumu)
 
 ### 3.2 Consul Entegrasyonu
-- [ ] `internal/discovery/consul.go` — Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] Graceful shutdown'da deregistration
+- [x] `internal/discovery/consul.go` — Consul'a self-registration
+- [x] Health check kaydı
+- [x] Graceful shutdown'da deregistration
 - [ ] Consul UI'da "streaming-service" healthy göründüğünü doğrula
 
 ### 3.3 MinIO Storage
-- [ ] `internal/storage/interface.go` — Storage interface tanımı
-- [ ] `internal/storage/minio.go` — MinIO client wrapper (upload, download, list, delete)
+- [x] `internal/storage/interface.go` — Storage interface tanımı
+- [x] `internal/storage/minio.go` — MinIO client wrapper (upload, download, list, delete)
 - [ ] Raw bucket'a dosya yükleme testi
 - [ ] Encoded bucket'tan dosya okuma testi
 
 ### 3.4 Video Upload (Admin)
-- [ ] `internal/handler/upload.go` — POST /api/stream/upload (multipart/form-data)
-- [ ] Dosyayı MinIO `streamvault-raw/{contentId}/original.mp4` konumuna yükle
-- [ ] Admin rolü kontrolü (X-User-Role header)
-- [ ] RabbitMQ'ya encoding job mesajı gönder
-- [ ] 202 Accepted response (jobId, contentId, status)
+- [x] `internal/handler/upload.go` — POST /api/stream/upload (multipart/form-data)
+- [x] Dosyayı MinIO `streamvault-raw/{contentId}/original.mp4` konumuna yükle
+- [x] Admin rolü kontrolü (X-User-Role header)
+- [x] RabbitMQ'ya encoding job mesajı gönder
+- [x] 202 Accepted response (jobId, contentId, status)
 
 ### 3.5 HLS Manifest & Segment Serving
-- [ ] `internal/hls/master_playlist.go` — Master playlist üretimi (multi-quality, tier filtreli)
-- [ ] `internal/hls/media_playlist.go` — Tek kalite playlist üretimi
-- [ ] `internal/handler/manifest.go` — GET /stream/{contentId}/manifest.m3u8
-- [ ] `internal/handler/chunk.go` — GET /stream/{contentId}/{quality}/segment_{number}.ts
-- [ ] Tier'e göre kalite filtreleme (Basic: 360p+720p, Standard: +1080p, Premium: +4K)
-- [ ] MinIO'dan segment okuyup client'a proxy
-- [ ] Content-Type header'ları (application/vnd.apple.mpegurl, video/mp2t)
-- [ ] Accept-Ranges ve Content-Length header'ları
+- [x] `internal/hls/master_playlist.go` — Master playlist üretimi (multi-quality, tier filtreli)
+- [x] `internal/hls/media_playlist.go` — Tek kalite playlist üretimi
+- [x] `internal/handler/manifest.go` — GET /stream/{contentId}/manifest.m3u8
+- [x] `internal/handler/chunk.go` — GET /stream/{contentId}/{quality}/segment_{number}.ts
+- [x] Tier'e göre kalite filtreleme (Basic: 360p+720p, Standard: +1080p, Premium: +4K)
+- [x] MinIO'dan segment okuyup client'a proxy
+- [x] Content-Type header'ları (application/vnd.apple.mpegurl, video/mp2t)
+- [x] Accept-Ranges ve Content-Length header'ları
 
 ### 3.6 İzleme Pozisyonu (Progress)
-- [ ] `internal/progress/repository.go` — Redis'te izleme pozisyonu (Hash: `progress:{userId}:{contentId}`)
-- [ ] `internal/progress/service.go` — İş mantığı (kaydet, oku, continue-watching listesi)
-- [ ] `internal/handler/progress.go` — POST /api/stream/{contentId}/progress (pozisyon kaydet)
-- [ ] GET /api/stream/{contentId}/progress (pozisyon oku)
-- [ ] GET /api/stream/continue-watching (sorted set'ten liste)
-- [ ] Tamamlanmış içerikleri (%95+) listeden düşür
-- [ ] Redis TTL ayarları (progress: 90 gün, concurrent: 5 dakika)
+- [x] `internal/progress/repository.go` — Redis'te izleme pozisyonu (Hash: `progress:{userId}:{contentId}`)
+- [x] `internal/progress/service.go` — İş mantığı (kaydet, oku, continue-watching listesi)
+- [x] `internal/handler/progress.go` — POST /api/stream/{contentId}/progress (pozisyon kaydet)
+- [x] GET /api/stream/{contentId}/progress (pozisyon oku)
+- [x] GET /api/stream/continue-watching (sorted set'ten liste)
+- [x] Tamamlanmış içerikleri (%95+) listeden düşür
+- [x] Redis TTL ayarları (progress: 90 gün, concurrent: 5 dakika)
 
 ### 3.7 Eşzamanlı İzleme Limiti
-- [ ] `internal/middleware/concurrent.go` — Redis Set ile aktif session takibi
-- [ ] Tier bazlı limit kontrolü (Basic: 1, Standard: 2, Premium: 4)
-- [ ] Heartbeat mekanizması (TTL yenileme)
-- [ ] Limit aşımında hata dönüşü
+- [x] `internal/middleware/concurrent.go` — Redis Set ile aktif session takibi
+- [x] Tier bazlı limit kontrolü (Basic: 1, Standard: 2, Premium: 4)
+- [x] Heartbeat mekanizması (TTL yenileme)
+- [x] Limit aşımında hata dönüşü
 
 ### 3.8 Abonelik Kontrolü
-- [ ] `internal/middleware/subscription.go` — X-User-Tier header kontrolü
-- [ ] Kalite bazlı erişim kontrolü
+- [x] `internal/middleware/subscription.go` — X-User-Tier header kontrolü
+- [x] Kalite bazlı erişim kontrolü
 
 ### 3.9 gRPC Server
-- [ ] `internal/grpc/server.go` — gRPC server implementasyonu (port: 50051)
-- [ ] GetStreamingInfo RPC — içerik streaming bilgisi
-- [ ] GetProgress RPC — kullanıcı izleme pozisyonu
-- [ ] GetContinueWatching RPC — devam eden izlemeler listesi
+- [x] `internal/grpc/server.go` — gRPC server implementasyonu (port: 50051)
+- [x] GetStreamingInfo RPC — içerik streaming bilgisi
+- [x] GetProgress RPC — kullanıcı izleme pozisyonu
+- [x] GetContinueWatching RPC — devam eden izlemeler listesi
 - [ ] `internal/grpc/catalog_client.go` — Catalog Service gRPC client (opsiyonel)
 
 ### 3.10 RabbitMQ Publisher
-- [ ] Encoding job publish (encoding exchange, routing_key: job.new)
-- [ ] EncodingCompleted/EncodingFailed event consume (result queue'dan)
-- [ ] Stream info cache'i (Redis) güncelle
+- [x] Encoding job publish (encoding exchange, routing_key: job.new)
+- [x] EncodingCompleted/EncodingFailed event consume (result queue'dan)
+- [x] Stream info cache'i (Redis) güncelle
 
 ---
 

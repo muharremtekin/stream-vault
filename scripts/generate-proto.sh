@@ -9,10 +9,13 @@ PROTO_DIR="$(cd "$(dirname "$0")/.." && pwd)/proto"
 GATEWAY_DIR="$(cd "$(dirname "$0")/.." && pwd)/gateway"
 GO_OUT_DIR="$GATEWAY_DIR/proto"
 ENCODING_SERVICE_DIR="$(cd "$(dirname "$0")/.." && pwd)/services/encoding-service"
+STREAMING_SERVICE_DIR="$(cd "$(dirname "$0")/.." && pwd)/services/streaming-service"
+STREAMING_GO_OUT_DIR="$STREAMING_SERVICE_DIR/proto"
 
 echo "=== StreamVault Proto Generator ==="
-echo "Proto source: $PROTO_DIR"
-echo "Go output:    $GO_OUT_DIR"
+echo "Proto source:       $PROTO_DIR"
+echo "Go output (gw):     $GO_OUT_DIR"
+echo "Go output (stream): $STREAMING_GO_OUT_DIR"
 
 # Check dependencies
 command -v protoc >/dev/null 2>&1 || { echo "ERROR: protoc is not installed"; exit 1; }
@@ -36,6 +39,25 @@ for proto_file in $(find "$PROTO_DIR" -name "*.proto" | sort); do
     --go_opt=paths=source_relative \
     --go-grpc_opt=paths=source_relative \
     "$proto_file"
+done
+
+# Generate Go code for streaming service (only common + streaming protos)
+echo "[1.5/3] Generating Go code for streaming service..."
+rm -rf "$STREAMING_GO_OUT_DIR"
+mkdir -p "$STREAMING_GO_OUT_DIR"
+for proto_file in common/v1/common.proto streaming/v1/streaming.proto; do
+  echo "  Processing (streaming-service): $proto_file"
+  protoc \
+    --proto_path="$PROTO_DIR" \
+    --go_out="$STREAMING_GO_OUT_DIR" \
+    --go-grpc_out="$STREAMING_GO_OUT_DIR" \
+    --go_opt=paths=source_relative \
+    --go-grpc_opt=paths=source_relative \
+    --go_opt=Mcommon/v1/common.proto=github.com/streamvault/streaming-service/proto/common/v1 \
+    --go_opt=Mstreaming/v1/streaming.proto=github.com/streamvault/streaming-service/proto/streaming/v1 \
+    --go-grpc_opt=Mcommon/v1/common.proto=github.com/streamvault/streaming-service/proto/common/v1 \
+    --go-grpc_opt=Mstreaming/v1/streaming.proto=github.com/streamvault/streaming-service/proto/streaming/v1 \
+    "$PROTO_DIR/$proto_file"
 done
 
 # C# code generation note

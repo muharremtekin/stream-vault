@@ -23,6 +23,9 @@ services:
   catalog-service:
     url: "http://catalog-service:5100"
     health_path: "/health"
+  streaming-service:
+    url: "http://streaming-service:5003"
+    health_path: "/health"
 
 logging:
   level: "info"

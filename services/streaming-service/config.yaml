@@ -1,0 +1,42 @@
+server:
+  http_port: 5003
+  grpc_port: 50051
+  read_timeout: 30s
+  write_timeout: 60s
+
+consul:
+  address: "consul:8500"
+  health_check_interval: 10s
+
+minio:
+  endpoint: "minio:9000"
+  access_key: "minioadmin"
+  secret_key: "minioadmin"
+  use_ssl: false
+  raw_bucket: "streamvault-raw"
+  encoded_bucket: "streamvault-encoded"
+  thumbnails_bucket: "streamvault-thumbnails"
+
+redis:
+  url: "redis://redis:6379/0"
+  progress_ttl: 2160h
+  concurrent_ttl: 5m
+
+rabbitmq:
+  url: "amqp://streamvault:secret@rabbitmq:5672/"
+  exchange: "encoding"
+  publish_routing_key: "job.new"
+  result_queue: "encoding.results.streaming"
+  prefetch: 5
+
+upload:
+  max_file_size: 10737418240
+  allowed_types:
+    - "video/mp4"
+    - "video/quicktime"
+    - "video/x-msvideo"
+    - "video/x-matroska"
+
+logging:
+  level: "info"
+  format: "json"
