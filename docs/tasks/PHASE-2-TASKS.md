@@ -7,32 +7,32 @@
 ## 1. Altyapı Eklentileri
 
 ### 1.1 RabbitMQ
-- [ ] Docker Compose'a RabbitMQ servisi ekle (rabbitmq:3.13-management-alpine)
-- [ ] `infrastructure/rabbitmq/rabbitmq.conf` oluştur
-- [ ] `infrastructure/rabbitmq/definitions.json` ile topology tanımla (exchange, queue, binding)
-- [ ] Exchange: `encoding` (type: topic, durable)
-- [ ] Queue: `encoding.jobs` (durable, prefetch=2, routing_key: `job.new`)
-- [ ] Queue: `encoding.results.catalog` (durable, routing_key: `job.completed` + `job.failed`)
-- [ ] Dead Letter Exchange: `encoding.dlx` + `encoding.dead-letters` queue
-- [ ] RabbitMQ Management UI'da (15672) topology'nin doğru göründüğünü doğrula
-- [ ] Healthcheck çalışıyor (`rabbitmq-diagnostics -q ping`)
+- [x] Docker Compose'a RabbitMQ servisi ekle (rabbitmq:3.13-management-alpine)
+- [x] `infrastructure/rabbitmq/rabbitmq.conf` oluştur
+- [x] `infrastructure/rabbitmq/definitions.json` ile topology tanımla (exchange, queue, binding)
+- [x] Exchange: `encoding` (type: topic, durable)
+- [x] Queue: `encoding.jobs` (durable, prefetch=2, routing_key: `job.new`)
+- [x] Queue: `encoding.results.catalog` (durable, routing_key: `job.completed` + `job.failed`)
+- [x] Dead Letter Exchange: `encoding.dlx` + `encoding.dead-letters` queue
+- [x] RabbitMQ Management UI'da (15672) topology'nin doğru göründüğünü doğrula
+- [x] Healthcheck çalışıyor (`rabbitmq-diagnostics -q ping`)
 
 ### 1.2 MinIO
-- [ ] Docker Compose'a MinIO servisi ekle (minio/minio:latest)
-- [ ] `infrastructure/minio/init-buckets.sh` ile bucket oluşturma script'i yaz
-- [ ] `minio-init` servisi ekle (mc ile bucket oluşturma)
-- [ ] 3 bucket oluştur: `streamvault-raw`, `streamvault-encoded`, `streamvault-thumbnails`
-- [ ] `streamvault-thumbnails` için anonymous download izni ayarla
-- [ ] MinIO Console'da (9001) bucket'ların göründüğünü doğrula
-- [ ] Healthcheck çalışıyor (`mc ready local`)
+- [x] Docker Compose'a MinIO servisi ekle (minio/minio:latest)
+- [x] `infrastructure/minio/init-buckets.sh` ile bucket oluşturma script'i yaz
+- [x] `minio-init` servisi ekle (mc ile bucket oluşturma)
+- [x] 3 bucket oluştur: `streamvault-raw`, `streamvault-encoded`, `streamvault-thumbnails`
+- [x] `streamvault-thumbnails` için anonymous download izni ayarla
+- [x] MinIO Console'da (9001) bucket'ların göründüğünü doğrula
+- [x] Healthcheck çalışıyor (`curl -f http://localhost:9000/minio/health/live`)
 
 ### 1.3 Docker Compose Güncellemeleri
-- [ ] `rabbitmq_data` ve `minio_data` volume'larını ekle
+- [x] `rabbitmq_data` ve `minio_data` volume'larını ekle
 - [ ] Streaming Service container tanımı ekle (port: 5003, 50051)
 - [ ] Encoding Service container tanımı ekle (CPU: 2.0, RAM: 2G limiti)
-- [ ] Servis bağımlılıklarını (depends_on + condition) doğru kur
-- [ ] Environment variable'ları ekle (MINIO, RABBITMQ, REDIS, CONSUL)
-- [ ] `docker compose up` ile tüm yeni altyapı servislerinin ayağa kalktığını doğrula
+- [x] Servis bağımlılıklarını (depends_on + condition) doğru kur
+- [x] Environment variable'ları ekle (MINIO, RABBITMQ, REDIS, CONSUL)
+- [x] `docker compose up` ile tüm yeni altyapı servislerinin ayağa kalktığını doğrula
 
 ---
 

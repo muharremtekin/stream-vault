@@ -1,0 +1,90 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "encoding",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "encoding.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "encoding.jobs",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-dead-letter-exchange": "encoding.dlx",
+        "x-dead-letter-routing-key": "dead-letter"
+      }
+    },
+    {
+      "name": "encoding.results.catalog",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "encoding.dead-letters",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "encoding.jobs",
+      "destination_type": "queue",
+      "routing_key": "job.new",
+      "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "encoding.results.catalog",
+      "destination_type": "queue",
+      "routing_key": "job.completed",
+      "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "encoding.results.catalog",
+      "destination_type": "queue",
+      "routing_key": "job.failed",
+      "arguments": {}
+    },
+    {
+      "source": "encoding.dlx",
+      "vhost": "/",
+      "destination": "encoding.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "dead-letter",
+      "arguments": {}
+    }
+  ],
+  "policies": [],
+  "parameters": [],
+  "global_parameters": []
+}
