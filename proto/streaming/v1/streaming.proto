@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package streaming.v1;
+
+option go_package = "github.com/streamvault/gateway/proto/streaming/v1;streamingv1";
+option csharp_namespace = "StreamVault.Proto.Streaming.V1";
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// StreamingService provides streaming metadata, watch progress,
+// and continue-watching functionality.
+service StreamingService {
+  // GetStreamingInfo returns streaming metadata for a content item.
+  rpc GetStreamingInfo(GetStreamingInfoRequest) returns (StreamingInfoResponse);
+
+  // GetProgress returns a user's watch position for specific content.
+  rpc GetProgress(GetProgressRequest) returns (ProgressResponse);
+
+  // GetContinueWatching returns the user's list of in-progress content,
+  // sorted by most recently watched.
+  rpc GetContinueWatching(GetContinueWatchingRequest) returns (ContinueWatchingResponse);
+}
+
+// --- GetStreamingInfo ---
+
+message GetStreamingInfoRequest {
+  string content_id = 1;
+}
+
+message StreamingInfoResponse {
+  string content_id = 1;
+  common.v1.VideoStatus status = 2;
+  int64 duration_seconds = 3;
+  repeated QualityInfo available_qualities = 4;
+  string manifest_path = 5;
+  string thumbnail_path = 6;
+  string poster_path = 7;
+  google.protobuf.Timestamp encoded_at = 8;
+}
+
+// QualityInfo describes a single quality level available for streaming.
+message QualityInfo {
+  string label = 1;                              // "360p", "720p", "1080p", "4K"
+  int32 width = 2;
+  int32 height = 3;
+  int32 bitrate_kbps = 4;
+  int32 segment_count = 5;
+  common.v1.SubscriptionTier min_tier = 6;       // Minimum tier required
+}
+
+// --- GetProgress ---
+
+message GetProgressRequest {
+  string user_id = 1;
+  string content_id = 2;
+}
+
+message ProgressResponse {
+  string user_id = 1;
+  string content_id = 2;
+  int64 position_seconds = 3;
+  int64 duration_seconds = 4;
+  double percentage = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+// --- GetContinueWatching ---
+
+message GetContinueWatchingRequest {
+  string user_id = 1;
+  int32 limit = 2;                                // Max items to return; 0 = server default
+}
+
+message ContinueWatchingResponse {
+  repeated ContinueWatchingItem items = 1;
+}
+
+// ContinueWatchingItem represents a content item the user has partially watched.
+message ContinueWatchingItem {
+  string content_id = 1;
+  string title = 2;
+  string thumbnail_url = 3;
+  int64 position_seconds = 4;
+  int64 duration_seconds = 5;
+  double percentage = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}

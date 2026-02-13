@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "github.com/streamvault/gateway/proto/common/v1;commonv1";
+option csharp_namespace = "StreamVault.Proto.Common.V1";
+
+// Pagination request parameters.
+message Pagination {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+// PaginatedResponse carries pagination metadata in responses.
+message PaginatedResponse {
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 total_count = 3;
+  int32 total_pages = 4;
+}
+
+// ContentType represents the type of content in the catalog.
+enum ContentType {
+  CONTENT_TYPE_UNSPECIFIED = 0;
+  CONTENT_TYPE_MOVIE = 1;
+  CONTENT_TYPE_SERIES = 2;
+  CONTENT_TYPE_EPISODE = 3;
+  CONTENT_TYPE_DOCUMENTARY = 4;
+}
+
+// SubscriptionTier defines the user's subscription level.
+enum SubscriptionTier {
+  SUBSCRIPTION_TIER_UNSPECIFIED = 0;
+  SUBSCRIPTION_TIER_FREE = 1;
+  SUBSCRIPTION_TIER_BASIC = 2;
+  SUBSCRIPTION_TIER_STANDARD = 3;
+  SUBSCRIPTION_TIER_PREMIUM = 4;
+}
+
+// VideoStatus tracks the lifecycle of a video's encoding pipeline.
+enum VideoStatus {
+  VIDEO_STATUS_UNSPECIFIED = 0;
+  VIDEO_STATUS_NOT_UPLOADED = 1;
+  VIDEO_STATUS_UPLOADING = 2;
+  VIDEO_STATUS_QUEUED = 3;
+  VIDEO_STATUS_ENCODING = 4;
+  VIDEO_STATUS_READY = 5;
+  VIDEO_STATUS_ERROR = 6;
+}

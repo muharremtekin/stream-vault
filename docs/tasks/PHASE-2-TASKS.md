@@ -38,12 +38,12 @@
 
 ## 2. Proto Dosyaları & gRPC
 
-- [ ] `proto/common/v1/common.proto` oluştur (Pagination, ContentType, SubscriptionTier)
-- [ ] `proto/streaming/v1/streaming.proto` oluştur (StreamingService, GetStreamingInfo, GetProgress, GetContinueWatching)
-- [ ] `proto/encoding/v1/encoding.proto` oluştur (EncodingService, GetJobStatus, ListJobs)
-- [ ] `scripts/generate-proto.sh` güncelle — Go ve Rust için kod üretimi
-- [ ] Go proto üretiminin çalıştığını doğrula (`protoc` + `protoc-gen-go`, `protoc-gen-go-grpc`)
-- [ ] Rust proto üretiminin çalıştığını doğrula (`tonic-build`)
+- [x] `proto/common/v1/common.proto` oluştur (Pagination, ContentType, SubscriptionTier)
+- [x] `proto/streaming/v1/streaming.proto` oluştur (StreamingService, GetStreamingInfo, GetProgress, GetContinueWatching)
+- [x] `proto/encoding/v1/encoding.proto` oluştur (EncodingService, GetJobStatus, ListJobs)
+- [x] `scripts/generate-proto.sh` güncelle — Go ve Rust için kod üretimi
+- [x] Go proto üretiminin çalıştığını doğrula (`protoc` + `protoc-gen-go`, `protoc-gen-go-grpc`)
+- [ ] Rust proto üretiminin çalıştığını doğrula (`tonic-build`) — encoding-service oluşturulunca yapılacak
 
 ---
 

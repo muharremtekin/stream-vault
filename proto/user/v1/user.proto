@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user.v1;
 
-option go_package = "github.com/streamvault/proto/user/v1;userv1";
+option go_package = "github.com/streamvault/gateway/proto/user/v1;userv1";
 option csharp_namespace = "StreamVault.Proto.User.V1";
 
 service UserService {

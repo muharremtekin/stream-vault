@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package catalog.v1;
 
-option go_package = "github.com/streamvault/proto/catalog/v1;catalogv1";
+option go_package = "github.com/streamvault/gateway/proto/catalog/v1;catalogv1";
 option csharp_namespace = "StreamVault.Proto.Catalog.V1";
 
 service CatalogService {

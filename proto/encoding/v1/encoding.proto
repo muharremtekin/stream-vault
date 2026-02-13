@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package encoding.v1;
+
+option go_package = "github.com/streamvault/gateway/proto/encoding/v1;encodingv1";
+option csharp_namespace = "StreamVault.Proto.Encoding.V1";
+
+import "google/protobuf/timestamp.proto";
+
+// EncodingService provides job status queries for the encoding pipeline.
+service EncodingService {
+  // GetJobStatus returns the current status of a single encoding job.
+  rpc GetJobStatus(GetJobStatusRequest) returns (JobStatusResponse);
+
+  // ListJobs returns a filtered, paginated list of encoding jobs.
+  rpc ListJobs(ListJobsRequest) returns (ListJobsResponse);
+}
+
+// JobStatus tracks the lifecycle of an encoding job.
+enum JobStatus {
+  JOB_STATUS_UNSPECIFIED = 0;
+  JOB_STATUS_QUEUED = 1;
+  JOB_STATUS_PROCESSING = 2;
+  JOB_STATUS_COMPLETED = 3;
+  JOB_STATUS_FAILED = 4;
+  JOB_STATUS_CANCELLED = 5;
+}
+
+// --- GetJobStatus ---
+
+message GetJobStatusRequest {
+  string job_id = 1;
+}
+
+message JobStatusResponse {
+  string job_id = 1;
+  string content_id = 2;
+  JobStatus status = 3;
+  double progress_percentage = 4;                  // 0.0 - 100.0
+  string current_step = 5;                         // "validating", "transcoding_720p", "segmenting", etc.
+  repeated EncodingOutput outputs = 6;
+  string error_message = 7;                        // Populated only when status is FAILED
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp started_at = 9;
+  google.protobuf.Timestamp completed_at = 10;
+}
+
+// EncodingOutput describes the result of encoding to a specific quality level.
+message EncodingOutput {
+  string quality = 1;                              // "360p", "720p", "1080p", "4k"
+  int32 width = 2;
+  int32 height = 3;
+  int32 bitrate_kbps = 4;
+  int64 file_size_bytes = 5;
+  int32 segment_count = 6;
+  string playlist_path = 7;                        // MinIO path to quality playlist.m3u8
+  string storage_path = 8;                         // MinIO base path for segments
+}
+
+// --- ListJobs ---
+
+message ListJobsRequest {
+  JobStatus status_filter = 1;                     // Filter by status; UNSPECIFIED = all
+  string content_id_filter = 2;                    // Filter by content ID; empty = all
+  int32 limit = 3;                                 // Max items; 0 = server default
+  int32 offset = 4;                                // Pagination offset
+}
+
+message ListJobsResponse {
+  repeated JobStatusResponse jobs = 1;
+  int64 total_count = 2;
+}
