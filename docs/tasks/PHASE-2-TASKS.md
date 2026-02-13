@@ -29,7 +29,7 @@
 ### 1.3 Docker Compose Güncellemeleri
 - [x] `rabbitmq_data` ve `minio_data` volume'larını ekle
 - [x] Streaming Service container tanımı ekle (port: 5003, 50051)
-- [ ] Encoding Service container tanımı ekle (CPU: 2.0, RAM: 2G limiti)
+- [x] Encoding Service container tanımı ekle (CPU: 2.0, RAM: 2G limiti)
 - [x] Servis bağımlılıklarını (depends_on + condition) doğru kur
 - [x] Environment variable'ları ekle (MINIO, RABBITMQ, REDIS, CONSUL)
 - [x] `docker compose up` ile tüm yeni altyapı servislerinin ayağa kalktığını doğrula
@@ -43,7 +43,7 @@
 - [x] `proto/encoding/v1/encoding.proto` oluştur (EncodingService, GetJobStatus, ListJobs)
 - [x] `scripts/generate-proto.sh` güncelle — Go ve Rust için kod üretimi
 - [x] Go proto üretiminin çalıştığını doğrula (`protoc` + `protoc-gen-go`, `protoc-gen-go-grpc`)
-- [ ] Rust proto üretiminin çalıştığını doğrula (`tonic-build`) — encoding-service oluşturulunca yapılacak
+- [x] Rust proto üretiminin çalıştığını doğrula (`tonic-build`) — encoding-service oluşturulunca yapılacak
 
 ---
 
@@ -123,45 +123,45 @@
 ## 4. Encoding Service (Rust)
 
 ### 4.1 Proje Kurulumu & Temel Yapı
-- [ ] Cargo projesi oluştur (`services/encoding-service/`)
-- [ ] `Cargo.toml` — dependency'ler (axum, tokio, lapin, aws-sdk-s3/minio, tonic, serde, tracing)
-- [ ] `src/config.rs` — config.toml + env var yükleme
-- [ ] `src/main.rs` — Axum bootstrap + RabbitMQ consumer başlatma
-- [ ] `src/error.rs` — Hata tipleri (thiserror)
-- [ ] Dockerfile oluştur (multi-stage build, FFmpeg dahil)
-- [ ] Makefile oluştur (build, test, lint)
-- [ ] GET /health endpoint (RabbitMQ, MinIO, FFmpeg bağlantı durumu)
+- [x] Cargo projesi oluştur (`services/encoding-service/`)
+- [x] `Cargo.toml` — dependency'ler (axum, tokio, lapin, aws-sdk-s3/minio, tonic, serde, tracing)
+- [x] `src/config.rs` — config.toml + env var yükleme
+- [x] `src/main.rs` — Axum bootstrap + RabbitMQ consumer başlatma
+- [x] `src/error.rs` — Hata tipleri (thiserror)
+- [x] Dockerfile oluştur (multi-stage build, FFmpeg dahil)
+- [x] Makefile oluştur (build, test, lint)
+- [x] GET /health endpoint (RabbitMQ, MinIO, FFmpeg bağlantı durumu)
 
 ### 4.2 Consul Entegrasyonu
-- [ ] `src/main.rs` içinde Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] Graceful shutdown'da deregistration
+- [x] `src/main.rs` içinde Consul'a self-registration
+- [x] Health check kaydı
+- [x] Graceful shutdown'da deregistration
 
 ### 4.3 RabbitMQ Consumer
-- [ ] `src/queue/consumer.rs` — lapin ile RabbitMQ consumer
-- [ ] `encoding.jobs` queue'dan job mesajı alma
-- [ ] Ack/Nack mekanizması
-- [ ] Dead letter queue'ya düşen başarısız mesajlar
-- [ ] Prefetch count: 2 (aynı anda max 2 job)
-- [ ] Retry mekanizması (max 3, delay 5s)
+- [x] `src/queue/consumer.rs` — lapin ile RabbitMQ consumer
+- [x] `encoding.jobs` queue'dan job mesajı alma
+- [x] Ack/Nack mekanizması
+- [x] Dead letter queue'ya düşen başarısız mesajlar
+- [x] Prefetch count: 2 (aynı anda max 2 job)
+- [x] Retry mekanizması (max 3, delay 5s)
 
 ### 4.4 RabbitMQ Publisher
-- [ ] `src/queue/publisher.rs` — event publish
-- [ ] EncodingCompleted event (encoding.results exchange, routing_key: job.completed)
-- [ ] EncodingFailed event (routing_key: job.failed)
-- [ ] Mesaj formatları JSON (jobId, contentId, outputs, thumbnails, duration)
+- [x] `src/queue/publisher.rs` — event publish
+- [x] EncodingCompleted event (encoding.results exchange, routing_key: job.completed)
+- [x] EncodingFailed event (routing_key: job.failed)
+- [x] Mesaj formatları JSON (jobId, contentId, outputs, thumbnails, duration)
 
 ### 4.5 MinIO Storage
-- [ ] `src/storage/minio.rs` — S3 client wrapper
-- [ ] Raw bucket'tan ham video indirme (temp dizine)
-- [ ] Encoded bucket'a segment yükleme
-- [ ] Thumbnails bucket'a görsel yükleme
-- [ ] Büyük dosya streaming I/O
+- [x] `src/storage/minio.rs` — S3 client wrapper
+- [x] Raw bucket'tan ham video indirme (temp dizine)
+- [x] Encoded bucket'a segment yükleme
+- [x] Thumbnails bucket'a görsel yükleme
+- [x] Büyük dosya streaming I/O
 
 ### 4.6 Models
-- [ ] `src/models/job.rs` — EncodingJob struct
-- [ ] `src/models/profile.rs` — Encoding profilleri (360p, 720p, 1080p, 4K)
-- [ ] `src/models/status.rs` — Job durumları (Queued, Processing, Completed, Failed, Cancelled)
+- [x] `src/models/job.rs` — EncodingJob struct
+- [x] `src/models/profile.rs` — Encoding profilleri (360p, 720p, 1080p, 4K)
+- [x] `src/models/status.rs` — Job durumları (Queued, Processing, Completed, Failed, Cancelled)
 
 ### 4.7 Pipeline — Validator
 - [ ] `src/pipeline/validator.rs` — Video format doğrulama

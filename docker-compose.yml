@@ -173,6 +173,29 @@ services:
       minio-init:
         condition: service_completed_successfully
 
+  encoding-service:
+    build: ./services/encoding-service
+    environment:
+      - ENCODING_CONSUL_ADDRESS=consul:8500
+      - ENCODING_MINIO_ENDPOINT=minio:9000
+      - ENCODING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
+      - ENCODING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - ENCODING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/
+    depends_on:
+      minio:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+
 volumes:
   postgres_data:
   mongo_data:

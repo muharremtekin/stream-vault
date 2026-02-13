@@ -1,0 +1,38 @@
+[server]
+http_port = 5004
+grpc_port = 50052
+
+[consul]
+address = "localhost:8500"
+service_name = "encoding-service"
+health_check_interval_secs = 10
+
+[minio]
+endpoint = "localhost:9000"
+access_key = "minioadmin"
+secret_key = "minioadmin"
+use_ssl = false
+raw_bucket = "streamvault-raw"
+encoded_bucket = "streamvault-encoded"
+thumbnails_bucket = "streamvault-thumbnails"
+region = "us-east-1"
+
+[rabbitmq]
+url = "amqp://guest:guest@localhost:5672/"
+jobs_queue = "encoding.jobs"
+exchange = "encoding"
+completed_routing_key = "job.completed"
+failed_routing_key = "job.failed"
+prefetch = 2
+max_retries = 3
+retry_delay_secs = 5
+
+[encoding]
+temp_dir = "/tmp/encoding"
+ffmpeg_path = "/usr/bin/ffmpeg"
+ffprobe_path = "/usr/bin/ffprobe"
+max_concurrent_jobs = 2
+
+[logging]
+level = "info"
+format = "json"

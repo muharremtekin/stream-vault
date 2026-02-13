@@ -24,3 +24,11 @@ services:
     ports:
       - "5003:5003"
       - "50051:50051"
+
+  encoding-service:
+    environment:
+      - ENCODING_LOGGING_LEVEL=debug
+      - ENCODING_LOGGING_FORMAT=pretty
+    ports:
+      - "5004:5004"
+      - "50052:50052"
