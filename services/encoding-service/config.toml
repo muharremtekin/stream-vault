@@ -18,7 +18,7 @@ thumbnails_bucket = "streamvault-thumbnails"
 region = "us-east-1"
 
 [rabbitmq]
-url = "amqp://guest:guest@localhost:5672/"
+url = "amqp://guest:guest@localhost:5672/%2f"
 jobs_queue = "encoding.jobs"
 exchange = "encoding"
 completed_routing_key = "job.completed"

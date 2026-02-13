@@ -1,16 +1,17 @@
-#![allow(dead_code)] // Part 2 will use all declared items
-
+mod api;
 mod config;
 mod consul;
 mod domain;
 mod error;
+mod grpc;
 mod messaging;
+mod pipeline;
 mod storage;
+mod store;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use async_trait::async_trait;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::get;
@@ -24,8 +25,9 @@ use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::EnvFilter;
 
-use crate::messaging::consumer::{JobConsumer, JobProcessor};
-use crate::messaging::models::EncodingJob;
+use crate::messaging::consumer::JobConsumer;
+use crate::messaging::publisher::ResultPublisher;
+use crate::pipeline::orchestrator::PipelineOrchestrator;
 use crate::storage::minio::MinIOClient;
 use crate::storage::StorageClient;
 
@@ -34,56 +36,12 @@ pub mod encoding_proto {
     tonic::include_proto!("encoding.v1");
 }
 
-// ── Stub job processor (Part 2 will replace with actual pipeline) ──
-struct StubJobProcessor;
-
-#[async_trait]
-impl JobProcessor for StubJobProcessor {
-    async fn process(&self, job: EncodingJob) -> error::Result<()> {
-        info!(
-            job_id = %job.job_id,
-            content_id = %job.content_id,
-            source = %job.source_path,
-            "received job (stub processor — pipeline not yet implemented)"
-        );
-        Ok(())
-    }
-}
-
-// ── gRPC service stub ──────────────────────────────────────────────
-struct EncodingGrpcService;
-
-#[tonic::async_trait]
-impl encoding_proto::encoding_service_server::EncodingService for EncodingGrpcService {
-    async fn get_job_status(
-        &self,
-        request: tonic::Request<encoding_proto::GetJobStatusRequest>,
-    ) -> std::result::Result<tonic::Response<encoding_proto::JobStatusResponse>, tonic::Status>
-    {
-        let job_id = &request.get_ref().job_id;
-        info!(job_id, "get_job_status called (stub)");
-        Err(tonic::Status::unimplemented(
-            "will be implemented in Part 2",
-        ))
-    }
-
-    async fn list_jobs(
-        &self,
-        _request: tonic::Request<encoding_proto::ListJobsRequest>,
-    ) -> std::result::Result<tonic::Response<encoding_proto::ListJobsResponse>, tonic::Status>
-    {
-        info!("list_jobs called (stub)");
-        Err(tonic::Status::unimplemented(
-            "will be implemented in Part 2",
-        ))
-    }
-}
-
 // ── Health check ───────────────────────────────────────────────────
 #[derive(Clone)]
-struct AppState {
+pub struct AppState {
     storage: Arc<dyn StorageClient>,
     config: config::Config,
+    store: store::JobStore,
 }
 
 #[derive(Serialize)]
@@ -167,7 +125,7 @@ async fn main() -> anyhow::Result<()> {
     let storage: Arc<dyn StorageClient> = Arc::new(MinIOClient::new(&cfg.minio).await?);
 
     // RabbitMQ publisher
-    let publisher = Arc::new(
+    let publisher: Arc<dyn ResultPublisher> = Arc::new(
         messaging::publisher::RabbitMQPublisher::new(cfg.rabbitmq.clone()).await?,
     );
     info!("rabbitmq publisher initialized");
@@ -175,9 +133,20 @@ async fn main() -> anyhow::Result<()> {
     // Shutdown channel
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
 
+    // Job store (shared between pipeline, HTTP API, and gRPC)
+    let job_store = store::new_job_store();
+
+    // Pipeline orchestrator
+    let orchestrator = PipelineOrchestrator::new(
+        &cfg.encoding,
+        &cfg.minio,
+        Arc::clone(&storage),
+        Arc::clone(&publisher),
+        Arc::clone(&job_store),
+    );
+
     // RabbitMQ consumer
-    let processor: Arc<dyn JobProcessor> = Arc::new(StubJobProcessor);
-    let mut consumer = JobConsumer::new(cfg.rabbitmq.clone(), processor, shutdown_rx);
+    let mut consumer = JobConsumer::new(cfg.rabbitmq.clone(), Arc::new(orchestrator), shutdown_rx);
 
     let consumer_handle = tokio::spawn(async move {
         consumer.start().await;
@@ -197,14 +166,19 @@ async fn main() -> anyhow::Result<()> {
         }
     };
 
+    // gRPC service (clone store before moving into spawned task)
+    let grpc_store = Arc::clone(&job_store);
+
     // HTTP server
     let app_state = AppState {
         storage: Arc::clone(&storage),
         config: cfg.clone(),
+        store: Arc::clone(&job_store),
     };
 
     let app = Router::new()
         .route("/health", get(health_check))
+        .merge(api::routes::encoding_routes())
         .layer(TraceLayer::new_for_http())
         .with_state(app_state);
 
@@ -224,7 +198,7 @@ async fn main() -> anyhow::Result<()> {
     info!(addr = %grpc_addr, "grpc server listening");
 
     let grpc_handle = tokio::spawn(async move {
-        let service = EncodingGrpcService;
+        let service = grpc::EncodingGrpcService::new(grpc_store);
         if let Err(e) = tonic::transport::Server::builder()
             .add_service(
                 encoding_proto::encoding_service_server::EncodingServiceServer::new(service),
@@ -235,9 +209,6 @@ async fn main() -> anyhow::Result<()> {
             error!(error = %e, "grpc server error");
         }
     });
-
-    // Keep publisher alive
-    let _publisher = publisher;
 
     // Wait for shutdown signal
     tokio::signal::ctrl_c().await?;

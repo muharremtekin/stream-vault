@@ -163,3 +163,30 @@ impl StorageClient for MinIOClient {
         Ok(())
     }
 }
+
+/// Stub storage client for unit tests (no real MinIO connection).
+#[cfg(test)]
+pub struct StubStorageClient;
+
+#[cfg(test)]
+#[async_trait]
+impl StorageClient for StubStorageClient {
+    async fn download_to_file(&self, _: &str, _: &str, _: &Path) -> Result<u64> {
+        Ok(0)
+    }
+    async fn upload_from_file(&self, _: &str, _: &str, _: &Path, _: &str) -> Result<()> {
+        Ok(())
+    }
+    async fn upload_bytes(&self, _: &str, _: &str, _: Bytes, _: &str) -> Result<()> {
+        Ok(())
+    }
+    async fn delete(&self, _: &str, _: &str) -> Result<()> {
+        Ok(())
+    }
+    async fn exists(&self, _: &str, _: &str) -> Result<bool> {
+        Ok(false)
+    }
+    async fn health_check(&self, _: &str) -> Result<()> {
+        Ok(())
+    }
+}

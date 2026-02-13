@@ -26,6 +26,15 @@ pub enum EncodingError {
     #[error("encoding job error: {0}")]
     Job(String),
 
+    #[error("ffprobe error: {0}")]
+    FFprobe(String),
+
+    #[error("validation error: {0}")]
+    Validation(String),
+
+    #[error("transcode error: {0}")]
+    Transcode(String),
+
     #[error("ffmpeg not found or not executable")]
     FFmpegNotFound,
 

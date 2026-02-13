@@ -164,56 +164,56 @@
 - [x] `src/models/status.rs` — Job durumları (Queued, Processing, Completed, Failed, Cancelled)
 
 ### 4.7 Pipeline — Validator
-- [ ] `src/pipeline/validator.rs` — Video format doğrulama
-- [ ] ffprobe ile video bilgilerini oku (codec, çözünürlük, süre, boyut)
-- [ ] Desteklenen format kontrolü
-- [ ] Max dosya boyutu kontrolü (10 GB)
-- [ ] Kaynak çözünürlüğe göre hedef profilleri belirle (720p kaynak → sadece 360p + 720p)
+- [x] `src/pipeline/validator.rs` — Video format doğrulama
+- [x] ffprobe ile video bilgilerini oku (codec, çözünürlük, süre, boyut)
+- [x] Desteklenen format kontrolü
+- [x] Max dosya boyutu kontrolü (10 GB)
+- [x] Kaynak çözünürlüğe göre hedef profilleri belirle (720p kaynak → sadece 360p + 720p)
 
 ### 4.8 Pipeline — Transcoder
-- [ ] `src/pipeline/transcoder.rs` — FFmpeg ile transcoding
-- [ ] `std::process::Command` ile FFmpeg çağırma
-- [ ] Her profil için ayrı transcode (H.264/libx264, AAC 128kbps)
-- [ ] FFmpeg stdout parse → ilerleme yüzdesi Redis'e yaz
-- [ ] Paralel transcoding (profiller arası)
+- [x] `src/pipeline/transcoder.rs` — FFmpeg ile transcoding
+- [x] `tokio::process::Command` ile FFmpeg çağırma
+- [x] Her profil için ayrı transcode (H.264/libx264, AAC 128kbps)
+- [x] FFmpeg stdout parse → ilerleme yüzdesi log'a yaz
+- [x] Paralel transcoding (profiller arası)
 
 ### 4.9 Pipeline — Segmenter
-- [ ] `src/pipeline/segmenter.rs` — HLS segment üretimi
-- [ ] Her kalite dosyasını 10 saniyelik .ts segmentlerine ayır
-- [ ] Her kalite için playlist.m3u8 üret
-- [ ] Segment numaralandırma (segment_000.ts, segment_001.ts, ...)
+- [x] Transcode ile birleştirildi (FFmpeg `-f hls` tek pass'ta transcode + segment üretir)
+- [x] Her kalite dosyasını 10 saniyelik .ts segmentlerine ayır
+- [x] Her kalite için playlist.m3u8 üret
+- [x] Segment numaralandırma (segment_000.ts, segment_001.ts, ...)
 
 ### 4.10 Pipeline — Thumbnail
-- [ ] `src/pipeline/thumbnail.rs` — Thumbnail ve poster üretimi
-- [ ] Videonun %10, %30, %50, %70, %90 noktalarından kare çıkar
-- [ ] Poster (yüksek çözünürlük) ve thumbnail (300x170, 600x340) resize
-- [ ] Timeline preview görselleri
+- [x] `src/pipeline/thumbnail.rs` — Thumbnail ve poster üretimi
+- [x] Videonun %50 noktasından poster kare çıkar
+- [x] Poster (yüksek çözünürlük) ve thumbnail (300x170, 600x340) resize
+- [ ] Timeline preview görselleri (gelecek iterasyon)
 
 ### 4.11 Pipeline — Uploader
-- [ ] `src/pipeline/uploader.rs` — Sonuçları MinIO'ya yükleme
-- [ ] Tüm segmentleri `streamvault-encoded/{contentId}/{quality}/` altına yükle
-- [ ] Playlist dosyalarını yükle
-- [ ] Thumbnail'leri `streamvault-thumbnails/{contentId}/` altına yükle
-- [ ] Temp dosyaları temizle
+- [x] `src/pipeline/uploader.rs` — Sonuçları MinIO'ya yükleme
+- [x] Tüm segmentleri `streamvault-encoded/{contentId}/{quality}/` altına yükle
+- [x] Playlist dosyalarını yükle
+- [x] Thumbnail'leri `streamvault-thumbnails/{contentId}/` altına yükle
+- [x] Temp dosyaları temizle
 
 ### 4.12 Pipeline — Orchestrator
-- [ ] `src/pipeline/orchestrator.rs` — Pipeline adımlarını sırayla çalıştır
-- [ ] Akış: validate → transcode → segment → thumbnail → upload → notify
-- [ ] Her adımda Redis'e progress güncelle
-- [ ] Error handling: hata durumunda cleanup ve fail event publish
-- [ ] Job durumunu güncelle (Processing → Completed/Failed)
+- [x] `src/pipeline/orchestrator.rs` — Pipeline adımlarını sırayla çalıştır
+- [x] Akış: validate → transcode → segment → thumbnail → upload → notify
+- [x] Her adımda log ile progress güncelle (Redis entegrasyonu gelecek iterasyon)
+- [x] Error handling: hata durumunda cleanup ve fail event publish
+- [x] Job durumunu güncelle (Processing → Completed/Failed)
 
 ### 4.13 HTTP API
-- [ ] `src/api/routes.rs` — HTTP endpoint tanımları
-- [ ] `src/api/handlers.rs` — Handler implementasyonları
-- [ ] GET /api/encoding/jobs/{jobId} — Job durum sorgulama
-- [ ] GET /api/encoding/jobs?status=processing&limit=10 — Job listeleme
-- [ ] Response formatları (jobId, status, progressPercentage, currentStep, outputs)
+- [x] `src/api/routes.rs` — HTTP endpoint tanımları
+- [x] `src/api/handlers.rs` — Handler implementasyonları
+- [x] GET /api/encoding/jobs/{jobId} — Job durum sorgulama
+- [x] GET /api/encoding/jobs?status=processing&limit=10 — Job listeleme
+- [x] Response formatları (jobId, status, progressPercentage, currentStep, outputs)
 
 ### 4.14 gRPC Server
-- [ ] gRPC server implementasyonu (port: 50052)
-- [ ] GetJobStatus RPC
-- [ ] ListJobs RPC
+- [x] gRPC server implementasyonu (port: 50052)
+- [x] GetJobStatus RPC
+- [x] ListJobs RPC
 
 ---
 

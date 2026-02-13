@@ -14,7 +14,7 @@ tokio-util = { version = "0.7", features = ["io"] }
 
 # HTTP framework
 axum = "0.8"
-tower = { version = "0.5", features = ["timeout"] }
+tower = { version = "0.5", features = ["timeout", "util"] }
 tower-http = { version = "0.6", features = ["trace"] }
 
 # gRPC
@@ -55,9 +55,12 @@ bytes = "1"
 futures = "0.3"
 async-trait = "0.1"
 
+[dev-dependencies]
+http-body-util = "0.1"
+
 [build-dependencies]
 tonic-build = "0.12"
 
 [profile.release]
 strip = true
-lto = true
+lto = "thin"

@@ -180,7 +180,7 @@ services:
       - ENCODING_MINIO_ENDPOINT=minio:9000
       - ENCODING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
       - ENCODING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
-      - ENCODING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/
+      - ENCODING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/%2f
     depends_on:
       minio:
         condition: service_healthy

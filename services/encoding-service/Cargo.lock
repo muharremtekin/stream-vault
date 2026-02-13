@@ -1388,6 +1388,7 @@ dependencies = [
  "config",
  "futures",
  "futures-lite 2.6.1",
+ "http-body-util",
  "lapin",
  "prost",
  "prost-types",

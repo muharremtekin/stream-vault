@@ -1,30 +1,40 @@
+# syntax=docker/dockerfile:1
 # ============================================================
 # Stage 1: Build the Rust binary
 # ============================================================
-FROM rust:1.85-alpine AS builder
+FROM rust:1.93-alpine3.21 AS builder
 
-RUN apk add --no-cache musl-dev protobuf-dev protoc
+RUN apk add --no-cache musl-dev protobuf-dev protoc openssl-dev openssl-libs-static
 
 WORKDIR /build
 
-# Cache dependency downloads
-COPY Cargo.toml Cargo.lock* ./
-COPY build.rs ./
+# Copy manifests and build script first for dependency caching
+COPY Cargo.toml Cargo.lock* build.rs ./
+
+# Create stub source and proto so cargo can resolve and build dependencies
 RUN mkdir -p src proto/encoding/v1 && \
     echo "fn main() {}" > src/main.rs && \
-    touch proto/encoding/v1/encoding.proto && \
-    cargo build --release 2>/dev/null || true && \
+    echo 'syntax = "proto3"; package encoding.v1;' > proto/encoding/v1/encoding.proto
+
+# Build dependencies only (cached unless Cargo.toml/Cargo.lock change)
+RUN --mount=type=cache,target=/build/target \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo build --release && \
     rm -rf src proto
 
-# Copy source and proto files
+# Copy real source and proto files
 COPY . .
 
-RUN cargo build --release
+# Build the actual binary (only recompiles our crate, deps are cached)
+RUN --mount=type=cache,target=/build/target \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo build --release && \
+    cp target/release/encoding-service /build/encoding-service-bin
 
 # ============================================================
 # Stage 2: Minimal runtime with FFmpeg
 # ============================================================
-FROM alpine:3.19
+FROM alpine:3.21
 
 RUN apk add --no-cache ca-certificates tzdata ffmpeg
 
@@ -32,7 +42,7 @@ RUN addgroup -S encoding && adduser -S encoding -G encoding
 
 WORKDIR /app
 
-COPY --from=builder /build/target/release/encoding-service .
+COPY --from=builder /build/encoding-service-bin ./encoding-service
 COPY --from=builder /build/config.toml* ./
 
 RUN mkdir -p /tmp/encoding && \

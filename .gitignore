@@ -27,3 +27,4 @@ gateway/gateway
 # Docker
 docker-compose.local.yml
 .claude/plans/
+docs/test-videos/
