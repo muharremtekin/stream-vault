@@ -25,6 +25,16 @@ public static class BsonMappingConfiguration
             cm.UnmapMember(d => d.TotalMinutes);
         });
 
+        BsonClassMap.RegisterClassMap<StreamingInfo>(cm =>
+        {
+            cm.AutoMap();
+        });
+
+        BsonClassMap.RegisterClassMap<QualityInfo>(cm =>
+        {
+            cm.AutoMap();
+        });
+
         _configured = true;
     }
 }

@@ -144,11 +144,15 @@ services:
       - ServiceRegistration__Port=5100
       - Service__Host=catalog-service
       - Service__Port=5100
+      - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/
+      - RabbitMQ__QueueName=encoding.results.catalog
     depends_on:
       mongo:
         condition: service_healthy
       consul:
         condition: service_started
+      rabbitmq:
+        condition: service_healthy
 
   streaming-service:
     build:

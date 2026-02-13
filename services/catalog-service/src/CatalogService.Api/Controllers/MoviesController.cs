@@ -2,6 +2,7 @@ using CatalogService.Application.Commands.CreateMovie;
 using CatalogService.Application.DTOs;
 using CatalogService.Application.Queries.GetContentById;
 using CatalogService.Application.Queries.GetMovies;
+using CatalogService.Application.Queries.GetStreamingInfo;
 using CatalogService.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -85,5 +86,24 @@ public class MoviesController : ControllerBase
             nameof(GetMovieById),
             new { id = movieId },
             new { id = movieId });
+    }
+
+    /// <summary>
+    /// Gets streaming info for a movie.
+    /// </summary>
+    [HttpGet("{id}/streaming-info")]
+    [ProducesResponseType(typeof(StreamingInfoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetStreamingInfo(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        var query = new GetStreamingInfoQuery { MovieId = id };
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result is null)
+            return NotFound(new { message = $"Movie with ID '{id}' not found." });
+
+        return Ok(result);
     }
 }

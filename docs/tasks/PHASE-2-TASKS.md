@@ -220,33 +220,31 @@
 ## 5. Catalog Service Güncellemeleri
 
 ### 5.1 Domain Değişiklikleri
-- [ ] `VideoStatus` enum ekle (NotUploaded, Uploading, Queued, Encoding, Ready, Error)
-- [ ] `StreamingInfo` sınıfı ekle (DurationSeconds, AvailableQualities, ManifestPath, ThumbnailPath, PosterPath, EncodedAt)
-- [ ] `QualityInfo` sınıfı ekle (Label, Width, Height, BitrateKbps, SegmentCount)
-- [ ] `Movie` entity'sine `VideoStatus` ve `StreamingInfo?` alanlarını ekle
-- [ ] MongoDB BsonClassMap güncellemesi
+- [x] `VideoStatus` enum ekle (NotUploaded, Uploading, Queued, Encoding, Ready, Error)
+- [x] `StreamingInfo` sınıfı ekle (DurationSeconds, AvailableQualities, ManifestPath, ThumbnailPath, PosterPath, EncodedAt)
+- [x] `QualityInfo` sınıfı ekle (Label, Width, Height, BitrateKbps, SegmentCount)
+- [x] `Movie` entity'sine `VideoStatus` ve `StreamingInfo?` alanlarını ekle
+- [x] MongoDB BsonClassMap güncellemesi
 
 ### 5.2 RabbitMQ Entegrasyonu
-- [ ] `CatalogService.Infrastructure/Messaging/RabbitMqEventPublisher.cs` oluştur
-- [ ] `CatalogService.Application/Events/IEventPublisher.cs` interface tanımla
-- [ ] `CatalogService.Application/Events/ContentUploadedEvent.cs` oluştur
-- [ ] RabbitMQ consumer ekle — `encoding.results.catalog` queue dinle
-- [ ] EncodingCompleted event'i handle et: Movie bul, VideoStatus = Ready, StreamingInfo güncelle
-- [ ] EncodingFailed event'i handle et: VideoStatus = Error
+- [x] `CatalogService.Application/Events/IEventPublisher.cs` interface tanımla
+- [x] RabbitMQ consumer ekle — `encoding.results.catalog` queue dinle
+- [x] EncodingCompleted event'i handle et: Movie bul, VideoStatus = Ready, StreamingInfo güncelle
+- [x] EncodingFailed event'i handle et: VideoStatus = Error
 
 ### 5.3 Yeni Command & Handler
-- [ ] `UpdateVideoStatusCommand.cs` oluştur
-- [ ] `UpdateVideoStatusHandler.cs` — MediatR handler
-- [ ] Validasyon: geçerli content ID, geçerli status geçişi
+- [x] `UpdateVideoStatusCommand.cs` oluştur
+- [x] `UpdateVideoStatusHandler.cs` — MediatR handler
+- [x] Validasyon: geçerli content ID, geçerli status geçişi
 
 ### 5.4 Yeni Endpoint
-- [ ] GET /api/catalog/movies/{id}/streaming-info — Video streaming bilgisi
-- [ ] Response: videoStatus, durationSeconds, availableQualities, manifestUrl, thumbnailUrl
-- [ ] 404: "Video henüz yüklenmemiş"
+- [x] GET /api/catalog/movies/{id}/streaming-info — Video streaming bilgisi
+- [x] Response: videoStatus, durationSeconds, availableQualities, manifestUrl, thumbnailUrl
+- [x] 404: "Video henüz yüklenmemiş"
 
 ### 5.5 NuGet Paketleri
-- [ ] RabbitMQ.Client paketi ekle
-- [ ] DI konfigürasyonu (RabbitMQ connection, consumer registration)
+- [x] RabbitMQ.Client paketi ekle
+- [x] DI konfigürasyonu (RabbitMQ connection, consumer registration)
 
 ---
 

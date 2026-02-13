@@ -43,6 +43,11 @@ public class Movie
     [BsonRepresentation(BsonType.String)]
     public ContentStatus Status { get; set; } = ContentStatus.Draft;
 
+    [BsonRepresentation(BsonType.String)]
+    public VideoStatus VideoStatus { get; set; } = VideoStatus.NotUploaded;
+
+    public StreamingInfo? StreamingInfo { get; set; }
+
     public List<string> Tags { get; set; } = new();
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

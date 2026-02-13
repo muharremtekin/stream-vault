@@ -1,4 +1,5 @@
 using CatalogService.Application.Interfaces;
+using CatalogService.Infrastructure.Messaging;
 using CatalogService.Infrastructure.Persistence;
 using CatalogService.Infrastructure.Persistence.Repositories;
 using CatalogService.Infrastructure.Seed;
@@ -38,6 +39,9 @@ public static class DependencyInjection
 
         // Seeder
         services.AddTransient<CatalogSeeder>();
+
+        // RabbitMQ Consumer
+        services.AddHostedService<EncodingResultConsumer>();
 
         return services;
     }
