@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -11,6 +12,18 @@ import (
 
 	"github.com/streamvault/streaming-service/internal/config"
 )
+
+// IsNotFound returns true if the error indicates the object does not exist.
+func IsNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	var errResp minio.ErrorResponse
+	if errors.As(err, &errResp) {
+		return errResp.Code == "NoSuchKey"
+	}
+	return false
+}
 
 type MinIOStorage struct {
 	client    *minio.Client

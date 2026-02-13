@@ -63,6 +63,8 @@ func (r *redisRepository) Save(ctx context.Context, p WatchProgress) error {
 		Score:  float64(p.UpdatedAt),
 		Member: p.ContentID,
 	})
+	pipe.Expire(ctx, cwKey, r.progressTTL)
+	pipe.ZRemRangeByRank(ctx, cwKey, 0, -101) // keep only 100 most recent entries
 
 	_, err := pipe.Exec(ctx)
 	if err != nil {

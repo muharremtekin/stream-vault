@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -27,6 +28,8 @@ type Publisher interface {
 }
 
 type amqpPublisher struct {
+	mu         sync.Mutex
+	conn       *amqp.Connection
 	channel    *amqp.Channel
 	exchange   string
 	routingKey string
@@ -41,10 +44,24 @@ func NewPublisher(conn *amqp.Connection, cfg config.RabbitMQConfig) (Publisher, 
 	log.Info().Str("exchange", cfg.Exchange).Str("routing_key", cfg.PublishRoutingKey).Msg("rabbitmq publisher ready")
 
 	return &amqpPublisher{
+		conn:       conn,
 		channel:    ch,
 		exchange:   cfg.Exchange,
 		routingKey: cfg.PublishRoutingKey,
 	}, nil
+}
+
+func (p *amqpPublisher) recreateChannel() error {
+	if p.channel != nil {
+		p.channel.Close()
+	}
+	ch, err := p.conn.Channel()
+	if err != nil {
+		return fmt.Errorf("recreating rabbitmq channel: %w", err)
+	}
+	p.channel = ch
+	log.Info().Msg("rabbitmq publisher channel recreated")
+	return nil
 }
 
 func (p *amqpPublisher) PublishEncodingJob(ctx context.Context, job EncodingJob) error {
@@ -53,21 +70,27 @@ func (p *amqpPublisher) PublishEncodingJob(ctx context.Context, job EncodingJob)
 		return fmt.Errorf("marshalling encoding job: %w", err)
 	}
 
-	err = p.channel.PublishWithContext(ctx,
-		p.exchange,
-		p.routingKey,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType:  "application/json",
-			DeliveryMode: amqp.Persistent,
-			MessageId:    job.JobID,
-			Timestamp:    job.CreatedAt,
-			Body:         body,
-		},
-	)
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	publishing := amqp.Publishing{
+		ContentType:  "application/json",
+		DeliveryMode: amqp.Persistent,
+		MessageId:    job.JobID,
+		Timestamp:    job.CreatedAt,
+		Body:         body,
+	}
+
+	err = p.channel.PublishWithContext(ctx, p.exchange, p.routingKey, false, false, publishing)
 	if err != nil {
-		return fmt.Errorf("publishing encoding job: %w", err)
+		log.Warn().Err(err).Msg("publish failed, attempting channel recreation")
+		if recreateErr := p.recreateChannel(); recreateErr != nil {
+			return fmt.Errorf("publishing encoding job (channel recreation failed): %w", recreateErr)
+		}
+		err = p.channel.PublishWithContext(ctx, p.exchange, p.routingKey, false, false, publishing)
+		if err != nil {
+			return fmt.Errorf("publishing encoding job (retry failed): %w", err)
+		}
 	}
 
 	log.Info().Str("job_id", job.JobID).Str("content_id", job.ContentID).Msg("encoding job published")
@@ -75,5 +98,10 @@ func (p *amqpPublisher) PublishEncodingJob(ctx context.Context, job EncodingJob)
 }
 
 func (p *amqpPublisher) Close() error {
-	return p.channel.Close()
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.channel != nil {
+		return p.channel.Close()
+	}
+	return nil
 }

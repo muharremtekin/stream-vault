@@ -41,8 +41,13 @@ func (h *SegmentHandler) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	key := fmt.Sprintf("%s/%s/%s", contentId, quality, segment)
 	reader, info, err := h.storage.Download(ctx, h.minioCfg.EncodedBucket, key)
 	if err != nil {
-		log.Error().Err(err).Str("key", key).Msg("failed to download segment")
-		WriteErrorResponse(w, http.StatusNotFound, "segment not found")
+		if storage.IsNotFound(err) {
+			log.Debug().Str("key", key).Msg("segment not found")
+			WriteErrorResponse(w, http.StatusNotFound, "segment not found")
+		} else {
+			log.Error().Err(err).Str("key", key).Msg("failed to download segment")
+			WriteErrorResponse(w, http.StatusBadGateway, "storage error")
+		}
 		return
 	}
 	defer reader.Close()

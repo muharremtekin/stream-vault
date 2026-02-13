@@ -177,7 +177,18 @@ func main() {
 		consumer.Stop()
 	}
 
-	grpcSrv.GracefulStop()
+	grpcDone := make(chan struct{})
+	go func() {
+		grpcSrv.GracefulStop()
+		close(grpcDone)
+	}()
+	select {
+	case <-grpcDone:
+		log.Info().Msg("grpc server stopped gracefully")
+	case <-shutdownCtx.Done():
+		log.Warn().Msg("grpc graceful stop timed out, forcing stop")
+		grpcSrv.Stop()
+	}
 
 	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("forced http shutdown")

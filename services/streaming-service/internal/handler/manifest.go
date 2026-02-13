@@ -102,8 +102,13 @@ func (h *ManifestHandler) MediaPlaylist(w http.ResponseWriter, r *http.Request) 
 	key := contentId + "/" + quality + "/playlist.m3u8"
 	reader, info, err := h.storage.Download(ctx, h.minioCfg.EncodedBucket, key)
 	if err != nil {
-		log.Error().Err(err).Str("key", key).Msg("failed to download media playlist")
-		WriteErrorResponse(w, http.StatusNotFound, "playlist not found")
+		if storage.IsNotFound(err) {
+			log.Debug().Str("key", key).Msg("playlist not found")
+			WriteErrorResponse(w, http.StatusNotFound, "playlist not found")
+		} else {
+			log.Error().Err(err).Str("key", key).Msg("failed to download media playlist")
+			WriteErrorResponse(w, http.StatusBadGateway, "storage error")
+		}
 		return
 	}
 	defer reader.Close()

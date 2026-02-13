@@ -77,7 +77,18 @@ func ConcurrentStreams(redisClient *redis.Client, concurrentTTL time.Duration) f
 				return
 			}
 
-			next.ServeHTTP(w, r)
+			rec := newResponseRecorder(w)
+			next.ServeHTTP(rec, r)
+
+			// Remove phantom session if handler returned non-2xx
+			if rec.statusCode < 200 || rec.statusCode >= 300 {
+				cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 2*time.Second)
+				defer cleanupCancel()
+				if err := redisClient.ZRem(cleanupCtx, key, sessionID).Err(); err != nil {
+					log.Warn().Err(err).Str("user_id", userID).Str("session_id", sessionID).
+						Msg("failed to remove phantom concurrent session")
+				}
+			}
 		})
 	}
 }

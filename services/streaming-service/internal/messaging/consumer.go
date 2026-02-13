@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
@@ -61,6 +62,28 @@ func NewConsumer(conn *amqp.Connection, cfg config.RabbitMQConfig, redisClient *
 }
 
 func (c *Consumer) Start(ctx context.Context) {
+	for {
+		if err := c.consumeLoop(ctx); err != nil {
+			log.Error().Err(err).Msg("consumer loop exited with error")
+		}
+
+		select {
+		case <-c.done:
+			log.Info().Msg("consumer stopping (done signal)")
+			return
+		case <-ctx.Done():
+			log.Info().Msg("consumer stopping (context cancelled)")
+			return
+		default:
+		}
+
+		if !c.reconnect(ctx) {
+			return
+		}
+	}
+}
+
+func (c *Consumer) consumeLoop(ctx context.Context) error {
 	msgs, err := c.channel.Consume(
 		c.queueName,
 		"streaming-consumer",
@@ -71,8 +94,7 @@ func (c *Consumer) Start(ctx context.Context) {
 		nil,
 	)
 	if err != nil {
-		log.Error().Err(err).Str("queue", c.queueName).Msg("failed to start consuming")
-		return
+		return fmt.Errorf("failed to start consuming: %w", err)
 	}
 
 	log.Info().Str("queue", c.queueName).Msg("consumer started")
@@ -81,15 +103,52 @@ func (c *Consumer) Start(ctx context.Context) {
 		select {
 		case msg, ok := <-msgs:
 			if !ok {
-				log.Warn().Msg("consumer channel closed")
-				return
+				return fmt.Errorf("delivery channel closed")
 			}
 			c.handleResult(ctx, msg)
 		case <-c.done:
-			return
+			return nil
 		case <-ctx.Done():
-			return
+			return nil
 		}
+	}
+}
+
+func (c *Consumer) reconnect(ctx context.Context) bool {
+	backoff := time.Second
+	maxBackoff := 30 * time.Second
+
+	for {
+		select {
+		case <-c.done:
+			return false
+		case <-ctx.Done():
+			return false
+		case <-time.After(backoff):
+		}
+
+		log.Info().Dur("backoff", backoff).Msg("attempting consumer channel recreation")
+
+		ch, err := c.conn.Channel()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to recreate consumer channel")
+			backoff = min(backoff*2, maxBackoff)
+			continue
+		}
+
+		if err := ch.Qos(c.prefetch, 0, false); err != nil {
+			log.Error().Err(err).Msg("failed to set consumer prefetch on new channel")
+			ch.Close()
+			backoff = min(backoff*2, maxBackoff)
+			continue
+		}
+
+		if c.channel != nil {
+			c.channel.Close()
+		}
+		c.channel = ch
+		log.Info().Msg("consumer channel recreated successfully")
+		return true
 	}
 }
 
