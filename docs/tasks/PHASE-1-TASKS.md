@@ -158,9 +158,9 @@
 
 ## 8. Dokümantasyon
 
-- [ ] README.md: proje açıklaması, mimari diyagram, kurulum adımları, API kullanım örnekleri
-- [ ] Swagger/OpenAPI: User Service ve Catalog Service için aktif
-- [ ] API örnekleri: curl komutları ile temel akışlar
+- [x] README.md: proje açıklaması, mimari diyagram, kurulum adımları, API kullanım örnekleri
+- [x] Swagger/OpenAPI: User Service ve Catalog Service için aktif
+- [x] API örnekleri: curl komutları ile temel akışlar
 
 ---
 
