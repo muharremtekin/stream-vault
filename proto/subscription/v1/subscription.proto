@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package subscription.v1;
+
+option go_package = "github.com/streamvault/gateway/proto/subscription/v1;subscriptionv1";
+option csharp_namespace = "StreamVault.Proto.Subscription.V1";
+
+import "common/v1/common.proto";
+import "google/protobuf/timestamp.proto";
+
+// SubscriptionQueryService provides read-only queries for user subscriptions.
+// Write operations (create, cancel, change plan) use HTTP REST with Saga pattern.
+service SubscriptionQueryService {
+  // GetUserSubscription returns the active subscription details for a user.
+  rpc GetUserSubscription(GetUserSubscriptionRequest) returns (GetUserSubscriptionResponse);
+
+  // GetUserTier returns the user's current subscription tier.
+  rpc GetUserTier(GetUserTierRequest) returns (GetUserTierResponse);
+}
+
+// --- Enums ---
+
+// SubscriptionStatus tracks the lifecycle of a subscription.
+enum SubscriptionStatus {
+  SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+  SUBSCRIPTION_STATUS_PENDING_PAYMENT = 1;
+  SUBSCRIPTION_STATUS_ACTIVE = 2;
+  SUBSCRIPTION_STATUS_CANCELLED = 3;
+  SUBSCRIPTION_STATUS_EXPIRED = 4;
+  SUBSCRIPTION_STATUS_FAILED = 5;
+}
+
+// --- GetUserSubscription ---
+
+message GetUserSubscriptionRequest {
+  string user_id = 1;
+}
+
+message GetUserSubscriptionResponse {
+  string subscription_id = 1;
+  string user_id = 2;
+  PlanInfo plan = 3;
+  SubscriptionStatus status = 4;
+  google.protobuf.Timestamp period_start = 5;
+  google.protobuf.Timestamp period_end = 6;
+  bool auto_renew = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp cancelled_at = 9;         // Only set if status is CANCELLED
+}
+
+message PlanInfo {
+  string plan_id = 1;
+  string name = 2;                                    // "Basic", "Standard", "Premium"
+  common.v1.SubscriptionTier tier = 3;
+  double price_monthly = 4;
+  int32 max_screens = 5;
+  string max_quality = 6;                             // "720p", "1080p", "4K"
+  repeated string features = 7;
+}
+
+// --- GetUserTier ---
+
+message GetUserTierRequest {
+  string user_id = 1;
+}
+
+message GetUserTierResponse {
+  common.v1.SubscriptionTier tier = 1;
+}

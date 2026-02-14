@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+package search.v1;
+
+option go_package = "github.com/streamvault/gateway/proto/search/v1;searchv1";
+option csharp_namespace = "StreamVault.Proto.Search.V1";
+
+import "common/v1/common.proto";
+
+// SearchService provides full-text search, autocomplete, and trending content.
+service SearchService {
+  // Search performs full-text search with filtering, sorting, and pagination.
+  rpc Search(SearchRequest) returns (SearchResponse);
+
+  // Autocomplete returns title suggestions for prefix matching.
+  rpc Autocomplete(AutocompleteRequest) returns (AutocompleteResponse);
+
+  // GetTrending returns trending content for a given time window.
+  rpc GetTrending(GetTrendingRequest) returns (GetTrendingResponse);
+}
+
+// --- Enums ---
+
+// SortField defines the available sort options for search results.
+enum SortField {
+  SORT_FIELD_UNSPECIFIED = 0;
+  SORT_FIELD_RELEVANCE = 1;
+  SORT_FIELD_RATING = 2;
+  SORT_FIELD_YEAR = 3;
+  SORT_FIELD_TITLE = 4;
+}
+
+// SortOrder defines ascending or descending sort direction.
+enum SortOrder {
+  SORT_ORDER_UNSPECIFIED = 0;
+  SORT_ORDER_ASC = 1;
+  SORT_ORDER_DESC = 2;
+}
+
+// TimeWindow defines the period for trending content.
+enum TimeWindow {
+  TIME_WINDOW_UNSPECIFIED = 0;
+  TIME_WINDOW_DAY = 1;
+  TIME_WINDOW_WEEK = 2;
+  TIME_WINDOW_MONTH = 3;
+}
+
+// --- Search ---
+
+message SearchRequest {
+  string query = 1;
+  SearchFilters filters = 2;
+  SortField sort_field = 3;
+  SortOrder sort_order = 4;
+  common.v1.Pagination pagination = 5;
+}
+
+message SearchFilters {
+  repeated string genres = 1;
+  int32 year_from = 2;                                // 0 = no lower bound
+  int32 year_to = 3;                                  // 0 = no upper bound
+  repeated string maturity_ratings = 4;               // "G", "PG", "PG13", "R", "NC17"
+  double min_rating = 5;                              // 0.0 = no minimum
+  common.v1.ContentType content_type = 6;             // UNSPECIFIED = all types
+}
+
+message SearchResponse {
+  repeated SearchHit hits = 1;
+  Facets facets = 2;
+  common.v1.PaginatedResponse pagination = 3;
+}
+
+message SearchHit {
+  string content_id = 1;
+  string title = 2;
+  string description = 3;
+  common.v1.ContentType content_type = 4;
+  string thumbnail_url = 5;
+  int32 release_year = 6;
+  double average_rating = 7;
+  HighlightFields highlights = 8;
+}
+
+message HighlightFields {
+  string title = 1;                                   // Title with <em> highlight tags
+  string description = 2;                             // Description with <em> highlight tags
+}
+
+message Facets {
+  repeated FacetBucket genre_facets = 1;
+  repeated FacetBucket year_facets = 2;
+  repeated FacetBucket maturity_facets = 3;
+  repeated FacetBucket content_type_facets = 4;
+}
+
+message FacetBucket {
+  string key = 1;
+  int64 doc_count = 2;
+}
+
+// --- Autocomplete ---
+
+message AutocompleteRequest {
+  string query = 1;                                   // Minimum 2 characters
+  int32 limit = 2;                                    // Max suggestions; 0 = server default (5)
+}
+
+message AutocompleteResponse {
+  repeated AutocompleteSuggestion suggestions = 1;
+}
+
+message AutocompleteSuggestion {
+  string content_id = 1;
+  string title = 2;
+  common.v1.ContentType content_type = 3;
+  string thumbnail_url = 4;
+  int32 release_year = 5;
+}
+
+// --- GetTrending ---
+
+message GetTrendingRequest {
+  TimeWindow time_window = 1;                         // UNSPECIFIED defaults to WEEK
+  int32 limit = 2;                                    // Max items; 0 = server default (20)
+}
+
+message GetTrendingResponse {
+  repeated TrendingItem items = 1;
+}
+
+message TrendingItem {
+  string content_id = 1;
+  string title = 2;
+  string thumbnail_url = 3;
+  common.v1.ContentType content_type = 4;
+  int32 release_year = 5;
+  double average_rating = 6;
+  int32 rank = 7;
+  int32 rank_change = 8;                              // Positive = moved up, negative = moved down
+  int64 view_count = 9;
+}

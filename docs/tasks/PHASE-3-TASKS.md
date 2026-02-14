@@ -49,20 +49,20 @@
 
 ## 2. Proto Dosyaları & gRPC
 
-- [ ] `proto/search/v1/search.proto` oluştur (SearchService: Search, Autocomplete, GetTrending)
-- [ ] SearchRequest/SearchResponse mesajları (filtreleme, sıralama, sayfalama)
-- [ ] SearchHit, HighlightFields, Facets, FacetBucket mesajları
-- [ ] AutocompleteRequest/AutocompleteResponse mesajları
-- [ ] GetTrendingRequest/GetTrendingResponse mesajları
-- [ ] `proto/recommendation/v1/recommendation.proto` oluştur (RecommendationService: GetRecommendations, GetSimilar, GetHomePageSections)
-- [ ] GetRecommendationsRequest/Response mesajları (kişisel öneriler)
-- [ ] GetSimilarRequest/Response mesajları (benzer içerikler)
-- [ ] GetHomePageSectionsRequest/Response mesajları (ana sayfa section'ları)
-- [ ] RecommendedItem, SimilarItem, HomePageSection mesajları
-- [ ] `proto/subscription/v1/subscription.proto` oluştur (SubscriptionQueryService: GetUserSubscription, GetUserTier)
-- [ ] `google/protobuf/timestamp.proto` import'u, `common/v1/common.proto` bağımlılığı
-- [ ] `scripts/generate-proto.sh` güncelle — yeni proto dosyaları için Go ve Rust kod üretimi
-- [ ] Proto üretiminin tüm servisler için çalıştığını doğrula
+- [x] `proto/search/v1/search.proto` oluştur (SearchService: Search, Autocomplete, GetTrending)
+- [x] SearchRequest/SearchResponse mesajları (filtreleme, sıralama, sayfalama)
+- [x] SearchHit, HighlightFields, Facets, FacetBucket mesajları
+- [x] AutocompleteRequest/AutocompleteResponse mesajları
+- [x] GetTrendingRequest/GetTrendingResponse mesajları
+- [x] `proto/recommendation/v1/recommendation.proto` oluştur (RecommendationService: GetRecommendations, GetSimilar, GetHomePageSections)
+- [x] GetRecommendationsRequest/Response mesajları (kişisel öneriler)
+- [x] GetSimilarRequest/Response mesajları (benzer içerikler)
+- [x] GetHomePageSectionsRequest/Response mesajları (ana sayfa section'ları)
+- [x] RecommendedItem, SimilarItem, HomePageSection mesajları
+- [x] `proto/subscription/v1/subscription.proto` oluştur (SubscriptionQueryService: GetUserSubscription, GetUserTier)
+- [x] `google/protobuf/timestamp.proto` import'u, `common/v1/common.proto` bağımlılığı
+- [x] `scripts/generate-proto.sh` güncelle — yeni proto dosyaları için Go ve Rust kod üretimi
+- [x] Proto üretiminin tüm servisler için çalıştığını doğrula
 
 ---
 
