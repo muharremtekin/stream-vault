@@ -2,7 +2,7 @@
 set -e
 
 echo "Waiting for MinIO to be ready..."
-until mc alias set sv http://minio:9000 "${MINIO_ROOT_USER:-minioadmin}" "${MINIO_ROOT_PASSWORD:-minioadmin}" 2>/dev/null; do
+until mc alias set sv http://minio:9000 "${MINIO_ROOT_USER}" "${MINIO_ROOT_PASSWORD}" 2>/dev/null; do
   echo "MinIO not ready yet, retrying in 2 seconds..."
   sleep 2
 done

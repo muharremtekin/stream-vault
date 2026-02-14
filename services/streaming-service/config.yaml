@@ -10,8 +10,8 @@ consul:
 
 minio:
   endpoint: "minio:9000"
-  access_key: "minioadmin"
-  secret_key: "minioadmin"
+  access_key: ""
+  secret_key: ""
   use_ssl: false
   raw_bucket: "streamvault-raw"
   encoded_bucket: "streamvault-encoded"
@@ -23,7 +23,7 @@ redis:
   concurrent_ttl: 5m
 
 rabbitmq:
-  url: "amqp://streamvault:secret@rabbitmq:5672/"
+  url: "amqp://rabbitmq:5672/"
   exchange: "encoding"
   publish_routing_key: "job.new"
   result_queue: "encoding.results.streaming"

@@ -28,7 +28,7 @@ public class EncodingResultConsumer : BackgroundService
         _scopeFactory = scopeFactory;
         _logger = logger;
         _connectionString = configuration.GetValue<string>("RabbitMQ:ConnectionString")
-            ?? "amqp://streamvault:secret@localhost:5672/";
+            ?? throw new InvalidOperationException("RabbitMQ:ConnectionString configuration is required");
         _queueName = configuration.GetValue<string>("RabbitMQ:QueueName")
             ?? "encoding.results.catalog";
     }

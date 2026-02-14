@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: streamvault_users
       POSTGRES_USER: ${POSTGRES_USER:-streamvault}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports: ["5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -59,7 +59,7 @@ services:
       - "15672:15672"   # Management UI
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-streamvault}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-secret}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./infrastructure/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
@@ -76,8 +76,8 @@ services:
       - "9000:9000"     # API
       - "9001:9001"     # Console
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -93,8 +93,8 @@ services:
       minio:
         condition: service_healthy
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
     volumes:
       - ./infrastructure/minio/init-buckets.sh:/init-buckets.sh
     entrypoint: ["/bin/sh", "/init-buckets.sh"]
@@ -105,7 +105,7 @@ services:
     build: ./gateway
     ports: ["8081:8080"]
     environment:
-      - GATEWAY_JWT_SECRET=${JWT_SECRET:-StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!}
+      - GATEWAY_JWT_SECRET=${JWT_SECRET}
       - GATEWAY_CONSUL_ADDRESS=consul:8500
       - GATEWAY_RATELIMIT_REDIS_URL=redis://redis:6379/0
     depends_on:
@@ -118,8 +118,8 @@ services:
     build: ./services/user-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_users;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD:-secret}
-      - Jwt__Secret=${JWT_SECRET:-StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_users;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
+      - Jwt__Secret=${JWT_SECRET}
       - Jwt__Issuer=StreamVault.UserService
       - Jwt__AccessTokenExpirationMinutes=60
       - Jwt__RefreshTokenExpirationDays=30
@@ -144,7 +144,7 @@ services:
       - ServiceRegistration__Port=5100
       - Service__Host=catalog-service
       - Service__Port=5100
-      - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/
+      - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - RabbitMQ__QueueName=encoding.results.catalog
     depends_on:
       mongo:
@@ -161,10 +161,10 @@ services:
     environment:
       - STREAMING_CONSUL_ADDRESS=consul:8500
       - STREAMING_MINIO_ENDPOINT=minio:9000
-      - STREAMING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - STREAMING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
+      - STREAMING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - STREAMING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
       - STREAMING_REDIS_URL=redis://redis:6379/0
-      - STREAMING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/
+      - STREAMING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
     depends_on:
       minio:
         condition: service_healthy
@@ -180,11 +180,11 @@ services:
   encoding-service:
     build: ./services/encoding-service
     environment:
-      - ENCODING_CONSUL_ADDRESS=consul:8500
-      - ENCODING_MINIO_ENDPOINT=minio:9000
-      - ENCODING_MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-minioadmin}
-      - ENCODING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-minioadmin}
-      - ENCODING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS:-secret}@rabbitmq:5672/%2f
+      - ENCODING_CONSUL__ADDRESS=consul:8500
+      - ENCODING_MINIO__ENDPOINT=minio:9000
+      - ENCODING_MINIO__ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - ENCODING_MINIO__SECRET_KEY=${MINIO_SECRET_KEY}
+      - ENCODING_RABBITMQ__URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/%2f
     depends_on:
       minio:
         condition: service_healthy

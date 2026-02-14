@@ -4,7 +4,7 @@ server:
   write_timeout: 15s
 
 jwt:
-  secret: "StreamVault-Super-Secret-Key-Change-In-Production-Min-32-Chars!"
+  secret: ""
   issuer: "StreamVault.UserService"
 
 ratelimit:

@@ -70,14 +70,14 @@ pub fn load() -> anyhow::Result<Config> {
         .set_default("consul.service_name", "encoding-service")?
         .set_default("consul.health_check_interval_secs", 10)?
         .set_default("minio.endpoint", "localhost:9000")?
-        .set_default("minio.access_key", "minioadmin")?
-        .set_default("minio.secret_key", "minioadmin")?
+        .set_default("minio.access_key", "")?
+        .set_default("minio.secret_key", "")?
         .set_default("minio.use_ssl", false)?
         .set_default("minio.raw_bucket", "streamvault-raw")?
         .set_default("minio.encoded_bucket", "streamvault-encoded")?
         .set_default("minio.thumbnails_bucket", "streamvault-thumbnails")?
         .set_default("minio.region", "us-east-1")?
-        .set_default("rabbitmq.url", "amqp://guest:guest@localhost:5672/")?
+        .set_default("rabbitmq.url", "amqp://localhost:5672/")?
         .set_default("rabbitmq.jobs_queue", "encoding.jobs")?
         .set_default("rabbitmq.exchange", "encoding")?
         .set_default("rabbitmq.completed_routing_key", "job.completed")?
@@ -93,10 +93,13 @@ pub fn load() -> anyhow::Result<Config> {
         .set_default("logging.format", "json")?
         // File source
         .add_source(config::File::with_name("config").required(false))
-        // Environment variables: ENCODING_SERVER_HTTP_PORT, ENCODING_MINIO_ENDPOINT, etc.
+        // Environment variables: ENCODING_MINIO__ACCESS_KEY, ENCODING_RABBITMQ__URL, etc.
+        // Use "__" (double underscore) as hierarchy separator so single underscores
+        // in field names (access_key, secret_key, etc.) are preserved.
         .add_source(
             config::Environment::with_prefix("ENCODING")
-                .separator("_")
+                .prefix_separator("_")
+                .separator("__")
                 .try_parsing(true),
         )
         .build()?;

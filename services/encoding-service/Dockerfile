@@ -26,8 +26,10 @@ RUN --mount=type=cache,target=/build/target \
 COPY . .
 
 # Build the actual binary (only recompiles our crate, deps are cached)
+# touch source + build.rs to invalidate cargo fingerprints from the stub build
 RUN --mount=type=cache,target=/build/target \
     --mount=type=cache,target=/usr/local/cargo/registry \
+    touch src/main.rs build.rs && \
     cargo build --release && \
     cp target/release/encoding-service /build/encoding-service-bin
 
@@ -53,6 +55,6 @@ USER encoding
 EXPOSE 5004 50052
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD ["wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5004/health"]
+    CMD ["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5004/health"]
 
 ENTRYPOINT ["./encoding-service"]
