@@ -22,6 +22,42 @@
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+    {
+      "name": "catalog.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "watch.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "user.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "subscription.events",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "queues": [
@@ -51,6 +87,48 @@
     },
     {
       "name": "encoding.results.streaming",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "search.catalog-sync",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "recommendation.catalog",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "search.watch-count",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "recommendation.watch",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "recommendation.ratings",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "user.subscription-sync",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -104,6 +182,86 @@
       "destination": "encoding.results.streaming",
       "destination_type": "queue",
       "routing_key": "job.failed",
+      "arguments": {}
+    },
+    {
+      "source": "catalog.events",
+      "vhost": "/",
+      "destination": "search.catalog-sync",
+      "destination_type": "queue",
+      "routing_key": "content.created",
+      "arguments": {}
+    },
+    {
+      "source": "catalog.events",
+      "vhost": "/",
+      "destination": "search.catalog-sync",
+      "destination_type": "queue",
+      "routing_key": "content.updated",
+      "arguments": {}
+    },
+    {
+      "source": "catalog.events",
+      "vhost": "/",
+      "destination": "search.catalog-sync",
+      "destination_type": "queue",
+      "routing_key": "content.deleted",
+      "arguments": {}
+    },
+    {
+      "source": "catalog.events",
+      "vhost": "/",
+      "destination": "recommendation.catalog",
+      "destination_type": "queue",
+      "routing_key": "content.created",
+      "arguments": {}
+    },
+    {
+      "source": "watch.events",
+      "vhost": "/",
+      "destination": "search.watch-count",
+      "destination_type": "queue",
+      "routing_key": "watch.completed",
+      "arguments": {}
+    },
+    {
+      "source": "watch.events",
+      "vhost": "/",
+      "destination": "recommendation.watch",
+      "destination_type": "queue",
+      "routing_key": "watch.completed",
+      "arguments": {}
+    },
+    {
+      "source": "user.events",
+      "vhost": "/",
+      "destination": "recommendation.ratings",
+      "destination_type": "queue",
+      "routing_key": "content.rated",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "user.subscription-sync",
+      "destination_type": "queue",
+      "routing_key": "subscription.created",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "user.subscription-sync",
+      "destination_type": "queue",
+      "routing_key": "subscription.cancelled",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "user.subscription-sync",
+      "destination_type": "queue",
+      "routing_key": "plan.changed",
       "arguments": {}
     }
   ],

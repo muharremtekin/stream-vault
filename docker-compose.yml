@@ -12,6 +12,7 @@ services:
     ports: ["5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U streamvault"]
       interval: 5s
@@ -110,6 +111,37 @@ services:
     volumes:
       - ./infrastructure/minio/init-buckets.sh:/init-buckets.sh
     entrypoint: ["/bin/sh", "/init-buckets.sh"]
+    restart: "no"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports: ["9200:9200"]
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  elasticsearch-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - ./infrastructure/elasticsearch/init-index.sh:/init-index.sh:ro
+    entrypoint: ["/bin/sh", "/init-index.sh"]
     restart: "no"
 
   # --- Application Services ---
@@ -247,9 +279,88 @@ services:
           cpus: "2.0"
           memory: 2G
 
+  # --- Phase 3 Services (uncomment when service code is ready) ---
+
+  # search-service:
+  #   build: ./services/search-service
+  #   restart: unless-stopped
+  #   environment:
+  #     - SEARCH_ELASTICSEARCH_URL=http://elasticsearch:9200
+  #     - SEARCH_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+  #     - SEARCH_REDIS_URL=redis://redis:6379/3
+  #     - SEARCH_CONSUL_ADDRESS=consul:8500
+  #   depends_on:
+  #     elasticsearch:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     consul:
+  #       condition: service_healthy
+  #     elasticsearch-init:
+  #       condition: service_completed_successfully
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5005/health/live"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 3
+  #     start_period: 10s
+
+  # recommendation-service:
+  #   build: ./services/recommendation-service
+  #   restart: unless-stopped
+  #   environment:
+  #     - RECOMMENDATION__POSTGRES__URL=postgres://${POSTGRES_USER:-streamvault}:${POSTGRES_PASSWORD}@postgres:5432/streamvault_recommendations
+  #     - RECOMMENDATION__RABBITMQ__URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/%2f
+  #     - RECOMMENDATION__REDIS__URL=redis://redis:6379/4
+  #     - RECOMMENDATION__CONSUL__ADDRESS=consul:8500
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     consul:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5006/health/live"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 15s
+
+  # subscription-service:
+  #   build: ./services/subscription-service
+  #   restart: unless-stopped
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #     - ASPNETCORE_URLS=http://+:5007
+  #     - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_subscriptions;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
+  #     - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+  #     - Consul__Address=http://consul:8500
+  #     - ServiceRegistration__Name=subscription-service
+  #     - ServiceRegistration__Port=5007
+  #     - Service__Host=subscription-service
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
+  #     consul:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "wget --spider --quiet http://localhost:5007/health/live || exit 1"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 15s
+
 volumes:
   postgres_data:
   mongo_data:
   consul_data:
   rabbitmq_data:
   minio_data:
+  elasticsearch_data:

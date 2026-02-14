@@ -1,4 +1,16 @@
--- StreamVault User Database Initialization
+-- StreamVault Database Initialization
+
+-- Create additional databases for Phase 3 services
+-- (Tables are managed by each service's own migrations)
+CREATE DATABASE streamvault_subscriptions;
+CREATE DATABASE streamvault_recommendations;
+
+GRANT ALL PRIVILEGES ON DATABASE streamvault_subscriptions TO streamvault;
+GRANT ALL PRIVILEGES ON DATABASE streamvault_recommendations TO streamvault;
+
+-- ============================================================
+-- streamvault_users tables (connected DB via POSTGRES_DB env)
+-- ============================================================
 
 -- User tablosu
 CREATE TABLE IF NOT EXISTS users (

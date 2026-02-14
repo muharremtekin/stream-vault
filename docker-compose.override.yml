@@ -32,3 +32,24 @@ services:
     ports:
       - "5004:5004"
       - "50052:50052"
+
+  # --- Phase 3 Services (uncomment when service code is ready) ---
+
+  # search-service:
+  #   environment:
+  #     - SEARCH_LOGGING_LEVEL=debug
+  #   ports:
+  #     - "5005:5005"
+  #     - "50053:50053"
+
+  # recommendation-service:
+  #   environment:
+  #     - RECOMMENDATION__LOGGING__LEVEL=debug
+  #     - RECOMMENDATION__LOGGING__FORMAT=pretty
+  #   ports:
+  #     - "5006:5006"
+  #     - "50054:50054"
+
+  # subscription-service:
+  #   ports:
+  #     - "5007:5007"
