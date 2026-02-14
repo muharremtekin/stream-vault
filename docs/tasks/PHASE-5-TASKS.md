@@ -1,0 +1,597 @@
+# StreamVault — Faz 5: Frontend Web Uygulaması Görevleri
+
+> **Durum:** Faz 1-4 tamamlandı (8 backend servis + observability altyapısı). Faz 5 ile Next.js 16 tabanlı Netflix görünümlü bir web arayüzü oluşturulacak. Tüm backend endpoint'lerinin karşılığı olan UI bileşenleri implemente edilecek.
+
+---
+
+## Teknoloji Kararları
+
+| Kriter | Karar | Sebep |
+|--------|-------|-------|
+| Framework | Next.js 16 (App Router + Turbopack) | SSR/SSG, Turbopack varsayılan, React 19.2 |
+| Dil | TypeScript 5+ | Backend proto/DTO'larıyla uyumlu tip güvenliği |
+| Runtime | Node.js 20.9+ | Next.js 16 minimum gereksinim |
+| Styling | Tailwind CSS 4 | Hızlı geliştirme, Netflix-dark tema |
+| State | Zustand | Basit, boilerplate'siz global state |
+| Data Fetching | TanStack Query v5 (React Query) | Cache, retry, optimistic update |
+| Video Player | hls.js | HLS adaptive bitrate playback |
+| WebSocket | Native WebSocket + reconnect | Bildirimler için |
+| Form | React Hook Form + Zod | Validasyonlu formlar |
+| Icons | Lucide React | Hafif, tutarlı icon seti |
+| Toast/Alert | Sonner | Bildirim toast'ları |
+| Auth Redirect | `proxy.ts` (Next.js 16) | `middleware.ts` yerine yeni convention |
+| Config | `next.config.ts` | TypeScript config (Next.js 16 standart) |
+| Bundler | Turbopack (varsayılan) | Next.js 16'da default, `--turbopack` flag'i gereksiz |
+| ESLint | ESLint Flat Config (`eslint.config.mjs`) | `next lint` kaldırıldı, ESLint CLI doğrudan kullanılır |
+| React | React 19.2 | View Transitions, useEffectEvent, Activity |
+
+---
+
+## 1. Proje Kurulumu & Altyapı
+
+### 1.1 Next.js 16 Proje Oluşturma
+- [ ] `web/` dizini oluştur
+- [ ] `npx create-next-app@latest` ile Next.js 16 projesi oluştur (TypeScript, Tailwind CSS, App Router, src/ dizini)
+- [ ] Node.js 20.9+ gereksinimini doğrula
+- [ ] `next.config.ts` oluştur (TypeScript config)
+- [ ] Turbopack'in varsayılan olarak çalıştığını doğrula (`next dev` → Turbopack aktif)
+- [ ] `package.json` script'leri: `dev: "next dev"`, `build: "next build"`, `start: "next start"` (flag'siz)
+- [ ] `.env.local.example` oluştur (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`)
+
+### 1.2 Bağımlılıklar
+- [ ] Zustand ekle (`zustand`)
+- [ ] TanStack Query v5 ekle (`@tanstack/react-query`, `@tanstack/react-query-devtools`)
+- [ ] Axios ekle (`axios`)
+- [ ] React Hook Form + Zod ekle (`react-hook-form`, `@hookform/resolvers`, `zod`)
+- [ ] hls.js ekle (`hls.js`)
+- [ ] Lucide React ekle (`lucide-react`)
+- [ ] Sonner ekle (`sonner`)
+- [ ] clsx + tailwind-merge ekle (`clsx`, `tailwind-merge`)
+
+### 1.3 ESLint & Kod Kalitesi
+- [ ] `eslint.config.mjs` oluştur (Flat Config formatı — `next lint` kaldırıldı)
+- [ ] `@next/eslint-plugin-next` ekle
+- [ ] TypeScript ESLint kuralları ekle
+- [ ] Prettier entegrasyonu (opsiyonel)
+- [ ] `.prettierrc` oluştur
+
+### 1.4 Docker Entegrasyonu
+- [ ] `web/Dockerfile` oluştur (multi-stage: node:20-alpine builder + runner)
+- [ ] Build stage: `npm ci` → `npm run build`
+- [ ] Runner stage: `.next`, `public`, `package.json`, `node_modules` kopyala
+- [ ] `EXPOSE 3001`, `CMD ["npm", "start"]`
+- [ ] `docker-compose.yml`'a `web` servisi ekle (port: 3001:3001)
+- [ ] Environment: `NEXT_PUBLIC_API_URL=http://localhost:8081`, `NEXT_PUBLIC_WS_URL=ws://localhost:8081`
+- [ ] `depends_on: [gateway]`
+- [ ] `docker compose up web` ile frontend'in ayağa kalktığını doğrula
+
+### 1.5 Utility Fonksiyonlar
+- [ ] `src/lib/utils/cn.ts` — Tailwind class merge (`clsx` + `tailwind-merge`)
+- [ ] `src/lib/utils/format.ts` — Süre formatı (120dk → "2s 0dk"), tarih formatı, para formatı
+- [ ] `src/lib/utils/constants.ts` — API URL, WS URL, renk kodları, tier limitleri
+
+---
+
+## 2. Tema & Layout Sistemi
+
+### 2.1 Dark Tema & Global Stiller
+- [ ] `src/app/globals.css` — Tailwind import'ları, dark tema renk paleti (Netflix-dark)
+- [ ] CSS custom properties: `--background`, `--foreground`, `--primary`, `--accent`, `--muted` vb.
+- [ ] Font ayarı (Inter veya benzeri sans-serif)
+- [ ] Scrollbar stili (dark tema uyumlu)
+- [ ] Tailwind config'de custom renkleri tanımla
+
+### 2.2 Root Layout
+- [ ] `src/app/layout.tsx` — HTML lang, dark tema class, font, metadata
+- [ ] `<Toaster />` (Sonner) provider ekle
+- [ ] TanStack Query `QueryClientProvider` ekle
+- [ ] Global error boundary
+
+### 2.3 Auth Layout Grubu
+- [ ] `src/app/(auth)/layout.tsx` — Navbar yok, arka plan bulanık poster collage
+- [ ] Logo üstte ortalanmış
+- [ ] Sadece login/register sayfaları bu layout'u kullanır
+
+### 2.4 Main Layout Grubu
+- [ ] `src/app/(main)/layout.tsx` — Navbar + NotificationProvider + Footer
+- [ ] Tüm korumalı sayfalar bu layout'u kullanır
+
+### 2.5 Layout Bileşenleri
+- [ ] `src/components/layout/navbar.tsx` — Logo, navigasyon linkleri (Ana Sayfa, Diziler, Filmler, Listem), arama ikonu, bildirim bell, profil dropdown
+- [ ] `src/components/layout/footer.tsx` — Basit footer
+- [ ] `src/components/layout/sidebar.tsx` — Admin sidebar (Dashboard, İçerikler, Encoding)
+- [ ] `src/components/layout/profile-switcher.tsx` — Profil değiştirme dropdown (navbar içinde)
+- [ ] `src/components/layout/notification-bell.tsx` — Bildirim ikonu + unread count badge + dropdown
+
+---
+
+## 3. Temel UI Bileşenleri
+
+- [ ] `src/components/ui/button.tsx` — Primary, secondary, ghost, danger varyantları
+- [ ] `src/components/ui/input.tsx` — Text input, label, error mesajı desteği
+- [ ] `src/components/ui/modal.tsx` — Overlay modal (ESC ile kapanır)
+- [ ] `src/components/ui/dropdown.tsx` — Dropdown menü
+- [ ] `src/components/ui/skeleton.tsx` — Loading skeleton (card, text, image varyantları)
+- [ ] `src/components/ui/badge.tsx` — Renkli badge (tür, durum vb.)
+- [ ] `src/components/ui/tooltip.tsx` — Hover tooltip
+- [ ] `src/components/ui/progress-bar.tsx` — İlerleme çubuğu (izleme, upload, encoding)
+- [ ] `src/components/ui/toast.tsx` — Sonner toast wrapper (gerekirse)
+
+---
+
+## 4. API Client & State Management
+
+### 4.1 TypeScript Tipleri
+- [ ] `src/lib/types/common.ts` — `PaginatedResponse<T>`, `ApiError`, `ApiResponse<T>`
+- [ ] `src/lib/types/auth.ts` — `User`, `Profile`, `LoginRequest`, `LoginResponse`, `RegisterRequest`
+- [ ] `src/lib/types/catalog.ts` — `Movie`, `Series`, `Episode`, `Season`, `Genre`, `VideoStatus`
+- [ ] `src/lib/types/streaming.ts` — `StreamingInfo`, `WatchProgress`, `ContinueWatchingItem`
+- [ ] `src/lib/types/search.ts` — `SearchHit`, `SearchResponse`, `Facets`, `FacetBucket`, `AutocompleteItem`
+- [ ] `src/lib/types/recommendation.ts` — `RecommendedItem`, `SimilarItem`, `HomeSection`
+- [ ] `src/lib/types/subscription.ts` — `Plan`, `Subscription`, `Invoice`, `PaymentRequest`
+- [ ] `src/lib/types/notification.ts` — `Notification`, `NotificationPreferences`
+
+### 4.2 API Client
+- [ ] `src/lib/api/client.ts` — Axios instance oluştur (`baseURL: NEXT_PUBLIC_API_URL`, timeout: 10s)
+- [ ] Request interceptor: `Authorization: Bearer {token}` header ekle (Zustand store'dan)
+- [ ] Request interceptor: `X-Profile-Id` header ekle (aktif profil)
+- [ ] Response interceptor: 401 → refresh token dene → başarısızsa logout + `/login`'e redirect
+- [ ] `src/lib/api/auth.ts` — `login()`, `register()`, `refreshToken()`, `getProfiles()`, `createProfile()`
+- [ ] `src/lib/api/catalog.ts` — `getMovies()`, `getMovie(id)`, `getSeries()`, `getSeriesById(id)`, `getGenres()`, `getGenreContent(slug)`
+- [ ] `src/lib/api/streaming.ts` — `getStreamingInfo(id)`, `getProgress(id)`, `saveProgress(id, position)`, `getContinueWatching()`, `uploadVideo(formData, onProgress)`
+- [ ] `src/lib/api/search.ts` — `search(query, filters)`, `autocomplete(query)`, `getTrending(window)`
+- [ ] `src/lib/api/recommendation.ts` — `getHomeSections()`, `getSimilar(id)`, `getRecommendations()`
+- [ ] `src/lib/api/subscription.ts` — `getPlans()`, `getMySubscription()`, `subscribe(planId, payment)`, `changePlan(planId)`, `cancel()`, `getInvoices()`
+- [ ] `src/lib/api/notification.ts` — `getNotifications(params)`, `markAsRead(id)`, `markAllAsRead()`, `getPreferences()`, `updatePreferences(prefs)`
+- [ ] `src/lib/api/encoding.ts` — `getJobs(params)`, `getJob(id)` (admin)
+
+### 4.3 Zustand Store'lar
+- [ ] `src/lib/stores/auth-store.ts` — `user`, `accessToken`, `refreshToken`, `activeProfile`, `profiles`, `subscriptionTier`
+- [ ] Auth store actions: `login()`, `register()`, `logout()`, `refreshAuth()`, `setActiveProfile()`, `fetchProfiles()`
+- [ ] `persist` middleware ile token'ları localStorage'a kaydet
+- [ ] `src/lib/stores/player-store.ts` — `contentId`, `isPlaying`, `currentTime`, `duration`, `currentQuality`, `availableQualities`, `volume`, `isFullscreen`, `isBuffering`
+- [ ] Player store actions: `setQuality()`, `togglePlay()`, `seek()`, `setVolume()`
+- [ ] `src/lib/stores/notification-store.ts` — `notifications`, `unreadCount`, `wsConnected`
+- [ ] Notification store actions: `connect()`, `disconnect()`, `markAsRead()`, `markAllAsRead()`, `fetchHistory()`
+
+### 4.4 Custom Hooks (TanStack Query)
+- [ ] `src/lib/hooks/use-auth.ts` — Auth state ve işlemleri (store wrapper)
+- [ ] `src/lib/hooks/use-profile.ts` — Aktif profil yönetimi
+- [ ] `src/lib/hooks/use-search.ts` — Debounced arama (300ms) + autocomplete query
+- [ ] `src/lib/hooks/use-player.ts` — Player state + progress save (15s interval)
+- [ ] `src/lib/hooks/use-watchlist.ts` — Watchlist CRUD (TanStack Query mutations)
+- [ ] `src/lib/hooks/use-notifications.ts` — WebSocket bağlantı + bildirim state
+- [ ] `src/lib/hooks/use-subscription.ts` — Abonelik durumu query
+
+---
+
+## 5. Auth & Profil Sayfaları
+
+### 5.1 Landing Page (`/`)
+- [ ] `src/app/page.tsx` — Statik landing page
+- [ ] Logo + "Giriş Yap" butonu üstte
+- [ ] Hero section: başlık, açıklama, email input + "Başla" butonu
+- [ ] Özellik kartları (3 kart: TV, mobil, profil)
+- [ ] SSS accordion bölümü
+- [ ] Giriş yapmışsa → `/browse`'a redirect (server-side kontrol)
+
+### 5.2 Login Sayfası (`/login`)
+- [ ] `src/app/(auth)/login/page.tsx`
+- [ ] `src/components/auth/login-form.tsx` — React Hook Form + Zod validasyon
+- [ ] Email + şifre input'ları
+- [ ] "Giriş Yap" submit butonu
+- [ ] "Hesabın yok mu? Kayıt ol" linki
+- [ ] Loading state (submit sırasında)
+- [ ] Hata gösterimi (yanlış şifre, kullanıcı bulunamadı)
+- [ ] Başarılı login → profil seçimine veya `/browse`'a yönlendir
+- [ ] API: `POST /api/auth/login`
+
+### 5.3 Register Sayfası (`/register`)
+- [ ] `src/app/(auth)/register/page.tsx`
+- [ ] `src/components/auth/register-form.tsx` — React Hook Form + Zod validasyon
+- [ ] Email, şifre, şifre tekrarı input'ları
+- [ ] Şifre gücü göstergesi (opsiyonel)
+- [ ] Başarılı kayıt → login sayfasına yönlendir veya otomatik giriş
+- [ ] API: `POST /api/auth/register`
+
+### 5.4 Profil Seçimi
+- [ ] `src/components/auth/profile-select.tsx` — "Kim izliyor?" ekranı
+- [ ] Profil kartları grid'i (avatar + isim)
+- [ ] "Profil Ekle" kartı (+ ikonu)
+- [ ] Yeni profil oluşturma modal'ı (isim + avatar seçimi)
+- [ ] Max 5 profil sınırı UI'da gösterilmeli
+- [ ] Profil seçildiğinde → `setActiveProfile()` + `/browse`'a yönlendir
+- [ ] "Profilleri Yönet" butonu
+- [ ] API: `GET /api/users/me/profiles`, `POST /api/users/me/profiles`
+
+### 5.5 Auth Proxy (Korumalı Route'lar)
+- [ ] `src/proxy.ts` oluştur (Next.js 16 — `middleware.ts` yerine `proxy.ts`)
+- [ ] Named export: `export function proxy(request: Request)`
+- [ ] Token yoksa korumalı route'ları `/login`'e redirect et
+- [ ] Public route'lar: `/`, `/login`, `/register`
+- [ ] Matcher config: `/((?!_next/static|_next/image|favicon.ico).*)` patterni
+
+---
+
+## 6. Browse & İçerik Sayfaları
+
+### 6.1 Ana Sayfa (`/browse`)
+- [ ] `src/app/(main)/browse/page.tsx`
+- [ ] `src/components/browse/hero-banner.tsx` — Rastgele öne çıkan içerik (büyük banner)
+- [ ] Banner: poster arka plan, gradient overlay, başlık, rating, yıl, süre, açıklama
+- [ ] Banner butonları: "Oynat", "Listem", "Detay"
+- [ ] `src/components/browse/content-row.tsx` — Yatay kaydırmalı içerik sırası (ok butonları ile scroll)
+- [ ] Section başlığı (ör: "Sizin İçin Seçtiklerimiz", "Türkiye'de Trend")
+- [ ] Sağa/sola kaydırma ok butonları
+- [ ] "Kaldığın Yerden Devam Et" sırası — progress bar'lı kartlar
+- [ ] "Sizin İçin Seçtiklerimiz" sırası
+- [ ] "Trend" sırası (1-10 numaralı)
+- [ ] İzleme geçmişine dayalı öneri sıraları
+- [ ] Tür bazlı sıralar (Bilim Kurgu, Dram, Aksiyon vb.)
+- [ ] "Yeni Eklenenler" sırası
+- [ ] API: `GET /api/recommendations/home`, `GET /api/stream/continue-watching`, `GET /api/search/trending?window=week`
+
+### 6.2 Content Card
+- [ ] `src/components/browse/content-card.tsx` — Poster + başlık kartı
+- [ ] Poster image (fallback placeholder)
+- [ ] Başlık alt yazısı
+- [ ] `src/components/browse/content-card-hover.tsx` — Hover detay kartı
+- [ ] 300ms delay ile hover aktifleşir
+- [ ] Kart `scale(1.3)` ile büyür, `z-index` ile üste çıkar
+- [ ] Poster (zoom), başlık, rating, yıl, türler, süre
+- [ ] Aksiyon butonları: Oynat, Listeye Ekle, Beğen, Detay
+- [ ] Viewport kenarında sola/sağa kayma (taşma önleme)
+- [ ] `src/components/browse/genre-tags.tsx` — Tür etiketleri
+- [ ] `src/components/browse/trending-badge.tsx` — "#1 Trend" rozeti
+
+### 6.3 Film Detay (`/movie/[id]`)
+- [ ] `src/app/(main)/movie/[id]/page.tsx` — Async params: `const { id } = await props.params`
+- [ ] `src/components/content/content-hero.tsx` — Banner arka plan + gradient + bilgi
+- [ ] Başlık, rating (oy sayısı), yıl, yaş sınıfı, süre
+- [ ] "Oynat" ve "Listem" butonları
+- [ ] `src/components/content/content-info.tsx` — Açıklama, yönetmen, oyuncular, türler
+- [ ] `src/components/content/rating-stars.tsx` — 5 yıldız puanlama (tıklanabilir)
+- [ ] `src/components/content/maturity-badge.tsx` — Yaş sınıfı rozeti (PG-13, R vb.)
+- [ ] `src/components/content/add-to-list-button.tsx` — Watchlist toggle butonu (ekle/çıkar)
+- [ ] `src/components/content/similar-content.tsx` — Benzerleri satırı
+- [ ] API: `GET /api/catalog/movies/{id}`, `GET /api/catalog/movies/{id}/streaming-info`, `GET /api/recommendations/similar/{id}`, `GET /api/stream/{id}/progress`, `POST /api/users/me/ratings`, `POST /api/users/me/profiles/{pid}/watchlist`
+
+### 6.4 Dizi Detay (`/series/[id]`)
+- [ ] `src/app/(main)/series/[id]/page.tsx` — Async params
+- [ ] Film detayla aynı hero + info bileşenleri
+- [ ] `src/components/content/season-selector.tsx` — Sezon seçici (tab veya dropdown)
+- [ ] `src/components/content/episode-list.tsx` — Bölüm listesi (numara, başlık, süre, açıklama, oynat butonu)
+- [ ] Her bölümde izleme progress'i göster (izlenmişse)
+- [ ] API: `GET /api/catalog/series/{id}`, `GET /api/recommendations/similar/{id}`
+
+### 6.5 Watchlist (`/my-list`)
+- [ ] `src/app/(main)/my-list/page.tsx`
+- [ ] Grid görünümünde content card'lar
+- [ ] "Listeden Çıkar" hover aksiyonu
+- [ ] Liste boşsa empty state ("Henüz bir şey eklemediniz")
+- [ ] API: `GET /api/users/me/profiles/{pid}/watchlist`, `DELETE /api/users/me/profiles/{pid}/watchlist/{id}`
+
+### 6.6 Genre Sayfası (`/genre/[slug]`)
+- [ ] `src/app/(main)/genre/[slug]/page.tsx` — Async params
+- [ ] Tür başlığı + content card grid
+- [ ] Sayfalama (load more veya infinite scroll)
+- [ ] API: `GET /api/catalog/genres/{slug}/content`
+
+---
+
+## 7. Video Player
+
+### 7.1 Ana Player Bileşeni
+- [ ] `src/components/player/video-player.tsx` — hls.js wrapper
+- [ ] hls.js instance oluşturma ve video element'e attach
+- [ ] HLS manifest yükleme (`GET /stream/{id}/manifest.m3u8`)
+- [ ] Adaptive bitrate otomatik kalite seçimi
+- [ ] Error handling (network, media, fatal/non-fatal)
+- [ ] Cleanup: unmount'ta `hls.destroy()`
+- [ ] Native fallback: Safari'de HLS natively desteklendiğinde `<video>` src doğrudan kullan
+
+### 7.2 Player Kontrolleri
+- [ ] `src/components/player/player-controls.tsx`
+- [ ] Play/Pause butonu
+- [ ] Seek bar (progress slider)
+- [ ] Geçerli zaman / toplam süre gösterimi
+- [ ] Volume slider + mute toggle
+- [ ] Fullscreen toggle butonu
+- [ ] Kontroller 3 saniye hareketsizlikte gizlenir (mouse move ile gösterilir)
+
+### 7.3 Kalite Seçici
+- [ ] `src/components/player/quality-selector.tsx`
+- [ ] "Otomatik" seçenek (ABR — `hls.currentLevel = -1`)
+- [ ] Manuel kalite seçenekleri (360p, 720p, 1080p, 4K)
+- [ ] Tier bazlı kısıtlama: Basic → max 720p, Standard → max 1080p, Premium → 4K
+- [ ] Yetkisi olmayan kalite seviyeleri `disabled` göster
+- [ ] `hls.currentLevel = index` ile manuel seçim
+
+### 7.4 İzleme Pozisyonu Takibi
+- [ ] `src/components/player/progress-tracker.tsx`
+- [ ] Sayfa açılırken: `GET /api/stream/{id}/progress` → kaldığı yere seek
+- [ ] Oynatma sırasında: her 15 saniyede `POST /api/stream/{id}/progress`
+- [ ] `beforeunload` event'inde son pozisyonu kaydet
+- [ ] `visibilitychange` event'inde pozisyon kaydet (tab değişimi)
+
+### 7.5 Player Overlay & UX
+- [ ] `src/components/player/player-overlay.tsx` — Başlık, geri butonu
+- [ ] Buffering göstergesi (spinner)
+- [ ] Oynatma bittiğinde: dizi ise "Sonraki Bölüm" önerisi (10s countdown)
+- [ ] Oynatma bittiğinde: film ise "Benzerleri" önerisi
+- [ ] Keyboard shortcut'lar: Space (play/pause), F (fullscreen), ← (10s geri), → (10s ileri), M (mute), ↑/↓ (volume)
+
+### 7.6 Watch Sayfası (`/watch/[contentId]`)
+- [ ] `src/app/(main)/watch/[contentId]/page.tsx` — Async params
+- [ ] Tam ekran player layout (navbar gizli)
+- [ ] Player bileşenlerini birleştir (video-player + controls + quality + progress + overlay)
+- [ ] API: `GET /stream/{id}/manifest.m3u8`, `GET /api/stream/{id}/progress`, `POST /api/stream/{id}/progress`
+
+---
+
+## 8. Arama
+
+### 8.1 Search Bar
+- [ ] `src/components/search/search-bar.tsx` — Navbar'da arama ikonu + genişleyen input
+- [ ] İkon tıklandığında input açılır (animasyonlu)
+- [ ] 300ms debounce ile autocomplete tetiklenir
+- [ ] 2+ karakter sonrasında öneri listesi göster
+- [ ] Enter'a basınca `/search?q=...` sayfasına yönlendir
+
+### 8.2 Autocomplete
+- [ ] Autocomplete dropdown (search bar altında)
+- [ ] Film/dizi ikonu + başlık + yıl
+- [ ] Tıklandığında ilgili detay sayfasına git
+- [ ] API: `GET /api/search/autocomplete?q=...`
+
+### 8.3 Arama Sonuçları Sayfası (`/search`)
+- [ ] `src/app/(main)/search/page.tsx` — Async searchParams: `const query = (await props.searchParams).q`
+- [ ] `src/components/search/search-results.tsx` — Sonuç grid'i (content card'lar)
+- [ ] Sonuç sayısı + arama süresi gösterimi ("15 sonuç, 12ms")
+- [ ] `src/components/search/search-highlight.tsx` — Arama terimini vurgulu göster
+- [ ] Boş sonuç state'i ("Sonuç bulunamadı")
+- [ ] Boş arama → trending göster
+
+### 8.4 Facet Filtreleri
+- [ ] `src/components/search/search-filters.tsx`
+- [ ] Tür filtresi (checkbox grubu + sonuç sayıları)
+- [ ] Yıl filtresi (aralık seçimi: 2020+, 2015-2020, 2010-2015, Daha Eski)
+- [ ] Rating filtresi (minimum: 7+, 8+, 9+)
+- [ ] Tip filtresi (Filmler, Diziler, Tümü)
+- [ ] Sıralama (İlgililik, Puan, Yıl, İsim)
+- [ ] Filtre değişikliğinde URL parametreleri güncelle
+- [ ] Sayfalama (sayfa numaraları veya load more)
+- [ ] API: `GET /api/search?q=...&genres=...&yearFrom=...&yearTo=...&minRating=...&type=...&sort=...&page=...`
+
+---
+
+## 9. Abonelik Yönetimi
+
+### 9.1 Abonelik Sayfası (`/account/subscription`)
+- [ ] `src/app/(main)/account/subscription/page.tsx`
+- [ ] `src/components/subscription/subscription-status.tsx` — Aktif abonelik kartı (plan adı, fiyat, durum, yenileme tarihi, özellikler)
+- [ ] "Plan Değiştir" ve "İptal Et" butonları
+
+### 9.2 Plan Kartları
+- [ ] `src/components/subscription/plan-cards.tsx` — 3 plan kartı (Basic, Standard, Premium)
+- [ ] Her kart: plan adı, aylık fiyat, özellik listesi (kalite, ekran sayısı, indirme vb.)
+- [ ] Mevcut plan vurgulanmış ("Mevcut Plan" badge)
+- [ ] Upgrade/Downgrade butonları
+- [ ] API: `GET /api/plans`
+
+### 9.3 Ödeme Formu
+- [ ] `src/components/subscription/payment-form.tsx` — Mock kart bilgisi formu
+- [ ] Kart numarası, son kullanma, CVV input'ları (Zod validasyon)
+- [ ] "Ödemeyi Onayla" butonu
+- [ ] Başarılı → abonelik durumu güncelle
+- [ ] API: `POST /api/subscriptions`
+
+### 9.4 Plan Değiştirme & İptal
+- [ ] Plan değiştirme onay modal'ı (fiyat farkı gösterimi)
+- [ ] İptal onay modal'ı ("Emin misiniz?")
+- [ ] API: `PUT /api/subscriptions/me/plan`, `POST /api/subscriptions/me/cancel`
+
+### 9.5 Fatura Geçmişi
+- [ ] `src/components/subscription/invoice-table.tsx` — Fatura tablosu
+- [ ] Sütunlar: tarih, plan, tutar, durum
+- [ ] API: `GET /api/subscriptions/me/invoices`
+
+---
+
+## 10. Bildirimler
+
+### 10.1 WebSocket Provider
+- [ ] `src/components/notification/notification-provider.tsx`
+- [ ] Kullanıcı login olduğunda WebSocket bağlantısı aç (`ws://.../ws/notifications?token=...`)
+- [ ] Gelen mesajları notification store'a ekle
+- [ ] Toast göster (Sonner ile — bildirim tipi bazlı ikon)
+- [ ] Bağlantı koparsa exponential backoff ile reconnect (1s → 2s → 4s → 8s → max 30s)
+- [ ] Heartbeat: her 30 saniyede ping, 10s içinde pong gelmezse reconnect
+- [ ] Logout'ta bağlantıyı kapat
+- [ ] Provider'ı `(main)/layout.tsx`'e sar
+
+### 10.2 Bildirim Bell & Dropdown
+- [ ] Navbar'da bildirim ikonu
+- [ ] Unread count badge (kırmızı daire + sayı)
+- [ ] Tıklandığında dropdown açılır (son 5-10 bildirim)
+- [ ] "Tümünü Okundu İşaretle" butonu
+- [ ] "Tüm Bildirimleri Gör" linki → `/account/notifications`
+
+### 10.3 Bildirim Listesi Sayfası
+- [ ] `src/app/(main)/account/notifications/page.tsx`
+- [ ] `src/components/notification/notification-list.tsx` — Sayfalı bildirim listesi
+- [ ] `src/components/notification/notification-item.tsx` — Tek bildirim kartı (ikon, mesaj, tarih, okundu/okunmadı)
+- [ ] Tıklandığında okundu işaretle + ilgili sayfaya yönlendir
+- [ ] API: `GET /api/notifications?unreadOnly=...`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all`
+
+### 10.4 Bildirim Tercihleri
+- [ ] `src/components/notification/notification-prefs.tsx` — Tercih ayarları formu
+- [ ] Bildirim türleri (yeni içerik, öneri, abonelik vb.) için toggle'lar
+- [ ] API: `GET /api/notifications/preferences`, `PUT /api/notifications/preferences`
+
+---
+
+## 11. Hesap Sayfaları
+
+### 11.1 Hesap Genel Bakış (`/account`)
+- [ ] `src/app/(main)/account/page.tsx`
+- [ ] Kullanıcı bilgileri (email, kayıt tarihi)
+- [ ] Aktif abonelik özeti
+- [ ] Navigasyon: Profiller, Abonelik, Bildirimler
+
+### 11.2 Profil Yönetimi (`/account/profiles`)
+- [ ] `src/app/(main)/account/profiles/page.tsx`
+- [ ] Profil listesi (düzenle/sil butonları)
+- [ ] Profil düzenleme modal'ı (isim, avatar değiştirme)
+- [ ] Yeni profil ekleme (max 5 sınırı)
+- [ ] API: `GET /api/users/me/profiles`, `POST /api/users/me/profiles`
+
+---
+
+## 12. Admin Paneli
+
+### 12.1 Admin Layout & Guard
+- [ ] `src/app/(main)/admin/layout.tsx` — Admin sidebar + role guard
+- [ ] Kullanıcının `role === "Admin"` kontrolü, değilse `/browse`'a redirect
+- [ ] Sidebar: Dashboard, İçerikler, Encoding linkleri
+
+### 12.2 Admin Dashboard (`/admin`)
+- [ ] `src/app/(main)/admin/page.tsx`
+- [ ] `src/components/admin/stats-cards.tsx` — İstatistik kartları (toplam içerik, encoding işlemde, aktif abone)
+- [ ] Son encoding işlemleri listesi (kısa tablo: başlık, kalite, progress, durum)
+
+### 12.3 İçerik Yönetimi (`/admin/content`)
+- [ ] `src/app/(main)/admin/content/page.tsx` — İçerik listesi tablosu
+- [ ] Sütunlar: başlık, tür (Film/Dizi), video durumu (Ready/Encoding/No Video), tarih
+- [ ] Arama filtresi
+- [ ] "Yeni Ekle" butonu → `/admin/content/new`
+- [ ] Satır tıklandığında → `/admin/content/[id]`
+- [ ] API: `GET /api/catalog/movies`, `GET /api/catalog/series`
+
+### 12.4 İçerik Ekleme/Düzenleme (`/admin/content/new`, `/admin/content/[id]`)
+- [ ] `src/app/(main)/admin/content/new/page.tsx`
+- [ ] `src/app/(main)/admin/content/[id]/page.tsx` — Async params
+- [ ] `src/components/admin/content-form.tsx` — Film/dizi ekleme/düzenleme formu (React Hook Form + Zod)
+- [ ] Alanlar: başlık, açıklama, yıl, rating (dropdown), türler (multi-select), yönetmen, oyuncular (tag input)
+- [ ] Film/Dizi tipi seçimi (dizi seçilince sezon/bölüm ekleme alanları)
+- [ ] "Kaydet" ve "İptal" butonları
+- [ ] API: `POST /api/catalog/movies`, `POST /api/catalog/series`, `GET /api/catalog/movies/{id}`
+
+### 12.5 Video Upload
+- [ ] `src/components/admin/video-uploader.tsx` — Drag & drop video upload bileşeni
+- [ ] Desteklenen formatlar gösterimi (MP4, MKV, AVI — max 10GB)
+- [ ] Upload progress bar (yüzde + boyut)
+- [ ] Upload tamamlanınca encoding job ID göster
+- [ ] Axios `onUploadProgress` ile gerçek zamanlı ilerleme
+- [ ] API: `POST /api/stream/upload` (multipart/form-data)
+
+### 12.6 Encoding İzleme (`/admin/encoding`)
+- [ ] `src/app/(main)/admin/encoding/page.tsx`
+- [ ] `src/components/admin/encoding-status.tsx` — Encoding job listesi tablosu
+- [ ] Sütunlar: içerik adı, kalite, progress bar, durum (Pending/Processing/Completed/Failed)
+- [ ] `src/components/admin/encoding-progress.tsx` — Gerçek zamanlı ilerleme çubuğu (polling ile güncelleme, 5s interval)
+- [ ] Detay sayfası: job bilgileri, hata mesajı (varsa)
+- [ ] API: `GET /api/encoding/jobs`, `GET /api/encoding/jobs/{id}`
+
+---
+
+## 13. UX & Responsive
+
+### 13.1 Loading State'ler
+- [ ] Her sayfa için loading skeleton'lar (Suspense boundary veya TanStack Query `isLoading`)
+- [ ] Content card skeleton (poster + text placeholder)
+- [ ] Tablo skeleton (satır placeholder)
+- [ ] Hero banner skeleton
+
+### 13.2 Error State'ler
+- [ ] Global error boundary (`error.tsx`)
+- [ ] API hata gösterimi (toast veya inline mesaj)
+- [ ] 404 sayfası (`not-found.tsx`)
+- [ ] Network hata sayfası
+
+### 13.3 Empty State'ler
+- [ ] Watchlist boş ("Henüz bir şey eklemediniz")
+- [ ] Arama sonuç yok ("Sonuç bulunamadı")
+- [ ] Bildirim yok ("Yeni bildiriminiz yok")
+- [ ] Admin içerik yok ("Henüz içerik eklenmemiş")
+
+### 13.4 Responsive Tasarım
+- [ ] Navbar: mobilde hamburger menü
+- [ ] Content card grid: mobilde 2 sütun, tablette 3, masaüstünde 5-6
+- [ ] Content row: mobilde tek sıra kaydırma
+- [ ] Player: mobilde kontrol boyutları büyütülmüş
+- [ ] Admin sidebar: mobilde overlay
+- [ ] Form'lar: mobilde full-width
+
+### 13.5 Animasyonlar & Geçişler
+- [ ] React 19.2 View Transitions API ile sayfa geçiş animasyonları (opsiyonel)
+- [ ] Content card hover animasyonu (scale + opacity transition)
+- [ ] Modal açılış/kapanış animasyonu
+- [ ] Navbar scroll'da arka plan değişimi (transparent → solid)
+
+---
+
+## 14. Uçtan Uca Test & Doğrulama
+
+### 14.1 Auth Akışı
+- [ ] Register → login → profil seçimi → browse akışı çalışıyor
+- [ ] Token refresh otomatik çalışıyor (401 → retry)
+- [ ] Logout → login'e redirect çalışıyor
+- [ ] Korumalı route'lar unauthorized erişimi engelliyor
+
+### 14.2 Browse & İçerik Akışı
+- [ ] Ana sayfa tüm section'ları yüklüyor
+- [ ] Content card hover efekti çalışıyor
+- [ ] Film/dizi detay sayfaları tüm bilgileri gösteriyor
+- [ ] Puanlama çalışıyor
+- [ ] Watchlist ekleme/çıkarma çalışıyor
+
+### 14.3 Player Akışı
+- [ ] HLS video oynatılabiliyor
+- [ ] Kalite seçimi çalışıyor
+- [ ] İzleme pozisyonu kaydediliyor
+- [ ] Kaldığın yerden devam çalışıyor
+- [ ] Keyboard shortcut'lar çalışıyor
+
+### 14.4 Arama Akışı
+- [ ] Autocomplete çalışıyor (2+ karakter)
+- [ ] Full-text arama sonuç dönüyor
+- [ ] Facet filtreleri çalışıyor
+- [ ] Boş aramada trendler gösteriliyor
+
+### 14.5 Admin Akışı
+- [ ] Admin paneline sadece admin erişebiliyor
+- [ ] İçerik CRUD çalışıyor
+- [ ] Video upload progress gösteriyor
+- [ ] Encoding job durumu görüntüleniyor
+
+### 14.6 Bildirim Akışı
+- [ ] WebSocket bağlantısı kuruluyor
+- [ ] Toast bildirimi gösteriliyor
+- [ ] Bell'de unread count güncelleniyor
+- [ ] Okundu işaretleme çalışıyor
+
+### 14.7 Docker Doğrulama
+- [ ] `docker compose up` ile frontend ayağa kalkıyor
+- [ ] Gateway üzerinden tüm API istekleri başarılı
+- [ ] HLS streaming tarayıcıdan çalışıyor
+
+---
+
+## Önerilen Sıralama
+
+1. **Proje kurulumu** → Next.js 16 + TS + Tailwind + bağımlılıklar + Docker
+2. **Tema & Layout** → Dark tema, root/auth/main layout'lar, navbar, footer
+3. **UI bileşenleri** → Button, input, modal, skeleton, badge, progress-bar
+4. **API client & state** → Axios + interceptor, Zustand store'lar, TypeScript tipleri
+5. **Auth sayfaları** → Landing, login, register, profil seçimi, proxy.ts
+6. **Browse — Ana sayfa** → Hero banner, content-row, content-card, recommendation API
+7. **Content card hover & Detay** → Hover efekti, film detay, dizi detay (sezon/bölüm)
+8. **Video player** → hls.js, kontroller, kalite seçici, progress tracking, keyboard shortcuts
+9. **Arama** → Search bar, autocomplete, sonuç sayfası, facet filtreleri
+10. **Watchlist & Genre** → Listem sayfası, tür sayfası
+11. **Abonelik** → Plan kartları, mock ödeme, durum, değiştirme, iptal, fatura
+12. **Bildirimler** → WebSocket provider, bell, dropdown, liste, tercihler, toast
+13. **Admin paneli** → Layout, dashboard, içerik CRUD, video upload, encoding izleme
+14. **UX & Responsive** → Skeleton'lar, error/empty state'ler, mobil uyum, animasyonlar
+15. **Test & Doğrulama** → Uçtan uca tüm akışların tarayıcıda doğrulanması
