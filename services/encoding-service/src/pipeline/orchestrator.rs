@@ -207,3 +207,199 @@ impl JobProcessor for PipelineOrchestrator {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::{EncodingConfig, MinIOConfig};
+    use crate::error::EncodingError;
+    use crate::messaging::consumer::JobProcessor;
+    use crate::messaging::models::{EncodingJob, EncodingResult};
+    use crate::messaging::publisher::ResultPublisher;
+    use crate::storage::StorageClient;
+    use crate::store;
+    use bytes::Bytes;
+    use std::path::Path;
+    use std::sync::Mutex;
+
+    /// A storage client that always fails on download_to_file.
+    struct FailingStorageClient;
+
+    #[async_trait]
+    impl StorageClient for FailingStorageClient {
+        async fn download_to_file(&self, _: &str, _: &str, _: &Path) -> Result<u64> {
+            Err(EncodingError::Storage("simulated download failure".into()))
+        }
+        async fn upload_from_file(&self, _: &str, _: &str, _: &Path, _: &str) -> Result<()> {
+            Ok(())
+        }
+        async fn upload_bytes(&self, _: &str, _: &str, _: Bytes, _: &str) -> Result<()> {
+            Ok(())
+        }
+        async fn delete(&self, _: &str, _: &str) -> Result<()> {
+            Ok(())
+        }
+        async fn exists(&self, _: &str, _: &str) -> Result<bool> {
+            Ok(false)
+        }
+        async fn health_check(&self, _: &str) -> Result<()> {
+            Ok(())
+        }
+    }
+
+    /// A publisher mock that records calls.
+    struct MockPublisher {
+        completed_calls: Mutex<Vec<EncodingResult>>,
+        failed_calls: Mutex<Vec<EncodingResult>>,
+    }
+
+    impl MockPublisher {
+        fn new() -> Self {
+            Self {
+                completed_calls: Mutex::new(Vec::new()),
+                failed_calls: Mutex::new(Vec::new()),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl ResultPublisher for MockPublisher {
+        async fn publish_completed(&self, result: EncodingResult) -> Result<()> {
+            self.completed_calls.lock().unwrap().push(result);
+            Ok(())
+        }
+        async fn publish_failed(&self, result: EncodingResult) -> Result<()> {
+            self.failed_calls.lock().unwrap().push(result);
+            Ok(())
+        }
+    }
+
+    fn test_encoding_config() -> EncodingConfig {
+        EncodingConfig {
+            temp_dir: std::env::temp_dir()
+                .join("encoding-test")
+                .to_string_lossy()
+                .into_owned(),
+            ffmpeg_path: "ffmpeg".into(),
+            ffprobe_path: "ffprobe".into(),
+            max_concurrent_jobs: 1,
+        }
+    }
+
+    fn test_minio_config() -> MinIOConfig {
+        MinIOConfig {
+            endpoint: "localhost:9000".into(),
+            access_key: "test".into(),
+            secret_key: "test".into(),
+            use_ssl: false,
+            raw_bucket: "streamvault-raw".into(),
+            encoded_bucket: "streamvault-encoded".into(),
+            thumbnails_bucket: "streamvault-thumbnails".into(),
+            region: "us-east-1".into(),
+        }
+    }
+
+    fn test_encoding_job() -> EncodingJob {
+        EncodingJob {
+            job_id: "test-job-001".into(),
+            content_id: "movie-123".into(),
+            source_path: "movie-123/original.mp4".into(),
+            source_bucket: "streamvault-raw".into(),
+            requested_by: "admin-user".into(),
+            created_at: chrono::Utc::now(),
+        }
+    }
+
+    #[tokio::test]
+    async fn process_inserts_job_into_store() {
+        let store = store::new_job_store();
+        let publisher: Arc<dyn ResultPublisher> = Arc::new(MockPublisher::new());
+        let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
+
+        let orchestrator = PipelineOrchestrator::new(
+            &test_encoding_config(),
+            &test_minio_config(),
+            storage,
+            publisher,
+            store.clone(),
+        );
+
+        let job = test_encoding_job();
+        let _ = orchestrator.process(job.clone()).await;
+
+        // Job should exist in store regardless of pipeline outcome
+        let store_read = store.read().await;
+        let stored_job = store_read.get("test-job-001");
+        assert!(stored_job.is_some(), "job should be inserted into store");
+        assert_eq!(stored_job.unwrap().content_id, "movie-123");
+    }
+
+    #[tokio::test]
+    async fn process_with_failing_download_publishes_failure() {
+        let store = store::new_job_store();
+        let mock_pub = Arc::new(MockPublisher::new());
+        let publisher: Arc<dyn ResultPublisher> = Arc::clone(&mock_pub) as Arc<dyn ResultPublisher>;
+        let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
+
+        let orchestrator = PipelineOrchestrator::new(
+            &test_encoding_config(),
+            &test_minio_config(),
+            storage,
+            publisher,
+            store.clone(),
+        );
+
+        let job = test_encoding_job();
+        let result = orchestrator.process(job).await;
+
+        // Process should return an error
+        assert!(result.is_err(), "process should fail when download fails");
+
+        // Publisher should have received a failure event
+        let failed = mock_pub.failed_calls.lock().unwrap();
+        assert_eq!(failed.len(), 1, "should publish exactly one failure");
+        assert_eq!(failed[0].status, "failed");
+        assert_eq!(failed[0].job_id, "test-job-001");
+        assert_eq!(failed[0].content_id, "movie-123");
+        assert!(
+            failed[0].error_message.is_some(),
+            "failure should include error message"
+        );
+        assert_eq!(failed[0].event_type, "encoding.job.failed");
+
+        // No completed events should be published
+        let completed = mock_pub.completed_calls.lock().unwrap();
+        assert_eq!(completed.len(), 0, "should not publish completed event");
+    }
+
+    #[tokio::test]
+    async fn process_with_failing_download_marks_job_as_failed_in_store() {
+        let store = store::new_job_store();
+        let publisher: Arc<dyn ResultPublisher> = Arc::new(MockPublisher::new());
+        let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
+
+        let orchestrator = PipelineOrchestrator::new(
+            &test_encoding_config(),
+            &test_minio_config(),
+            storage,
+            publisher,
+            store.clone(),
+        );
+
+        let job = test_encoding_job();
+        let _ = orchestrator.process(job).await;
+
+        // Job in store should be marked as Failed
+        let store_read = store.read().await;
+        let stored_job = store_read.get("test-job-001").unwrap();
+        assert_eq!(
+            stored_job.status,
+            crate::domain::status::JobStatus::Failed,
+            "job should be marked as Failed"
+        );
+        assert!(
+            stored_job.error_message.is_some(),
+            "failed job should have error message"
+        );
+    }
+}

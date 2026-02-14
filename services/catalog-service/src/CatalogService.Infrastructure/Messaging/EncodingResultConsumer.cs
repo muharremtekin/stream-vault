@@ -108,7 +108,7 @@ public class EncodingResultConsumer : BackgroundService
         await tcs.Task;
     }
 
-    private async Task HandleMessageAsync(EncodingResultMessage message, CancellationToken cancellationToken)
+    internal async Task HandleMessageAsync(EncodingResultMessage message, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
             "Processing encoding result: EventId={EventId}, EventType={EventType}, Source={Source}, " +

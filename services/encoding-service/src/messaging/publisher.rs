@@ -136,3 +136,135 @@ impl ResultPublisher for RabbitMQPublisher {
         self.publish(&result, &self.config.failed_routing_key).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::messaging::models::{EncodingOutput, EncodingResult};
+    use std::sync::Mutex;
+
+    /// Mock publisher that records all publish calls for assertion.
+    struct TrackingPublisher {
+        completed: Mutex<Vec<EncodingResult>>,
+        failed: Mutex<Vec<EncodingResult>>,
+    }
+
+    impl TrackingPublisher {
+        fn new() -> Self {
+            Self {
+                completed: Mutex::new(Vec::new()),
+                failed: Mutex::new(Vec::new()),
+            }
+        }
+    }
+
+    #[async_trait]
+    impl ResultPublisher for TrackingPublisher {
+        async fn publish_completed(&self, result: EncodingResult) -> Result<()> {
+            self.completed.lock().unwrap().push(result);
+            Ok(())
+        }
+        async fn publish_failed(&self, result: EncodingResult) -> Result<()> {
+            self.failed.lock().unwrap().push(result);
+            Ok(())
+        }
+    }
+
+    fn make_result(status: &str) -> EncodingResult {
+        EncodingResult {
+            event_id: "evt-001".into(),
+            event_type: format!("encoding.job.{}", status),
+            timestamp: "2024-01-15T10:35:00Z".into(),
+            source: "encoding-service".into(),
+            correlation_id: "job-001".into(),
+            job_id: "job-001".into(),
+            content_id: "movie-456".into(),
+            status: status.into(),
+            outputs: if status == "completed" {
+                vec![EncodingOutput {
+                    quality: "720p".into(),
+                    width: 1280,
+                    height: 720,
+                    bitrate_kbps: 2800,
+                    segment_count: 12,
+                    playlist_path: "movie-456/720p/playlist.m3u8".into(),
+                }]
+            } else {
+                vec![]
+            },
+            duration_seconds: 120,
+            error_message: if status == "failed" {
+                Some("codec not supported".into())
+            } else {
+                None
+            },
+            completed_at: "2024-01-15T10:35:00Z".into(),
+        }
+    }
+
+    #[tokio::test]
+    async fn publish_completed_records_result() {
+        let publisher = TrackingPublisher::new();
+        let result = make_result("completed");
+
+        publisher.publish_completed(result).await.unwrap();
+
+        let calls = publisher.completed.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].status, "completed");
+        assert_eq!(calls[0].job_id, "job-001");
+        assert_eq!(calls[0].content_id, "movie-456");
+        assert_eq!(calls[0].outputs.len(), 1);
+        assert_eq!(calls[0].outputs[0].quality, "720p");
+        assert!(calls[0].error_message.is_none());
+    }
+
+    #[tokio::test]
+    async fn publish_failed_records_result() {
+        let publisher = TrackingPublisher::new();
+        let result = make_result("failed");
+
+        publisher.publish_failed(result).await.unwrap();
+
+        let calls = publisher.failed.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].status, "failed");
+        assert_eq!(calls[0].job_id, "job-001");
+        assert_eq!(calls[0].outputs.len(), 0);
+        assert_eq!(
+            calls[0].error_message.as_deref(),
+            Some("codec not supported")
+        );
+    }
+
+    #[tokio::test]
+    async fn publish_completed_and_failed_are_independent() {
+        let publisher = TrackingPublisher::new();
+
+        publisher
+            .publish_completed(make_result("completed"))
+            .await
+            .unwrap();
+        publisher
+            .publish_failed(make_result("failed"))
+            .await
+            .unwrap();
+
+        assert_eq!(publisher.completed.lock().unwrap().len(), 1);
+        assert_eq!(publisher.failed.lock().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn publish_result_event_envelope_fields() {
+        let publisher = TrackingPublisher::new();
+        let result = make_result("completed");
+
+        publisher.publish_completed(result).await.unwrap();
+
+        let calls = publisher.completed.lock().unwrap();
+        assert_eq!(calls[0].event_id, "evt-001");
+        assert_eq!(calls[0].event_type, "encoding.job.completed");
+        assert_eq!(calls[0].source, "encoding-service");
+        assert_eq!(calls[0].correlation_id, "job-001");
+    }
+}

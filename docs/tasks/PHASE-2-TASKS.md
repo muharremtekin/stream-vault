@@ -306,20 +306,20 @@
 - [ ] Proto dosyalarından Go ve Rust kodu başarıyla üretiliyor — generate-proto.sh mevcut, CI'da test edilmeli
 
 ### 7.5 Unit & Integration Tests
-- [ ] Streaming Service: handler testleri, HLS playlist üretimi, progress logic
-- [ ] Encoding Service: pipeline adımları, RabbitMQ consumer/publisher, model testleri
-- [ ] Gateway: yeni route ve middleware testleri
-- [ ] Catalog Service: UpdateVideoStatus handler, RabbitMQ consumer testleri
+- [x] Streaming Service: handler testleri, HLS playlist üretimi, progress logic
+- [x] Encoding Service: pipeline adımları, RabbitMQ consumer/publisher, model testleri
+- [x] Gateway: yeni route ve middleware testleri
+- [x] Catalog Service: UpdateVideoStatus handler, RabbitMQ consumer testleri
 
 ---
 
 ## 8. Dokümantasyon
 
-- [ ] README.md güncelle: Faz 2 mimari diyagram, yeni servisler, port haritası
-- [ ] Streaming API kullanım örnekleri (curl komutları)
-- [ ] Encoding API kullanım örnekleri
-- [ ] RabbitMQ topology açıklaması
-- [ ] MinIO bucket yapısı açıklaması
+- [x] README.md güncelle: Faz 2 mimari diyagram, yeni servisler, port haritası
+- [x] Streaming API kullanım örnekleri (curl komutları)
+- [x] Encoding API kullanım örnekleri
+- [x] RabbitMQ topology açıklaması
+- [x] MinIO bucket yapısı açıklaması
 
 ---
 

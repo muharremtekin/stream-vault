@@ -17,4 +17,8 @@
     <ProjectReference Include="..\CatalogService.Application\CatalogService.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="CatalogService.UnitTests" />
+  </ItemGroup>
+
 </Project>
