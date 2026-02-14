@@ -42,13 +42,12 @@ services:
       - "5005:5005"
       - "50053:50053"
 
-  # recommendation-service:
-  #   environment:
-  #     - RECOMMENDATION__LOGGING__LEVEL=debug
-  #     - RECOMMENDATION__LOGGING__FORMAT=pretty
-  #   ports:
-  #     - "5006:5006"
-  #     - "50054:50054"
+  recommendation-service:
+    environment:
+      - RECOMMENDATION_LOGGING_LEVEL=debug
+    ports:
+      - "5006:5006"
+      - "50054:50054"
 
   # subscription-service:
   #   ports:

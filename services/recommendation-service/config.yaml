@@ -1,0 +1,29 @@
+server:
+  http_port: 5006
+  grpc_port: 50054
+  read_timeout: 30s
+  write_timeout: 30s
+
+consul:
+  address: "consul:8500"
+  health_check_interval: 10s
+
+postgres:
+  url: ""
+  max_conns: 10
+  min_conns: 2
+  run_migrations: true
+
+redis:
+  url: "redis://redis:6379/4"
+
+rabbitmq:
+  url: "amqp://rabbitmq:5672/"
+  catalog_queue: "recommendation.catalog"
+  watch_queue: "recommendation.watch"
+  ratings_queue: "recommendation.ratings"
+  prefetch: 10
+
+logging:
+  level: "info"
+  format: "json"

@@ -167,95 +167,95 @@
 ## 4. Recommendation Engine (Go)
 
 ### 4.1 Proje Kurulumu & Temel Yapı
-- [ ] Go projesi oluştur (`services/recommendation-service/`)
-- [ ] `go.mod` oluştur, dependency'leri ekle (pgx, go-redis, amqp091-go, grpc, consul api, viper)
-- [ ] `internal/config/config.go` — config.yaml + Viper ile env var yükleme
-- [ ] `cmd/recommendation/main.go` — HTTP + gRPC server bootstrap, RabbitMQ consumer başlatma
-- [ ] Dockerfile oluştur (multi-stage build)
-- [ ] Makefile oluştur (build, test, lint)
-- [ ] GET /health endpoint (PostgreSQL, Redis, RabbitMQ bağlantı durumu)
+- [x] Go projesi oluştur (`services/recommendation-service/`)
+- [x] `go.mod` oluştur, dependency'leri ekle (pgx, go-redis, amqp091-go, grpc, consul api, viper)
+- [x] `internal/config/config.go` — config.yaml + Viper ile env var yükleme
+- [x] `cmd/recommendation/main.go` — HTTP + gRPC server bootstrap, RabbitMQ consumer başlatma
+- [x] Dockerfile oluştur (multi-stage build)
+- [x] Makefile oluştur (build, test, lint)
+- [x] GET /health endpoint (PostgreSQL, Redis, RabbitMQ bağlantı durumu)
 
 ### 4.2 Consul Entegrasyonu
-- [ ] Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] Graceful shutdown'da deregistration
+- [x] Consul'a self-registration
+- [x] Health check kaydı
+- [x] Graceful shutdown'da deregistration
 
 ### 4.3 PostgreSQL — Migration & Models
-- [ ] `migrations/001_create_interactions.sql` — interactions tablosu
-- [ ] `migrations/002_create_user_profiles.sql` — user_profiles tablosu
-- [ ] `migrations/003_create_content_features.sql` — content_features tablosu
-- [ ] `migrations/004_create_content_similarity.sql` — content_similarity tablosu
-- [ ] `internal/model/interaction.go` — Etkileşim modeli (watch, rating, watchlist)
-- [ ] `internal/model/user_profile.go` — Kullanıcı tercih profili
-- [ ] `internal/model/content_features.go` — İçerik özellik vektörü
-- [ ] `internal/model/recommendation.go` — Öneri sonuç yapısı
-- [ ] `internal/store/postgres.go` — PostgreSQL repository (pgx)
+- [x] `migrations/001_create_interactions.sql` — interactions tablosu
+- [x] `migrations/002_create_user_profiles.sql` — user_profiles tablosu
+- [x] `migrations/003_create_content_features.sql` — content_features tablosu
+- [x] `migrations/004_create_content_similarity.sql` — content_similarity tablosu
+- [x] `internal/model/interaction.go` — Etkileşim modeli (watch, rating, watchlist)
+- [x] `internal/model/user_profile.go` — Kullanıcı tercih profili
+- [x] `internal/model/content_features.go` — İçerik özellik vektörü
+- [x] `internal/model/recommendation.go` — Öneri sonuç yapısı
+- [x] `internal/store/postgres.go` — PostgreSQL repository (pgx)
 
 ### 4.4 Redis Feature Store
-- [ ] `internal/store/redis.go` — Redis feature store
-- [ ] Kullanıcı profil cache (`rec:user_profile:{userId}`, TTL: 1 saat)
-- [ ] İçerik feature cache (`rec:content_features:{contentId}`, TTL: 6 saat)
-- [ ] Öneri sonuç cache (`rec:recommendations:{userId}`, TTL: 30 dakika)
-- [ ] Benzer içerik cache (`rec:similar:{contentId}`, TTL: 6 saat)
+- [x] `internal/store/redis.go` — Redis feature store
+- [x] Kullanıcı profil cache (`rec:user_profile:{userId}`, TTL: 1 saat)
+- [x] İçerik feature cache (`rec:content_features:{contentId}`, TTL: 6 saat)
+- [x] Öneri sonuç cache (`rec:recommendations:{userId}`, TTL: 30 dakika)
+- [x] Benzer içerik cache (`rec:similar:{contentId}`, TTL: 6 saat)
 
 ### 4.5 Content-Based Filtering
-- [ ] `internal/engine/content_based.go` — Content-based filtering motoru
-- [ ] İçerik feature vektörü oluşturma (genres, tags, director, year, rating)
-- [ ] Kullanıcı preference profili hesaplama (izleme geçmişi ağırlıklı ortalaması)
-- [ ] `internal/engine/similarity.go` — Cosine similarity hesaplama
-- [ ] İçerik-içerik benzerlik matrisi oluşturma (top-N sakla)
-- [ ] Kullanıcı-içerik benzerlik skoru hesaplama
+- [x] `internal/engine/content_based.go` — Content-based filtering motoru
+- [x] İçerik feature vektörü oluşturma (genres, tags, director, year, rating)
+- [x] Kullanıcı preference profili hesaplama (izleme geçmişi ağırlıklı ortalaması)
+- [x] `internal/engine/similarity.go` — Cosine similarity hesaplama
+- [x] İçerik-içerik benzerlik matrisi oluşturma (top-N sakla)
+- [x] Kullanıcı-içerik benzerlik skoru hesaplama
 
 ### 4.6 Collaborative Filtering
-- [ ] `internal/engine/collaborative.go` — User-based collaborative filtering
-- [ ] User-item matrix oluşturma (izleme + rating verisi)
-- [ ] Kullanıcı benzerliği hesaplama (cosine similarity, ortak puanlanmış içerikler üzerinden)
-- [ ] En benzer K kullanıcıyı bulma (K=20)
-- [ ] Ağırlıklı ortalama ile puan tahmini
-- [ ] Implicit feedback dönüşümü (izleme tamamlama → 7.0, %50+ → 5.0, watchlist → 6.0)
+- [x] `internal/engine/collaborative.go` — User-based collaborative filtering
+- [x] User-item matrix oluşturma (izleme + rating verisi)
+- [x] Kullanıcı benzerliği hesaplama (cosine similarity, ortak puanlanmış içerikler üzerinden)
+- [x] En benzer K kullanıcıyı bulma (K=20)
+- [x] Ağırlıklı ortalama ile puan tahmini
+- [x] Implicit feedback dönüşümü (izleme tamamlama → 7.0, %50+ → 5.0, watchlist → 6.0)
 
 ### 4.7 Hybrid Scorer & Popularity
-- [ ] `internal/engine/hybrid.go` — Hibrit skor hesaplama
-- [ ] `final_score = α × collab_score + β × content_score + γ × popularity`
-- [ ] Ağırlıklar kullanıcı etkileşim sayısına göre dinamik (cold start: γ yüksek, aktif: α yüksek)
-- [ ] `internal/engine/popularity.go` — Popülerlik bazlı öneri (cold start fallback)
-- [ ] Cold start eşiği: 5 etkileşimden az → popülerlik bazlı
+- [x] `internal/engine/hybrid.go` — Hibrit skor hesaplama
+- [x] `final_score = α × collab_score + β × content_score + γ × popularity`
+- [x] Ağırlıklar kullanıcı etkileşim sayısına göre dinamik (cold start: γ yüksek, aktif: α yüksek)
+- [x] `internal/engine/popularity.go` — Popülerlik bazlı öneri (cold start fallback)
+- [x] Cold start eşiği: 5 etkileşimden az → popülerlik bazlı
 
 ### 4.8 HTTP API
-- [ ] `internal/handler/routes.go` — HTTP endpoint tanımları
-- [ ] `internal/handler/recommendation.go` — Handler implementasyonları
-- [ ] GET /api/recommendations — Kişisel öneriler (X-User-Id header, limit parametresi)
-- [ ] GET /api/recommendations/similar/{contentId} — Benzer içerikler (limit parametresi)
-- [ ] GET /api/recommendations/home — Ana sayfa section'ları (personal, trending, because_you_watched, genre, new)
-- [ ] POST /api/recommendations/feedback — Geri bildirim (not_interested)
-- [ ] Response'larda `algorithm` alanı (hybrid, collaborative, popularity)
-- [ ] Response'larda `reason` alanı ("Interstellar'ı beğendiğiniz için")
+- [x] `internal/handler/routes.go` — HTTP endpoint tanımları
+- [x] `internal/handler/recommendation.go` — Handler implementasyonları
+- [x] GET /api/recommendations — Kişisel öneriler (X-User-Id header, limit parametresi)
+- [x] GET /api/recommendations/similar/{contentId} — Benzer içerikler (limit parametresi)
+- [x] GET /api/recommendations/home — Ana sayfa section'ları (personal, trending, because_you_watched, genre, new)
+- [x] POST /api/recommendations/feedback — Geri bildirim (not_interested)
+- [x] Response'larda `algorithm` alanı (hybrid, collaborative, popularity)
+- [x] Response'larda `reason` alanı ("Interstellar'ı beğendiğiniz için")
 
 ### 4.9 gRPC Server
-- [ ] gRPC server implementasyonu (port: 50054)
-- [ ] GetRecommendations RPC
-- [ ] GetSimilar RPC
-- [ ] GetHomePageSections RPC
+- [x] gRPC server implementasyonu (port: 50054)
+- [x] GetRecommendations RPC
+- [x] GetSimilar RPC
+- [x] GetHomePageSections RPC
 
 ### 4.10 RabbitMQ Consumers
-- [ ] `internal/consumer/watch_consumer.go` — WatchCompleted event consumer
-- [ ] Etkileşim kaydet (interactions tablosu, type: watch)
-- [ ] Kullanıcı profili güncelleme tetikle
-- [ ] `internal/consumer/rating_consumer.go` — ContentRated event consumer
-- [ ] Etkileşim kaydet (interactions tablosu, type: rating)
-- [ ] Kullanıcı profili güncelleme tetikle
-- [ ] `internal/consumer/catalog_consumer.go` — ContentAdded event consumer
-- [ ] Content features tablosuna yeni içerik ekle
-- [ ] Feature vektörü hesapla
+- [x] `internal/consumer/watch_consumer.go` — WatchCompleted event consumer
+- [x] Etkileşim kaydet (interactions tablosu, type: watch)
+- [x] Kullanıcı profili güncelleme tetikle
+- [x] `internal/consumer/rating_consumer.go` — ContentRated event consumer
+- [x] Etkileşim kaydet (interactions tablosu, type: rating)
+- [x] Kullanıcı profili güncelleme tetikle
+- [x] `internal/consumer/catalog_consumer.go` — ContentAdded event consumer
+- [x] Content features tablosuna yeni içerik ekle
+- [x] Feature vektörü hesapla
 
 ### 4.11 Batch Hesaplama
-- [ ] Profil ve benzerlik matrisi periyodik yeniden hesaplama (background task, 6 saat aralık)
-- [ ] Content similarity matrix güncelleme
-- [ ] User profile güncelleme
+- [x] Profil ve benzerlik matrisi periyodik yeniden hesaplama (background task, 6 saat aralık)
+- [x] Content similarity matrix güncelleme
+- [x] User profile güncelleme
 
 ### 4.12 Fake Data Generation
-- [ ] `scripts/generate-interactions.sh` — Fake izleme/puan verisi üretme script'i
-- [ ] Mevcut seed kullanıcılar ve catalog içerikleri üzerinden rastgele etkileşimler
+- [x] `scripts/generate-interactions.sh` — Fake izleme/puan verisi üretme script'i
+- [x] Mevcut seed kullanıcılar ve catalog içerikleri üzerinden rastgele etkileşimler
 
 ---
 
