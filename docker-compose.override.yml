@@ -33,14 +33,14 @@ services:
       - "5004:5004"
       - "50052:50052"
 
-  # --- Phase 3 Services (uncomment when service code is ready) ---
+  # --- Phase 3 Services ---
 
-  # search-service:
-  #   environment:
-  #     - SEARCH_LOGGING_LEVEL=debug
-  #   ports:
-  #     - "5005:5005"
-  #     - "50053:50053"
+  search-service:
+    environment:
+      - SEARCH_LOGGING_LEVEL=debug
+    ports:
+      - "5005:5005"
+      - "50053:50053"
 
   # recommendation-service:
   #   environment:

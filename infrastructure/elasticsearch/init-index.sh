@@ -59,7 +59,7 @@ curl -sf -X PUT "${ES_URL}/${INDEX_NAME}" \
           "type": "custom",
           "tokenizer": "standard",
           "filter": [
-            "turkish_lowercase",
+            "lowercase",
             "edge_ngram_filter"
           ]
         },
@@ -67,7 +67,7 @@ curl -sf -X PUT "${ES_URL}/${INDEX_NAME}" \
           "type": "custom",
           "tokenizer": "standard",
           "filter": [
-            "turkish_lowercase"
+            "lowercase"
           ]
         }
       }

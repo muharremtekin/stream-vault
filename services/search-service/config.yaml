@@ -1,0 +1,26 @@
+server:
+  http_port: 5005
+  grpc_port: 50053
+  read_timeout: 30s
+  write_timeout: 30s
+
+consul:
+  address: "consul:8500"
+  health_check_interval: 10s
+
+elasticsearch:
+  url: "http://elasticsearch:9200"
+  index_name: "streamvault-content"
+
+redis:
+  url: "redis://redis:6379/3"
+
+rabbitmq:
+  url: "amqp://rabbitmq:5672/"
+  catalog_queue: "search.catalog-sync"
+  watch_queue: "search.watch-count"
+  prefetch: 10
+
+logging:
+  level: "info"
+  format: "json"

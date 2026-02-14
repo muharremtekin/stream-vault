@@ -69,61 +69,61 @@
 ## 3. Search Service (Go)
 
 ### 3.1 Proje Kurulumu & Temel Yapı
-- [ ] Go projesi oluştur (`services/search-service/`)
-- [ ] `go.mod` oluştur, dependency'leri ekle (elastic/go-elasticsearch, go-redis, amqp091-go, grpc, consul api, viper)
-- [ ] `internal/config/config.go` — Viper ile config.yaml + env var yükleme
-- [ ] `cmd/search/main.go` — HTTP + gRPC server bootstrap
-- [ ] Dockerfile oluştur (multi-stage build)
-- [ ] Makefile oluştur (build, test, lint)
-- [ ] `/health` endpoint'i (Elasticsearch, Redis, RabbitMQ bağlantı durumu)
+- [x] Go projesi oluştur (`services/search-service/`)
+- [x] `go.mod` oluştur, dependency'leri ekle (elastic/go-elasticsearch, go-redis, amqp091-go, grpc, consul api, viper)
+- [x] `internal/config/config.go` — Viper ile config.yaml + env var yükleme
+- [x] `cmd/search/main.go` — HTTP + gRPC server bootstrap
+- [x] Dockerfile oluştur (multi-stage build)
+- [x] Makefile oluştur (build, test, lint)
+- [x] `/health` endpoint'i (Elasticsearch, Redis, RabbitMQ bağlantı durumu)
 
 ### 3.2 Consul Entegrasyonu
-- [ ] `internal/discovery/consul.go` — Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] Graceful shutdown'da deregistration
-- [ ] Consul UI'da "search-service" healthy göründüğünü doğrula
+- [x] `internal/discovery/consul.go` — Consul'a self-registration
+- [x] Health check kaydı
+- [x] Graceful shutdown'da deregistration
+- [x] Consul UI'da "search-service" healthy göründüğünü doğrula
 
 ### 3.3 Elasticsearch Client & Index
-- [ ] `internal/elasticsearch/client.go` — ES client wrapper
-- [ ] `internal/elasticsearch/mapping.go` — Index mapping tanımları (Türkçe analyzer dahil)
-- [ ] `internal/elasticsearch/analyzer.go` — Custom analyzer konfigürasyonu
-- [ ] Startup'ta index yoksa otomatik oluşturma
-- [ ] Index mapping doğrulama
+- [x] `internal/elasticsearch/client.go` — ES client wrapper
+- [x] `internal/elasticsearch/mapping.go` — Index mapping tanımları (Türkçe analyzer dahil)
+- [x] `internal/elasticsearch/analyzer.go` — Custom analyzer konfigürasyonu
+- [x] Startup'ta index yoksa otomatik oluşturma
+- [x] Index mapping doğrulama
 
 ### 3.4 Elasticsearch Indexer
-- [ ] `internal/elasticsearch/indexer.go` — Document indexleme
-- [ ] Tek document indexleme (create/update)
-- [ ] Bulk indexleme (initial sync için)
-- [ ] Document silme
-- [ ] `internal/model/search_document.go` — ES'e yazılan document yapısı
+- [x] `internal/elasticsearch/indexer.go` — Document indexleme
+- [x] Tek document indexleme (create/update)
+- [x] Bulk indexleme (initial sync için)
+- [x] Document silme
+- [x] `internal/model/search_document.go` — ES'e yazılan document yapısı
 
 ### 3.5 Full-Text Arama
-- [ ] `internal/elasticsearch/searcher.go` — Search query builder
-- [ ] Multi-match query (title, description, original_title, cast_names)
-- [ ] Türkçe ve İngilizce analyzer ile çapraz dil arama
-- [ ] Highlight desteği (title, description alanlarında eşleşen kısımlar vurgulu)
-- [ ] `internal/handler/search.go` — GET /api/search endpoint
-- [ ] `internal/model/search_request.go` — Arama isteği modeli
-- [ ] `internal/model/search_response.go` — Arama sonucu modeli
+- [x] `internal/elasticsearch/searcher.go` — Search query builder
+- [x] Multi-match query (title, description, original_title, cast_names)
+- [x] Türkçe ve İngilizce analyzer ile çapraz dil arama
+- [x] Highlight desteği (title, description alanlarında eşleşen kısımlar vurgulu)
+- [x] `internal/handler/search.go` — GET /api/search endpoint
+- [x] `internal/model/search_request.go` — Arama isteği modeli
+- [x] `internal/model/search_response.go` — Arama sonucu modeli
 
 ### 3.6 Faceted Arama & Filtreleme
-- [ ] `internal/handler/facets.go` — Faceted arama endpoint'i
-- [ ] Genre filtresi (keyword aggregation)
-- [ ] Yıl aralığı filtresi (range query)
-- [ ] Maturity rating filtresi
-- [ ] Minimum rating filtresi
-- [ ] Content type filtresi (movie/series)
-- [ ] Sıralama seçenekleri: relevance, rating, year, title (asc/desc)
-- [ ] Sayfalama (page, pageSize)
-- [ ] Facet sayaçları (her filtre değeri için döküman sayısı)
+- [x] `internal/handler/facets.go` — Faceted arama endpoint'i
+- [x] Genre filtresi (keyword aggregation)
+- [x] Yıl aralığı filtresi (range query)
+- [x] Maturity rating filtresi
+- [x] Minimum rating filtresi
+- [x] Content type filtresi (movie/series)
+- [x] Sıralama seçenekleri: relevance, rating, year, title (asc/desc)
+- [x] Sayfalama (page, pageSize)
+- [x] Facet sayaçları (her filtre değeri için döküman sayısı)
 
 ### 3.7 Autocomplete
-- [ ] `internal/handler/autocomplete.go` — GET /api/search/autocomplete endpoint
-- [ ] Edge ngram ile prefix matching (title.autocomplete, original_title.autocomplete)
-- [ ] Fuzzy matching desteği
-- [ ] Minimum 2 karakter gereksinimi
-- [ ] Limit parametresi (default: 5)
-- [ ] Response: id, title, contentType, thumbnailUrl, releaseYear
+- [x] `internal/handler/autocomplete.go` — GET /api/search/autocomplete endpoint
+- [x] Edge ngram ile prefix matching (title.autocomplete, original_title.autocomplete)
+- [x] Fuzzy matching desteği
+- [x] Minimum 2 karakter gereksinimi
+- [x] Limit parametresi (default: 5)
+- [x] Response: id, title, contentType, thumbnailUrl, releaseYear
 
 ### 3.8 Trend İçerikler
 - [ ] `internal/handler/trending.go` — GET /api/search/trending endpoint
