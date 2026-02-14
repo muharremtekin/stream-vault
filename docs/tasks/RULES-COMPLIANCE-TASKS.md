@@ -44,38 +44,38 @@
 ## 2. [YÜKSEK] Docker & Altyapı Düzeltmeleri (Kural 7)
 
 ### 2.1 `latest` Tag'lerini Spesifik Versiyona Çevir (Kural 7.1)
-- [ ] `docker-compose.yml` — `minio/minio:latest` → `minio/minio:RELEASE.2024-XX-XX` (belirli bir versiyon seç)
-- [ ] `docker-compose.yml` — `minio/mc:latest` → `minio/mc:RELEASE.2024-XX-XX`
+- [x] `docker-compose.yml` — `minio/minio:latest` → `minio/minio:RELEASE.2025-09-07T16-13-09Z`
+- [x] `docker-compose.yml` — `minio/mc:latest` → `minio/mc:RELEASE.2025-08-13T08-35-41Z`
 
 ### 2.2 Tüm Servislere `restart` Policy Ekle (Kural 7.2)
-- [ ] `postgres` servisine `restart: unless-stopped` ekle
-- [ ] `mongo` servisine `restart: unless-stopped` ekle
-- [ ] `redis` servisine `restart: unless-stopped` ekle
-- [ ] `consul` servisine `restart: unless-stopped` ekle
-- [ ] `rabbitmq` servisine `restart: unless-stopped` ekle
-- [ ] `minio` servisine `restart: unless-stopped` ekle
-- [ ] `gateway` servisine `restart: unless-stopped` ekle
-- [ ] `user-service` servisine `restart: unless-stopped` ekle
-- [ ] `catalog-service` servisine `restart: unless-stopped` ekle
-- [ ] `streaming-service` servisine `restart: unless-stopped` ekle
-- [ ] `encoding-service` servisine `restart: unless-stopped` ekle
+- [x] `postgres` servisine `restart: unless-stopped` ekle
+- [x] `mongo` servisine `restart: unless-stopped` ekle
+- [x] `redis` servisine `restart: unless-stopped` ekle
+- [x] `consul` servisine `restart: unless-stopped` ekle
+- [x] `rabbitmq` servisine `restart: unless-stopped` ekle
+- [x] `minio` servisine `restart: unless-stopped` ekle
+- [x] `gateway` servisine `restart: unless-stopped` ekle
+- [x] `user-service` servisine `restart: unless-stopped` ekle
+- [x] `catalog-service` servisine `restart: unless-stopped` ekle
+- [x] `streaming-service` servisine `restart: unless-stopped` ekle
+- [x] `encoding-service` servisine `restart: unless-stopped` ekle
 
 ### 2.3 Application Servislerine `healthcheck` Ekle (Kural 7.2)
-- [ ] `gateway` — healthcheck tanımla (wget/curl ile `/health`)
-- [ ] `user-service` — healthcheck tanımla
-- [ ] `catalog-service` — healthcheck tanımla
-- [ ] `streaming-service` — healthcheck tanımla
-- [ ] `encoding-service` — healthcheck tanımla
+- [x] `gateway` — healthcheck tanımla (wget ile `/health`)
+- [x] `user-service` — healthcheck tanımla
+- [x] `catalog-service` — healthcheck tanımla
+- [x] `streaming-service` — healthcheck tanımla
+- [x] `encoding-service` — healthcheck tanımla
 
 ### 2.4 `depends_on` Koşullarını Düzelt (Kural 7.2)
-- [ ] `gateway` → `consul`: `service_started` → `service_healthy` yap
-- [ ] `user-service` → `consul`: `service_started` → `service_healthy` yap
-- [ ] `catalog-service` → `consul`: `service_started` → `service_healthy` yap
-- [ ] `streaming-service` → `consul`: `service_started` → `service_healthy` yap
-- [ ] Consul servisine healthcheck tanımla (prerequisite)
+- [x] `gateway` → `consul`: `service_started` → `service_healthy` yap
+- [x] `user-service` → `consul`: `service_started` → `service_healthy` yap
+- [x] `catalog-service` → `consul`: `service_started` → `service_healthy` yap
+- [x] `streaming-service` → `consul`: `service_started` → `service_healthy` yap
+- [x] Consul servisine healthcheck tanımla (prerequisite)
 
 ### 2.5 Eksik `.dockerignore` Ekle (Kural 7.1)
-- [ ] `services/streaming-service/.dockerignore` oluştur (Go standart: `.git`, `*.test`, `vendor/`, `tmp/`, etc.)
+- [x] `services/streaming-service/.dockerignore` oluştur (Go standart: `.git`, `*.test`, `vendor/`, `tmp/`, etc.)
 
 ---
 
