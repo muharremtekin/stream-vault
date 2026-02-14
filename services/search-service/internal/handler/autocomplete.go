@@ -5,17 +5,16 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/streamvault/search-service/internal/elasticsearch"
 	"github.com/streamvault/search-service/internal/model"
 )
 
 // AutocompleteHandler handles the autocomplete endpoint.
 type AutocompleteHandler struct {
-	searcher *elasticsearch.Searcher
+	searcher Searcher
 }
 
 // NewAutocompleteHandler creates a new AutocompleteHandler.
-func NewAutocompleteHandler(searcher *elasticsearch.Searcher) *AutocompleteHandler {
+func NewAutocompleteHandler(searcher Searcher) *AutocompleteHandler {
 	return &AutocompleteHandler{searcher: searcher}
 }
 

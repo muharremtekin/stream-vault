@@ -1,21 +1,28 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/streamvault/search-service/internal/elasticsearch"
 	"github.com/streamvault/search-service/internal/model"
 )
 
+// Searcher abstracts search and autocomplete operations.
+// Both *elasticsearch.Searcher and *cache.CachedSearcher satisfy this interface.
+type Searcher interface {
+	Search(ctx context.Context, req model.SearchRequest) (*model.SearchResponse, error)
+	Autocomplete(ctx context.Context, req model.AutocompleteRequest) (*model.AutocompleteResponse, error)
+}
+
 // SearchHandler handles the full-text search endpoint.
 type SearchHandler struct {
-	searcher *elasticsearch.Searcher
+	searcher Searcher
 }
 
 // NewSearchHandler creates a new SearchHandler.
-func NewSearchHandler(searcher *elasticsearch.Searcher) *SearchHandler {
+func NewSearchHandler(searcher Searcher) *SearchHandler {
 	return &SearchHandler{searcher: searcher}
 }
 

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 
@@ -143,5 +144,29 @@ func (ix *Indexer) DeleteDocument(ctx context.Context, id string) error {
 	}
 
 	log.Debug().Str("id", id).Msg("document deleted")
+	return nil
+}
+
+// IncrementViewCount atomically increments the view_count field of a document.
+func (ix *Indexer) IncrementViewCount(ctx context.Context, id string) error {
+	script := `{"script":{"source":"ctx._source.view_count += 1","lang":"painless"},"upsert":{"view_count":1}}`
+
+	res, err := ix.client.es.Update(
+		ix.client.indexName,
+		id,
+		strings.NewReader(script),
+		ix.client.es.Update.WithContext(ctx),
+	)
+	if err != nil {
+		return fmt.Errorf("incrementing view count for %s: %w", id, err)
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		respBody, _ := io.ReadAll(res.Body)
+		return fmt.Errorf("incrementing view count for %s: status %d, body: %s", id, res.StatusCode, string(respBody))
+	}
+
+	log.Debug().Str("id", id).Msg("view count incremented")
 	return nil
 }

@@ -18,11 +18,16 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/streamvault/search-service/internal/cache"
 	"github.com/streamvault/search-service/internal/config"
+	"github.com/streamvault/search-service/internal/consumer"
 	"github.com/streamvault/search-service/internal/discovery"
 	"github.com/streamvault/search-service/internal/elasticsearch"
+	"github.com/streamvault/search-service/internal/grpcserver"
 	"github.com/streamvault/search-service/internal/handler"
 	"github.com/streamvault/search-service/internal/middleware"
+	"github.com/streamvault/search-service/internal/trending"
+	searchv1 "github.com/streamvault/search-service/proto/search/v1"
 )
 
 func main() {
@@ -83,7 +88,29 @@ func main() {
 	// Create search components
 	indexer := elasticsearch.NewIndexer(esClient)
 	searcher := elasticsearch.NewSearcher(esClient)
-	_ = indexer // indexer used by consumers in Part 2
+
+	// Create cache and cached searcher
+	searchCache := cache.NewCache(redisClient)
+	cachedSearcher := cache.NewCachedSearcher(searcher, searchCache)
+
+	// Create trending service
+	trendingSvc := trending.NewService(redisClient)
+	go trendingSvc.StartRotation(ctx)
+
+	// Start RabbitMQ consumers
+	catalogConsumer, err := consumer.NewCatalogConsumer(rabbitConn, cfg.RabbitMQ, indexer, trendingSvc)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to create catalog consumer")
+	} else {
+		go catalogConsumer.Start(ctx)
+	}
+
+	watchConsumer, err := consumer.NewWatchConsumer(rabbitConn, cfg.RabbitMQ, indexer, redisClient, trendingSvc)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to create watch consumer")
+	} else {
+		go watchConsumer.Start(ctx)
+	}
 
 	// Register with Consul
 	var consulClient *discovery.ConsulClient
@@ -101,7 +128,7 @@ func main() {
 		return rabbitConn != nil && !rabbitConn.IsClosed()
 	}
 
-	mux := buildHTTPRouter(esClient, redisClient, searcher, rabbitCheckFn)
+	mux := buildHTTPRouter(esClient, redisClient, cachedSearcher, trendingSvc, searchCache, rabbitCheckFn)
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
@@ -127,6 +154,8 @@ func main() {
 
 	// Start gRPC server
 	grpcSrv := grpc.NewServer()
+	searchGRPC := grpcserver.NewSearchServer(cachedSearcher, trendingSvc)
+	searchv1.RegisterSearchServiceServer(grpcSrv, searchGRPC)
 	reflection.Register(grpcSrv)
 
 	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.Server.GRPCPort))
@@ -162,6 +191,13 @@ func main() {
 
 	ctxCancel()
 
+	if catalogConsumer != nil {
+		catalogConsumer.Stop()
+	}
+	if watchConsumer != nil {
+		watchConsumer.Stop()
+	}
+
 	grpcDone := make(chan struct{})
 	go func() {
 		grpcSrv.GracefulStop()
@@ -189,7 +225,8 @@ func main() {
 }
 
 func buildHTTPRouter(esClient *elasticsearch.Client, redisClient *redis.Client,
-	searcher *elasticsearch.Searcher, rabbitCheck func() bool) *http.ServeMux {
+	cachedSearcher handler.Searcher, trendingSvc *trending.Service,
+	searchCache *cache.Cache, rabbitCheck func() bool) *http.ServeMux {
 
 	mux := http.NewServeMux()
 
@@ -200,12 +237,16 @@ func buildHTTPRouter(esClient *elasticsearch.Client, redisClient *redis.Client,
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
 
 	// Search
-	searchH := handler.NewSearchHandler(searcher)
+	searchH := handler.NewSearchHandler(cachedSearcher)
 	mux.Handle("GET /api/search", searchH)
 
 	// Autocomplete
-	autocompleteH := handler.NewAutocompleteHandler(searcher)
+	autocompleteH := handler.NewAutocompleteHandler(cachedSearcher)
 	mux.Handle("GET /api/search/autocomplete", autocompleteH)
+
+	// Trending
+	trendingH := handler.NewTrendingHandler(trendingSvc, searchCache)
+	mux.Handle("GET /api/search/trending", trendingH)
 
 	return mux
 }

@@ -126,41 +126,41 @@
 - [x] Response: id, title, contentType, thumbnailUrl, releaseYear
 
 ### 3.8 Trend İçerikler
-- [ ] `internal/handler/trending.go` — GET /api/search/trending endpoint
-- [ ] Redis sorted set ile trend listesi (`trending:daily`, `trending:weekly`)
-- [ ] Zaman penceresi parametresi (day, week, month)
-- [ ] Rank ve rank değişimi hesaplama
-- [ ] View count bazlı sıralama
+- [x] `internal/handler/trending.go` — GET /api/search/trending endpoint
+- [x] Redis sorted set ile trend listesi (`trending:daily`, `trending:weekly`)
+- [x] Zaman penceresi parametresi (day, week, month)
+- [x] Rank ve rank değişimi hesaplama
+- [x] View count bazlı sıralama
 
 ### 3.9 RabbitMQ Consumer — Catalog Sync
-- [ ] `internal/consumer/catalog_consumer.go` — catalog.events exchange consumer
-- [ ] `content.created` event → ES'e yeni document indexle
-- [ ] `content.updated` event → ES'teki document'ı güncelle
-- [ ] `content.deleted` event → ES'ten document'ı sil
-- [ ] ACK/NACK mekanizması
-- [ ] Hata durumunda retry
+- [x] `internal/consumer/catalog_consumer.go` — catalog.events exchange consumer
+- [x] `content.created` event → ES'e yeni document indexle
+- [x] `content.updated` event → ES'teki document'ı güncelle
+- [x] `content.deleted` event → ES'ten document'ı sil
+- [x] ACK/NACK mekanizması
+- [x] Hata durumunda retry
 
 ### 3.10 RabbitMQ Consumer — Watch Count
-- [ ] `internal/consumer/watch_consumer.go` — watch.events exchange consumer
-- [ ] `watch.completed` event → view_count artır (ES document update)
-- [ ] Redis'te günlük view count güncelle (`views:daily:{date}`)
-- [ ] Trend sorted set güncelle
+- [x] `internal/consumer/watch_consumer.go` — watch.events exchange consumer
+- [x] `watch.completed` event → view_count artır (ES document update)
+- [x] Redis'te günlük view count güncelle (`views:daily:{date}`)
+- [x] Trend sorted set güncelle
 
 ### 3.11 Redis Cache
-- [ ] `internal/cache/redis.go` — Redis cache wrapper
-- [ ] Arama sonucu cache'leme (TTL: 5 dakika, key: `search_cache:{query_hash}`)
-- [ ] Popüler aramalar kaydı (sorted set: `popular_searches`)
-- [ ] Trend içerikler cache (TTL: 1 saat)
+- [x] `internal/cache/redis.go` — Redis cache wrapper
+- [x] Arama sonucu cache'leme (TTL: 5 dakika, key: `search_cache:{query_hash}`)
+- [x] Popüler aramalar kaydı (sorted set: `popular_searches`)
+- [x] Trend içerikler cache (TTL: 1 saat)
 
 ### 3.12 gRPC Server
-- [ ] gRPC server implementasyonu (port: 50053)
-- [ ] Search RPC
-- [ ] Autocomplete RPC
-- [ ] GetTrending RPC
+- [x] gRPC server implementasyonu (port: 50053)
+- [x] Search RPC
+- [x] Autocomplete RPC
+- [x] GetTrending RPC
 
 ### 3.13 Initial Data Sync
-- [ ] `scripts/seed-search-index.sh` — Mevcut catalog verisini ES'e toplu indexleme script'i
-- [ ] Catalog Service API'dan tüm içerikleri çek → ES'e bulk index
+- [x] `scripts/seed-search-index.sh` — Mevcut catalog verisini ES'e toplu indexleme script'i
+- [x] Catalog Service API'dan tüm içerikleri çek → ES'e bulk index
 
 ---
 
