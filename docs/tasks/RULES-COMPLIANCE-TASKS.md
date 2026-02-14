@@ -135,7 +135,7 @@
 ## 6. [ORTA] DB Naming Convention Düzeltmeleri (Kural 4.2)
 
 ### 6.1 EF Core Constraint/Index İsimlendirmesini Düzelt
-- [ ] Yeni migration oluştur: constraint ve index isimlerini kurala uygun hale getir
+- [x] Yeni migration oluştur: constraint ve index isimlerini kurala uygun hale getir
   - `PK_users` → `pk_users`
   - `PK_profiles` → `pk_profiles`
   - `PK_refresh_tokens` → `pk_refresh_tokens`
@@ -145,9 +145,10 @@
   - `FK_watchlist_items_profiles_profile_id` → `fk_watchlist_items_profile_id`
   - `IX_profiles_user_id` → `idx_profiles_user_id`
   - `IX_refresh_tokens_token` → `idx_refresh_tokens_token`
+  - `IX_refresh_tokens_user_id` → `idx_refresh_tokens_user_id`
   - `IX_users_email` → `idx_users_email`
   - `IX_watchlist_items_profile_id_content_id` → `idx_watchlist_items_profile_id_content_id`
-- [ ] EF Core'da `HasName()` ile future migration'lar için convention'ı override et (veya `IModelCustomizer` ile global naming convention uygula)
+- [x] EF Core'da `HasName()` ile future migration'lar için convention'ı override et (veya `IModelCustomizer` ile global naming convention uygula)
 
 ---
 

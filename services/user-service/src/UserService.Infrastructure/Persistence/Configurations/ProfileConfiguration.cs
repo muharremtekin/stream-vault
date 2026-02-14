@@ -10,7 +10,8 @@ public class ProfileConfiguration : IEntityTypeConfiguration<Profile>
     {
         builder.ToTable("profiles");
 
-        builder.HasKey(p => p.Id);
+        builder.HasKey(p => p.Id)
+            .HasName("pk_profiles");
 
         builder.Property(p => p.Id)
             .HasColumnName("id")
@@ -39,9 +40,13 @@ public class ProfileConfiguration : IEntityTypeConfiguration<Profile>
             .HasColumnName("created_at")
             .IsRequired();
 
+        builder.HasIndex(p => p.UserId)
+            .HasDatabaseName("idx_profiles_user_id");
+
         builder.HasMany(p => p.WatchlistItems)
             .WithOne(w => w.Profile)
             .HasForeignKey(w => w.ProfileId)
+            .HasConstraintName("fk_watchlist_items_profile_id")
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

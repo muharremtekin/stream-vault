@@ -10,7 +10,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
     {
         builder.ToTable("users");
 
-        builder.HasKey(u => u.Id);
+        builder.HasKey(u => u.Id)
+            .HasName("pk_users");
 
         builder.Property(u => u.Id)
             .HasColumnName("id")
@@ -22,7 +23,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.HasIndex(u => u.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("idx_users_email");
 
         builder.Property(u => u.PasswordHash)
             .HasColumnName("password_hash")
@@ -46,11 +48,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasMany(u => u.Profiles)
             .WithOne(p => p.User)
             .HasForeignKey(p => p.UserId)
+            .HasConstraintName("fk_profiles_user_id")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(u => u.RefreshTokens)
             .WithOne(rt => rt.User)
             .HasForeignKey(rt => rt.UserId)
+            .HasConstraintName("fk_refresh_tokens_user_id")
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -10,7 +10,8 @@ public class WatchlistItemConfiguration : IEntityTypeConfiguration<WatchlistItem
     {
         builder.ToTable("watchlist_items");
 
-        builder.HasKey(w => w.Id);
+        builder.HasKey(w => w.Id)
+            .HasName("pk_watchlist_items");
 
         builder.Property(w => w.Id)
             .HasColumnName("id")
@@ -40,6 +41,7 @@ public class WatchlistItemConfiguration : IEntityTypeConfiguration<WatchlistItem
             .HasMaxLength(500);
 
         builder.HasIndex(w => new { w.ProfileId, w.ContentId })
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("idx_watchlist_items_profile_id_content_id");
     }
 }

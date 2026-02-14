@@ -10,7 +10,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
         builder.ToTable("refresh_tokens");
 
-        builder.HasKey(rt => rt.Id);
+        builder.HasKey(rt => rt.Id)
+            .HasName("pk_refresh_tokens");
 
         builder.Property(rt => rt.Id)
             .HasColumnName("id")
@@ -20,7 +21,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .HasColumnName("user_id")
             .IsRequired();
 
-        builder.HasIndex(rt => rt.UserId);
+        builder.HasIndex(rt => rt.UserId)
+            .HasDatabaseName("idx_refresh_tokens_user_id");
 
         builder.Property(rt => rt.Token)
             .HasColumnName("token")
@@ -28,7 +30,8 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .IsRequired();
 
         builder.HasIndex(rt => rt.Token)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("idx_refresh_tokens_token");
 
         builder.Property(rt => rt.ExpiresAt)
             .HasColumnName("expires_at")
