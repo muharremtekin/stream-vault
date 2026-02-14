@@ -147,7 +147,7 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(_ =>
 
 var app = builder.Build();
 
-// Auto-apply EF Core migrations (skip for in-memory/testing environments)
+// Auto-apply EF Core migrations and seed data (skip for testing environments)
 if (!app.Environment.IsEnvironment("Testing"))
 {
     using var scope = app.Services.CreateScope();
@@ -157,6 +157,9 @@ if (!app.Environment.IsEnvironment("Testing"))
         app.Logger.LogInformation("Applying database migrations...");
         await dbContext.Database.MigrateAsync();
         app.Logger.LogInformation("Database migrations applied successfully.");
+
+        var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+        await seeder.SeedAsync();
     }
     catch (Exception ex)
     {

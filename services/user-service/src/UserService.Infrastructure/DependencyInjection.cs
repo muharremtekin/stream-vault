@@ -36,6 +36,9 @@ public static class DependencyInjection
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
 
+        // Seeder
+        services.AddScoped<DbSeeder>();
+
         return services;
     }
 }

@@ -66,16 +66,16 @@ test_endpoint POST /api/auth/login 200 \
   "{\"email\": \"$TEST_EMAIL\", \"password\": \"$TEST_PASSWORD\"}"
 
 LOGIN_RESPONSE=$(cat /tmp/sv_response.json)
-TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['accessToken'])")
-REFRESH_TOKEN=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['refreshToken'])")
-USER_ID=$(echo "$LOGIN_RESPONSE" | python3 -c "import sys,json; print(json.load(sys.stdin)['user']['id'])")
+TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.accessToken')
+REFRESH_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.refreshToken')
+USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r '.user.id')
 
 # ── Auth: Refresh Token ────────────────────────────────────
 test_endpoint POST /api/auth/refresh 200 \
   "{\"refreshToken\": \"$REFRESH_TOKEN\"}"
 
 # Use the new access token from now on
-TOKEN=$(cat /tmp/sv_response.json | python3 -c "import sys,json; print(json.load(sys.stdin)['accessToken'])")
+TOKEN=$(jq -r '.accessToken' /tmp/sv_response.json)
 
 # ── Auth: Unauthorized Access ──────────────────────────────
 test_endpoint GET /api/users/me 401
@@ -91,7 +91,7 @@ echo "[Profile]"
 test_endpoint POST /api/profile 201 \
   "{\"userId\": \"$USER_ID\", \"name\": \"Test Profile\", \"icon\": 1, \"isKids\": false}" "$TOKEN"
 
-PROFILE_ID=$(cat /tmp/sv_response.json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+PROFILE_ID=$(jq -r '.id' /tmp/sv_response.json)
 
 # ── Profile: List ──────────────────────────────────────────
 test_endpoint GET "/api/profile/user/$USER_ID" 200 "" "$TOKEN"
@@ -101,7 +101,7 @@ echo ""
 echo "[Catalog]"
 test_endpoint GET /api/catalog/movies 200
 
-MOVIE_ID=$(cat /tmp/sv_response.json | python3 -c "import sys,json; print(json.load(sys.stdin)['items'][0]['id'])")
+MOVIE_ID=$(jq -r '.items[0].id' /tmp/sv_response.json)
 
 # ── Catalog: Genres ────────────────────────────────────────
 test_endpoint GET /api/catalog/genres 200
@@ -115,7 +115,7 @@ echo "[Watchlist]"
 test_endpoint POST /api/watchlist 201 \
   "{\"profileId\": \"$PROFILE_ID\", \"contentId\": \"$MOVIE_ID\", \"contentType\": 0}" "$TOKEN"
 
-WATCHLIST_ID=$(cat /tmp/sv_response.json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+WATCHLIST_ID=$(jq -r '.id' /tmp/sv_response.json)
 
 # ── Watchlist: List ────────────────────────────────────────
 test_endpoint GET "/api/watchlist/profile/$PROFILE_ID" 200 "" "$TOKEN"
