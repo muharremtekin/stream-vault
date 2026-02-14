@@ -7,43 +7,43 @@
 ## 1. Altyapı Eklentileri
 
 ### 1.1 Elasticsearch
-- [ ] Docker Compose'a Elasticsearch servisi ekle (`docker.elastic.co/elasticsearch/elasticsearch:8.12.0`)
-- [ ] `discovery.type=single-node`, `xpack.security.enabled=false` ayarları
-- [ ] ES_JAVA_OPTS: `-Xms512m -Xmx512m`
-- [ ] `elasticsearch_data` volume ekle
-- [ ] Healthcheck çalışıyor (`curl -f http://localhost:9200/_cluster/health`)
-- [ ] `infrastructure/elasticsearch/elasticsearch.yml` oluştur
-- [ ] Index mapping oluştur: `streamvault-content` (Türkçe analyzer dahil)
-- [ ] Custom analyzer'lar: `turkish_analyzer`, `autocomplete_analyzer`, `autocomplete_search_analyzer`
-- [ ] Edge ngram filter (min_gram: 2, max_gram: 15) tanımla
-- [ ] Mapping test: DevTools veya curl ile index'in doğru oluştuğunu doğrula
+- [x] Docker Compose'a Elasticsearch servisi ekle (`docker.elastic.co/elasticsearch/elasticsearch:8.12.0`)
+- [x] `discovery.type=single-node`, `xpack.security.enabled=false` ayarları
+- [x] ES_JAVA_OPTS: `-Xms512m -Xmx512m`
+- [x] `elasticsearch_data` volume ekle
+- [x] Healthcheck çalışıyor (`curl -f http://localhost:9200/_cluster/health`)
+- [x] `infrastructure/elasticsearch/init-index.sh` oluştur (elasticsearch-init container ile)
+- [x] Index mapping oluştur: `streamvault-content` (Türkçe analyzer dahil)
+- [x] Custom analyzer'lar: `turkish_analyzer`, `autocomplete_analyzer`, `autocomplete_search_analyzer`
+- [x] Edge ngram filter (min_gram: 2, max_gram: 15) tanımla
+- [x] Mapping test: DevTools veya curl ile index'in doğru oluştuğunu doğrula
 
 ### 1.2 PostgreSQL — Yeni Veritabanları
-- [ ] `infrastructure/postgres/init.sql` güncelle: `streamvault_subscriptions` DB ekle
-- [ ] `infrastructure/postgres/init.sql` güncelle: `streamvault_recommendations` DB ekle
-- [ ] Her iki DB için de `streamvault` kullanıcısına yetki ver
+- [x] `infrastructure/postgres/init.sql` güncelle: `streamvault_subscriptions` DB ekle
+- [x] `infrastructure/postgres/init.sql` güncelle: `streamvault_recommendations` DB ekle
+- [x] Her iki DB için de `streamvault` kullanıcısına yetki ver
 
 ### 1.3 RabbitMQ Topology Güncellemesi
-- [ ] `infrastructure/rabbitmq/definitions.json` güncelle
-- [ ] `catalog.events` exchange ekle (topic, durable)
-- [ ] Queue: `search.catalog-sync` (routing_key: `content.created`, `content.updated`, `content.deleted`)
-- [ ] Queue: `recommendation.catalog` (routing_key: `content.created`)
-- [ ] `watch.events` exchange ekle (topic, durable)
-- [ ] Queue: `search.watch-count` (routing_key: `watch.completed`)
-- [ ] Queue: `recommendation.watch` (routing_key: `watch.completed`)
-- [ ] `user.events` exchange ekle (topic, durable)
-- [ ] Queue: `recommendation.ratings` (routing_key: `content.rated`)
-- [ ] `subscription.events` exchange ekle (topic, durable)
-- [ ] Queue: `user.subscription-sync` (routing_key: `subscription.created`, `subscription.cancelled`, `plan.changed`)
-- [ ] RabbitMQ Management UI'da tüm exchange ve queue'ların doğru göründüğünü doğrula
+- [x] `infrastructure/rabbitmq/definitions.json` güncelle
+- [x] `catalog.events` exchange ekle (topic, durable)
+- [x] Queue: `search.catalog-sync` (routing_key: `content.created`, `content.updated`, `content.deleted`)
+- [x] Queue: `recommendation.catalog` (routing_key: `content.created`)
+- [x] `watch.events` exchange ekle (topic, durable)
+- [x] Queue: `search.watch-count` (routing_key: `watch.completed`)
+- [x] Queue: `recommendation.watch` (routing_key: `watch.completed`)
+- [x] `user.events` exchange ekle (topic, durable)
+- [x] Queue: `recommendation.ratings` (routing_key: `content.rated`)
+- [x] `subscription.events` exchange ekle (topic, durable)
+- [x] Queue: `user.subscription-sync` (routing_key: `subscription.created`, `subscription.cancelled`, `plan.changed`)
+- [x] RabbitMQ Management UI'da tüm exchange ve queue'ların doğru göründüğünü doğrula
 
 ### 1.4 Docker Compose Güncellemeleri
-- [ ] Search Service container tanımı ekle (port: 5005, 50053)
-- [ ] Recommendation Service container tanımı ekle (port: 5006, 50054)
-- [ ] Subscription Service container tanımı ekle (port: 5007)
-- [ ] Servis bağımlılıklarını (depends_on + condition) doğru kur
-- [ ] Tüm yeni servisler için environment variable'ları ekle
-- [ ] `docker compose up` ile tüm yeni altyapı ve servislerin ayağa kalktığını doğrula
+- [x] Search Service container tanımı ekle (port: 5005, 50053)
+- [x] Recommendation Service container tanımı ekle (port: 5006, 50054)
+- [x] Subscription Service container tanımı ekle (port: 5007)
+- [x] Servis bağımlılıklarını (depends_on + condition) doğru kur
+- [x] Tüm yeni servisler için environment variable'ları ekle
+- [x] `docker compose up` ile tüm yeni altyapı ve servislerin ayağa kalktığını doğrula
 
 ---
 
