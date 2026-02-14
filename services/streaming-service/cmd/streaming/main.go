@@ -81,7 +81,8 @@ func main() {
 
 	// Create progress components
 	progressRepo := progress.NewRedisRepository(redisClient, cfg.Redis.ProgressTTL)
-	progressSvc := progress.NewService(progressRepo)
+	watchPub := progress.NewWatchCompletedPublisher(publisher, redisClient, 24*time.Hour)
+	progressSvc := progress.NewService(progressRepo, watchPub)
 
 	// Start RabbitMQ consumer
 	consumer, err := messaging.NewConsumer(rabbitConn, cfg.RabbitMQ, redisClient)

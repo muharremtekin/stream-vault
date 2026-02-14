@@ -1,3 +1,4 @@
+using System.Text.Json;
 using CatalogService.Application.Interfaces;
 using CatalogService.Domain.Entities;
 using CatalogService.Domain.Enums;
@@ -9,10 +10,12 @@ namespace CatalogService.Application.Commands.CreateMovie;
 public class CreateMovieHandler : IRequestHandler<CreateMovieCommand, string>
 {
     private readonly IMovieRepository _movieRepository;
+    private readonly IOutboxRepository _outboxRepository;
 
-    public CreateMovieHandler(IMovieRepository movieRepository)
+    public CreateMovieHandler(IMovieRepository movieRepository, IOutboxRepository outboxRepository)
     {
         _movieRepository = movieRepository ?? throw new ArgumentNullException(nameof(movieRepository));
+        _outboxRepository = outboxRepository ?? throw new ArgumentNullException(nameof(outboxRepository));
     }
 
     public async Task<string> Handle(CreateMovieCommand request, CancellationToken cancellationToken)
@@ -40,6 +43,32 @@ public class CreateMovieHandler : IRequestHandler<CreateMovieCommand, string>
         };
 
         await _movieRepository.AddAsync(movie, cancellationToken);
+
+        var outboxMessage = new OutboxMessage
+        {
+            EventType = "content.created",
+            Payload = JsonSerializer.Serialize(new
+            {
+                eventId = Guid.NewGuid().ToString(),
+                eventType = "content.created",
+                timestamp = DateTime.UtcNow.ToString("O"),
+                source = "catalog-service",
+                correlationId = Guid.NewGuid().ToString(),
+                data = new
+                {
+                    contentId = movie.Id,
+                    contentType = "movie",
+                    title = movie.Title,
+                    genres = movie.Genres,
+                    releaseYear = movie.ReleaseYear,
+                    director = movie.Director,
+                    tags = movie.Tags
+                }
+            }),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _outboxRepository.AddAsync(outboxMessage, cancellationToken);
 
         return movie.Id;
     }

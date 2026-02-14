@@ -28,6 +28,8 @@ rabbitmq:
   publish_routing_key: "job.new"
   result_queue: "encoding.results.streaming"
   prefetch: 5
+  watch_events_exchange: "watch.events"
+  watch_events_routing_key: "watch.completed"
 
 upload:
   max_file_size: 10737418240

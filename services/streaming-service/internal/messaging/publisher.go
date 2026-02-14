@@ -22,17 +22,36 @@ type EncodingJob struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+type WatchCompletedEvent struct {
+	EventID       string             `json:"eventId"`
+	EventType     string             `json:"eventType"`
+	Timestamp     string             `json:"timestamp"`
+	Source        string             `json:"source"`
+	CorrelationID string             `json:"correlationId"`
+	Data          WatchCompletedData `json:"data"`
+}
+
+type WatchCompletedData struct {
+	UserID               string  `json:"userId"`
+	ContentID            string  `json:"contentId"`
+	CompletionPercentage float64 `json:"completionPercentage"`
+	WatchedAt            string  `json:"watchedAt"`
+}
+
 type Publisher interface {
 	PublishEncodingJob(ctx context.Context, job EncodingJob) error
+	PublishWatchCompleted(ctx context.Context, event WatchCompletedEvent) error
 	Close() error
 }
 
 type amqpPublisher struct {
-	mu         sync.Mutex
-	conn       *amqp.Connection
-	channel    *amqp.Channel
-	exchange   string
-	routingKey string
+	mu              sync.Mutex
+	conn            *amqp.Connection
+	channel         *amqp.Channel
+	exchange        string
+	routingKey      string
+	watchExchange   string
+	watchRoutingKey string
 }
 
 func NewPublisher(conn *amqp.Connection, cfg config.RabbitMQConfig) (Publisher, error) {
@@ -44,10 +63,12 @@ func NewPublisher(conn *amqp.Connection, cfg config.RabbitMQConfig) (Publisher, 
 	log.Info().Str("exchange", cfg.Exchange).Str("routing_key", cfg.PublishRoutingKey).Msg("rabbitmq publisher ready")
 
 	return &amqpPublisher{
-		conn:       conn,
-		channel:    ch,
-		exchange:   cfg.Exchange,
-		routingKey: cfg.PublishRoutingKey,
+		conn:            conn,
+		channel:         ch,
+		exchange:        cfg.Exchange,
+		routingKey:      cfg.PublishRoutingKey,
+		watchExchange:   cfg.WatchExchange,
+		watchRoutingKey: cfg.WatchRoutingKey,
 	}, nil
 }
 
@@ -64,36 +85,62 @@ func (p *amqpPublisher) recreateChannel() error {
 	return nil
 }
 
-func (p *amqpPublisher) PublishEncodingJob(ctx context.Context, job EncodingJob) error {
-	body, err := json.Marshal(job)
-	if err != nil {
-		return fmt.Errorf("marshalling encoding job: %w", err)
-	}
-
+func (p *amqpPublisher) publish(ctx context.Context, exchange, routingKey string, messageID string, body []byte) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	publishing := amqp.Publishing{
 		ContentType:  "application/json",
 		DeliveryMode: amqp.Persistent,
-		MessageId:    job.JobID,
-		Timestamp:    job.CreatedAt,
+		MessageId:    messageID,
+		Timestamp:    time.Now().UTC(),
 		Body:         body,
 	}
 
-	err = p.channel.PublishWithContext(ctx, p.exchange, p.routingKey, false, false, publishing)
+	err := p.channel.PublishWithContext(ctx, exchange, routingKey, false, false, publishing)
 	if err != nil {
 		log.Warn().Err(err).Msg("publish failed, attempting channel recreation")
 		if recreateErr := p.recreateChannel(); recreateErr != nil {
-			return fmt.Errorf("publishing encoding job (channel recreation failed): %w", recreateErr)
+			return fmt.Errorf("publish (channel recreation failed): %w", recreateErr)
 		}
-		err = p.channel.PublishWithContext(ctx, p.exchange, p.routingKey, false, false, publishing)
+		err = p.channel.PublishWithContext(ctx, exchange, routingKey, false, false, publishing)
 		if err != nil {
-			return fmt.Errorf("publishing encoding job (retry failed): %w", err)
+			return fmt.Errorf("publish (retry failed): %w", err)
 		}
 	}
 
+	return nil
+}
+
+func (p *amqpPublisher) PublishEncodingJob(ctx context.Context, job EncodingJob) error {
+	body, err := json.Marshal(job)
+	if err != nil {
+		return fmt.Errorf("marshalling encoding job: %w", err)
+	}
+
+	if err := p.publish(ctx, p.exchange, p.routingKey, job.JobID, body); err != nil {
+		return fmt.Errorf("publishing encoding job: %w", err)
+	}
+
 	log.Info().Str("job_id", job.JobID).Str("content_id", job.ContentID).Msg("encoding job published")
+	return nil
+}
+
+func (p *amqpPublisher) PublishWatchCompleted(ctx context.Context, event WatchCompletedEvent) error {
+	body, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("marshalling watch completed event: %w", err)
+	}
+
+	if err := p.publish(ctx, p.watchExchange, p.watchRoutingKey, event.EventID, body); err != nil {
+		return fmt.Errorf("publishing watch completed event: %w", err)
+	}
+
+	log.Info().
+		Str("userId", event.Data.UserID).
+		Str("contentId", event.Data.ContentID).
+		Float64("percentage", event.Data.CompletionPercentage).
+		Msg("watch completed event published")
 	return nil
 }
 

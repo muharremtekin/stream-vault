@@ -12,14 +12,16 @@ namespace CatalogService.UnitTests.Commands;
 public class UpdateVideoStatusHandlerTests
 {
     private readonly Mock<IMovieRepository> _movieRepositoryMock;
+    private readonly Mock<IOutboxRepository> _outboxRepositoryMock;
     private readonly Mock<ILogger<UpdateVideoStatusHandler>> _loggerMock;
     private readonly UpdateVideoStatusHandler _handler;
 
     public UpdateVideoStatusHandlerTests()
     {
         _movieRepositoryMock = new Mock<IMovieRepository>();
+        _outboxRepositoryMock = new Mock<IOutboxRepository>();
         _loggerMock = new Mock<ILogger<UpdateVideoStatusHandler>>();
-        _handler = new UpdateVideoStatusHandler(_movieRepositoryMock.Object, _loggerMock.Object);
+        _handler = new UpdateVideoStatusHandler(_movieRepositoryMock.Object, _outboxRepositoryMock.Object, _loggerMock.Object);
     }
 
     private static Movie CreateMovie(VideoStatus status = VideoStatus.NotUploaded) => new()
@@ -240,13 +242,13 @@ public class UpdateVideoStatusHandlerTests
     public void Constructor_NullRepository_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new UpdateVideoStatusHandler(null!, _loggerMock.Object));
+            new UpdateVideoStatusHandler(null!, _outboxRepositoryMock.Object, _loggerMock.Object));
     }
 
     [Fact]
     public void Constructor_NullLogger_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new UpdateVideoStatusHandler(_movieRepositoryMock.Object, null!));
+            new UpdateVideoStatusHandler(_movieRepositoryMock.Object, _outboxRepositoryMock.Object, null!));
     }
 }

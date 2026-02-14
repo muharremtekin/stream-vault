@@ -10,12 +10,14 @@ namespace CatalogService.UnitTests.Commands;
 public class CreateMovieHandlerTests
 {
     private readonly Mock<IMovieRepository> _movieRepositoryMock;
+    private readonly Mock<IOutboxRepository> _outboxRepositoryMock;
     private readonly CreateMovieHandler _handler;
 
     public CreateMovieHandlerTests()
     {
         _movieRepositoryMock = new Mock<IMovieRepository>();
-        _handler = new CreateMovieHandler(_movieRepositoryMock.Object);
+        _outboxRepositoryMock = new Mock<IOutboxRepository>();
+        _handler = new CreateMovieHandler(_movieRepositoryMock.Object, _outboxRepositoryMock.Object);
     }
 
     [Fact]
@@ -181,6 +183,6 @@ public class CreateMovieHandlerTests
     public void Constructor_NullRepository_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new CreateMovieHandler(null!));
+        Assert.Throws<ArgumentNullException>(() => new CreateMovieHandler(null!, _outboxRepositoryMock.Object));
     }
 }

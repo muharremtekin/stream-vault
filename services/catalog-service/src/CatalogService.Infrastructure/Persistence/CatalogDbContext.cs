@@ -21,6 +21,9 @@ public class CatalogDbContext
     public IMongoCollection<Genre> Genres =>
         _database.GetCollection<Genre>(MongoCollectionSettings.GenresCollection);
 
+    public IMongoCollection<OutboxMessage> OutboxMessages =>
+        _database.GetCollection<OutboxMessage>(MongoCollectionSettings.OutboxCollection);
+
     public async Task CreateIndexesAsync()
     {
         // Movie indexes

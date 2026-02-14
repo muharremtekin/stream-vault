@@ -94,6 +94,10 @@ func (m *mockPublisher) PublishEncodingJob(ctx context.Context, job messaging.En
 	return nil
 }
 
+func (m *mockPublisher) PublishWatchCompleted(ctx context.Context, event messaging.WatchCompletedEvent) error {
+	return nil
+}
+
 func (m *mockPublisher) Close() error { return nil }
 
 // Ensure compile-time interface satisfaction.

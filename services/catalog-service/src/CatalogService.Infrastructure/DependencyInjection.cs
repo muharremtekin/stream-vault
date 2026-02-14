@@ -1,3 +1,4 @@
+using CatalogService.Application.Events;
 using CatalogService.Application.Interfaces;
 using CatalogService.Infrastructure.Messaging;
 using CatalogService.Infrastructure.Persistence;
@@ -36,12 +37,15 @@ public static class DependencyInjection
         services.AddScoped<IMovieRepository, MovieRepository>();
         services.AddScoped<ISeriesRepository, SeriesRepository>();
         services.AddScoped<IGenreRepository, GenreRepository>();
+        services.AddScoped<IOutboxRepository, OutboxRepository>();
 
         // Seeder
         services.AddTransient<CatalogSeeder>();
 
-        // RabbitMQ Consumer
+        // RabbitMQ
+        services.AddSingleton<IEventPublisher, RabbitMqPublisher>();
         services.AddHostedService<EncodingResultConsumer>();
+        services.AddHostedService<OutboxProcessor>();
 
         return services;
     }

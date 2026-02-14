@@ -52,6 +52,8 @@ type RabbitMQConfig struct {
 	PublishRoutingKey string `mapstructure:"publish_routing_key"`
 	ResultQueue      string `mapstructure:"result_queue"`
 	Prefetch         int    `mapstructure:"prefetch"`
+	WatchExchange    string `mapstructure:"watch_events_exchange"`
+	WatchRoutingKey  string `mapstructure:"watch_events_routing_key"`
 }
 
 type UploadConfig struct {
@@ -88,6 +90,8 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("rabbitmq.publish_routing_key", "job.new")
 	v.SetDefault("rabbitmq.result_queue", "encoding.results.streaming")
 	v.SetDefault("rabbitmq.prefetch", 5)
+	v.SetDefault("rabbitmq.watch_events_exchange", "watch.events")
+	v.SetDefault("rabbitmq.watch_events_routing_key", "watch.completed")
 	v.SetDefault("upload.max_file_size", 10737418240)
 	v.SetDefault("upload.allowed_types", []string{"video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska"})
 	v.SetDefault("logging.level", "info")

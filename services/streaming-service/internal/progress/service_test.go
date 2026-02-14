@@ -14,7 +14,7 @@ func setupServiceTest(t *testing.T) (*Service, *miniredis.Miniredis) {
 	mr := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	repo := NewRedisRepository(client, 90*24*time.Hour)
-	svc := NewService(repo)
+	svc := NewService(repo, nil)
 	return svc, mr
 }
 

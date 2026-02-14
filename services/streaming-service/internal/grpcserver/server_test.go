@@ -54,7 +54,7 @@ func setupServer(t *testing.T) (*StreamingServer, *redis.Client, *miniredis.Mini
 	mr := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	store := &mockStorage{}
 	minioCfg := config.MinIOConfig{
 		EncodedBucket: "streamvault-encoded",
@@ -124,7 +124,7 @@ func TestGetStreamingInfo_CacheMiss_ObjectsExist_ReturnsReady(t *testing.T) {
 	mr := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 
 	store := &mockStorage{
 		listFunc: func(ctx context.Context, bucket, prefix string) ([]storage.ObjectInfo, error) {
@@ -157,7 +157,7 @@ func TestGetStreamingInfo_CacheMiss_NoObjects_ReturnsNotUploaded(t *testing.T) {
 	mr := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 
 	store := &mockStorage{
 		listFunc: func(ctx context.Context, bucket, prefix string) ([]storage.ObjectInfo, error) {
@@ -185,7 +185,7 @@ func TestGetStreamingInfo_CacheMiss_StorageError_ReturnsNotUploaded(t *testing.T
 	mr := miniredis.RunT(t)
 	client := redis.NewClient(&redis.Options{Addr: mr.Addr()})
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 
 	store := &mockStorage{
 		listFunc: func(ctx context.Context, bucket, prefix string) ([]storage.ObjectInfo, error) {
@@ -259,7 +259,7 @@ func TestGetProgress_Found_ReturnsCorrectData(t *testing.T) {
 
 	// Save progress via Redis directly
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	_ = svc.SaveProgress(ctx, "user-1", "movie-1", 60, 120)
 
 	// Re-create server with the same progress service
@@ -310,7 +310,7 @@ func TestGetContinueWatching_DefaultLimit(t *testing.T) {
 	ctx := context.Background()
 
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	server.progressSvc = svc
 
 	_ = svc.SaveProgress(ctx, "user-1", "movie-1", 30, 120)
@@ -333,7 +333,7 @@ func TestGetContinueWatching_CustomLimit(t *testing.T) {
 	ctx := context.Background()
 
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	server.progressSvc = svc
 
 	_ = svc.SaveProgress(ctx, "user-1", "movie-1", 30, 120)
@@ -358,7 +358,7 @@ func TestGetContinueWatching_ReturnsCorrectFields(t *testing.T) {
 	ctx := context.Background()
 
 	repo := progress.NewRedisRepository(client, 90*24*time.Hour)
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	server.progressSvc = svc
 
 	_ = svc.SaveProgress(ctx, "user-1", "movie-1", 60, 120)

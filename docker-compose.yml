@@ -220,10 +220,13 @@ services:
       - ServiceRegistration__Name=user-service
       - ServiceRegistration__Port=8080
       - Service__Host=user-service
+      - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
     depends_on:
       postgres:
         condition: service_healthy
       consul:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget --spider --quiet http://localhost:8080/health/live || exit 1"]

@@ -12,7 +12,7 @@ import (
 )
 
 func newProgressHandler(repo progress.Repository) *ProgressHandler {
-	svc := progress.NewService(repo)
+	svc := progress.NewService(repo, nil)
 	return NewProgressHandler(svc)
 }
 

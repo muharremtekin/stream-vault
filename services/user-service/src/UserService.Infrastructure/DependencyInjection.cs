@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UserService.Application.Interfaces;
+using UserService.Infrastructure.Messaging;
 using UserService.Infrastructure.Persistence;
 using UserService.Infrastructure.Persistence.Repositories;
 using UserService.Infrastructure.Services;
@@ -31,10 +32,15 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IWatchlistRepository, WatchlistRepository>();
+        services.AddScoped<IContentRatingRepository, ContentRatingRepository>();
 
         // Services
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+
+        // RabbitMQ
+        services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
+        services.AddHostedService<SubscriptionSyncConsumer>();
 
         // Seeder
         services.AddScoped<DbSeeder>();

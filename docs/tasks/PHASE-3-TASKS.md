@@ -262,144 +262,144 @@
 ## 5. Subscription Service (.NET 8)
 
 ### 5.1 Proje Kurulumu
-- [ ] .NET solution oluştur (`services/subscription-service/`)
-- [ ] 4 proje ekle: `SubscriptionService.Api`, `SubscriptionService.Application`, `SubscriptionService.Domain`, `SubscriptionService.Infrastructure`
-- [ ] NuGet paketleri: MediatR, FluentValidation, AutoMapper, Npgsql.EntityFrameworkCore, RabbitMQ.Client
-- [ ] `Program.cs` — DI, MediatR, EF Core, RabbitMQ konfigürasyonu
-- [ ] `appsettings.json` — Bağlantı bilgileri
-- [ ] Dockerfile oluştur
-- [ ] Makefile oluştur
+- [x] .NET solution oluştur (`services/subscription-service/`)
+- [x] 4 proje ekle: `SubscriptionService.Api`, `SubscriptionService.Application`, `SubscriptionService.Domain`, `SubscriptionService.Infrastructure`
+- [x] NuGet paketleri: MediatR, FluentValidation, AutoMapper, Npgsql.EntityFrameworkCore, RabbitMQ.Client
+- [x] `Program.cs` — DI, MediatR, EF Core, RabbitMQ konfigürasyonu
+- [x] `appsettings.json` — Bağlantı bilgileri
+- [x] Dockerfile oluştur
+- [x] Makefile oluştur
 
 ### 5.2 Domain Modelleri
-- [ ] `Domain/Entities/Plan.cs` — Abonelik planı (Id, Name, Tier, PriceMonthly, MaxScreens, MaxQuality, Features)
-- [ ] `Domain/Entities/Subscription.cs` — Abonelik (UserId, PlanId, Status, PeriodStart/End, AutoRenew, CancelledAt)
-- [ ] `Domain/Entities/Payment.cs` — Ödeme (SubscriptionId, Amount, Status, TransactionId, FailureReason)
-- [ ] `Domain/Entities/Invoice.cs` — Fatura (InvoiceNumber, Amount, PeriodStart/End)
-- [ ] `Domain/Entities/SagaState.cs` — Saga durumu (SagaType, CurrentStep, Status, StateData)
-- [ ] `Domain/Entities/OutboxMessage.cs` — Outbox mesajı (EventType, Payload, ProcessedAt, RetryCount)
-- [ ] `Domain/Enums/PlanTier.cs` — Basic, Standard, Premium
-- [ ] `Domain/Enums/SubscriptionStatus.cs` — PendingPayment, Active, Cancelled, Expired, Failed
-- [ ] `Domain/Enums/PaymentStatus.cs` — Pending, Succeeded, Failed, Refunded
-- [ ] `Domain/Enums/SagaStep.cs` — ValidatePlan, CreateSubscription, ProcessPayment, Activate, CreateInvoice, PublishEvents
-- [ ] `Domain/Events/` — SubscriptionCreatedEvent, SubscriptionCancelledEvent, PlanChangedEvent, PaymentProcessedEvent
-- [ ] `Domain/Exceptions/` — PlanNotFoundException, ActiveSubscriptionExistsException, PaymentFailedException
+- [x] `Domain/Entities/Plan.cs` — Abonelik planı (Id, Name, Tier, PriceMonthly, MaxScreens, MaxQuality, Features)
+- [x] `Domain/Entities/Subscription.cs` — Abonelik (UserId, PlanId, Status, PeriodStart/End, AutoRenew, CancelledAt)
+- [x] `Domain/Entities/Payment.cs` — Ödeme (SubscriptionId, Amount, Status, TransactionId, FailureReason)
+- [x] `Domain/Entities/Invoice.cs` — Fatura (InvoiceNumber, Amount, PeriodStart/End)
+- [x] `Domain/Entities/SagaState.cs` — Saga durumu (SagaType, CurrentStep, Status, StateData)
+- [x] `Domain/Entities/OutboxMessage.cs` — Outbox mesajı (EventType, Payload, ProcessedAt, RetryCount)
+- [x] `Domain/Enums/PlanTier.cs` — Basic, Standard, Premium
+- [x] `Domain/Enums/SubscriptionStatus.cs` — PendingPayment, Active, Cancelled, Expired, Failed
+- [x] `Domain/Enums/PaymentStatus.cs` — Pending, Succeeded, Failed, Refunded
+- [x] `Domain/Enums/SagaStep.cs` — ValidatePlan, CreateSubscription, ProcessPayment, Activate, CreateInvoice, PublishEvents
+- [x] `Domain/Events/` — SubscriptionCreatedEvent, SubscriptionCancelledEvent, PlanChangedEvent, PaymentProcessedEvent
+- [x] `Domain/Exceptions/` — PlanNotFoundException, ActiveSubscriptionExistsException, PaymentFailedException
 
 ### 5.3 Infrastructure — Persistence
-- [ ] `Infrastructure/Persistence/SubscriptionDbContext.cs` — EF Core DbContext
-- [ ] `Infrastructure/Persistence/Configurations/PlanConfiguration.cs`
-- [ ] `Infrastructure/Persistence/Configurations/SubscriptionConfiguration.cs`
-- [ ] `Infrastructure/Persistence/Configurations/PaymentConfiguration.cs`
-- [ ] `Infrastructure/Persistence/Configurations/SagaStateConfiguration.cs`
-- [ ] `Infrastructure/Persistence/Configurations/OutboxMessageConfiguration.cs`
-- [ ] EF Core migration oluştur ve uygula
-- [ ] Seed data: 3 plan (Basic: 49.99 TRY, Standard: 79.99 TRY, Premium: 119.99 TRY)
+- [x] `Infrastructure/Persistence/SubscriptionDbContext.cs` — EF Core DbContext
+- [x] `Infrastructure/Persistence/Configurations/PlanConfiguration.cs`
+- [x] `Infrastructure/Persistence/Configurations/SubscriptionConfiguration.cs`
+- [x] `Infrastructure/Persistence/Configurations/PaymentConfiguration.cs`
+- [x] `Infrastructure/Persistence/Configurations/SagaStateConfiguration.cs`
+- [x] `Infrastructure/Persistence/Configurations/OutboxMessageConfiguration.cs`
+- [x] EF Core migration oluştur ve uygula
+- [x] Seed data: 3 plan (Basic: 49.99 TRY, Standard: 79.99 TRY, Premium: 119.99 TRY)
 
 ### 5.4 Infrastructure — Repositories
-- [ ] `Application/Interfaces/IPlanRepository.cs` interface
-- [ ] `Application/Interfaces/ISubscriptionRepository.cs` interface
-- [ ] `Application/Interfaces/IPaymentRepository.cs` interface
-- [ ] `Application/Interfaces/ISagaRepository.cs` interface
-- [ ] `Application/Interfaces/IOutboxRepository.cs` interface
-- [ ] `Application/Interfaces/IPaymentGateway.cs` interface
-- [ ] `Infrastructure/Persistence/Repositories/PlanRepository.cs`
-- [ ] `Infrastructure/Persistence/Repositories/SubscriptionRepository.cs`
-- [ ] `Infrastructure/Persistence/Repositories/PaymentRepository.cs`
-- [ ] `Infrastructure/Persistence/Repositories/SagaRepository.cs`
-- [ ] `Infrastructure/Persistence/Repositories/OutboxRepository.cs`
+- [x] `Application/Interfaces/IPlanRepository.cs` interface
+- [x] `Application/Interfaces/ISubscriptionRepository.cs` interface
+- [x] `Application/Interfaces/IPaymentRepository.cs` interface
+- [x] `Application/Interfaces/ISagaRepository.cs` interface
+- [x] `Application/Interfaces/IOutboxRepository.cs` interface
+- [x] `Application/Interfaces/IPaymentGateway.cs` interface
+- [x] `Infrastructure/Persistence/Repositories/PlanRepository.cs`
+- [x] `Infrastructure/Persistence/Repositories/SubscriptionRepository.cs`
+- [x] `Infrastructure/Persistence/Repositories/PaymentRepository.cs`
+- [x] `Infrastructure/Persistence/Repositories/SagaRepository.cs`
+- [x] `Infrastructure/Persistence/Repositories/OutboxRepository.cs`
 
 ### 5.5 Mock Payment Gateway
-- [ ] `Infrastructure/Payment/MockPaymentGateway.cs`
-- [ ] Kart numarasına göre sonuç: `4242...4242` → Başarılı
-- [ ] `4000...0002` → Reddedildi (insufficient funds)
-- [ ] `4000...0069` → Süresi dolmuş kart
-- [ ] `4000...0127` → Genel hata
-- [ ] Random delay: 200-800ms (gerçekçi latency simülasyonu)
+- [x] `Infrastructure/Payment/MockPaymentGateway.cs`
+- [x] Kart numarasına göre sonuç: `4242...4242` → Başarılı
+- [x] `4000...0002` → Reddedildi (insufficient funds)
+- [x] `4000...0069` → Süresi dolmuş kart
+- [x] `4000...0127` → Genel hata
+- [x] Random delay: 200-800ms (gerçekçi latency simülasyonu)
 
 ### 5.6 Saga Pattern — Abonelik Oluşturma
-- [ ] `Application/Sagas/SubscriptionSagaState.cs` — Saga durumları tanımla
-- [ ] `Application/Sagas/SubscriptionSaga.cs` — Saga state machine
-- [ ] Step 1: VALIDATE_PLAN — Plan mevcut/aktif mi, kullanıcının aktif aboneliği var mı
-- [ ] Step 2: CREATE_PENDING_SUBSCRIPTION — Subscription kaydı (Status: PendingPayment) + Outbox
-- [ ] Step 3: PROCESS_PAYMENT — MockPaymentGateway.ChargeAsync + Payment kaydı
-- [ ] Step 4: ACTIVATE_SUBSCRIPTION — Status = Active, period ayarla
-- [ ] Step 5: CREATE_INVOICE — Invoice kaydı oluştur
-- [ ] Step 6: PUBLISH_EVENTS — SubscriptionCreated event → RabbitMQ
-- [ ] `Application/Sagas/CompensatingActions.cs` — Geri alma aksiyonları
-- [ ] Compensate Step 3 başarısız: Subscription sil/Failed yap
-- [ ] Her adım idempotent olmalı
+- [x] `Application/Sagas/SubscriptionSagaState.cs` — Saga durumları tanımla
+- [x] `Application/Sagas/SubscriptionSaga.cs` — Saga state machine
+- [x] Step 1: VALIDATE_PLAN — Plan mevcut/aktif mi, kullanıcının aktif aboneliği var mı
+- [x] Step 2: CREATE_PENDING_SUBSCRIPTION — Subscription kaydı (Status: PendingPayment) + Outbox
+- [x] Step 3: PROCESS_PAYMENT — MockPaymentGateway.ChargeAsync + Payment kaydı
+- [x] Step 4: ACTIVATE_SUBSCRIPTION — Status = Active, period ayarla
+- [x] Step 5: CREATE_INVOICE — Invoice kaydı oluştur
+- [x] Step 6: PUBLISH_EVENTS — SubscriptionCreated event → RabbitMQ
+- [x] `Application/Sagas/CompensatingActions.cs` — Geri alma aksiyonları
+- [x] Compensate Step 3 başarısız: Subscription sil/Failed yap
+- [x] Her adım idempotent olmalı
 
 ### 5.7 Saga Pattern — Plan Değiştirme
-- [ ] ChangePlan Saga: Validate → ProcessPriceDifference → UpdateSubscription → PublishEvents
-- [ ] Upgrade: Kalan gün için fark ücreti hesapla ve al
-- [ ] Downgrade: Kalan gün için kredi hesapla
-- [ ] PlanChanged event publish
+- [x] ChangePlan Saga: Validate → ProcessPriceDifference → UpdateSubscription → PublishEvents
+- [x] Upgrade: Kalan gün için fark ücreti hesapla ve al
+- [x] Downgrade: Kalan gün için kredi hesapla
+- [x] PlanChanged event publish
 
 ### 5.8 Commands & Handlers
-- [ ] `Application/Commands/CreateSubscription/` — Command, Handler, Validator
-- [ ] `Application/Commands/CancelSubscription/` — Command, Handler
-- [ ] `Application/Commands/ChangePlan/` — Command, Handler
-- [ ] `Application/Commands/ProcessPayment/` — Command, Handler
+- [x] `Application/Commands/CreateSubscription/` — Command, Handler, Validator
+- [x] `Application/Commands/CancelSubscription/` — Command, Handler
+- [x] `Application/Commands/ChangePlan/` — Command, Handler
+- [x] `Application/Commands/ProcessPayment/` — Command, Handler
 
 ### 5.9 Queries & Handlers
-- [ ] `Application/Queries/GetPlans/` — Query, Handler (plan listesi)
-- [ ] `Application/Queries/GetMySubscription/` — Query, Handler (aktif abonelik)
-- [ ] `Application/Queries/GetPaymentHistory/` — Query, Handler (fatura geçmişi)
-- [ ] `Application/DTOs/` — PlanDto, SubscriptionDto, PaymentDto, InvoiceDto
-- [ ] `Application/Mappings/MappingProfile.cs` — AutoMapper profili
+- [x] `Application/Queries/GetPlans/` — Query, Handler (plan listesi)
+- [x] `Application/Queries/GetMySubscription/` — Query, Handler (aktif abonelik)
+- [x] `Application/Queries/GetPaymentHistory/` — Query, Handler (fatura geçmişi)
+- [x] `Application/DTOs/` — PlanDto, SubscriptionDto, PaymentDto, InvoiceDto
+- [x] `Application/Mappings/MappingProfile.cs` — AutoMapper profili
 
 ### 5.10 API Controllers
-- [ ] `Api/Controllers/PlansController.cs` — GET /api/plans (public)
-- [ ] `Api/Controllers/SubscriptionsController.cs` — POST /api/subscriptions, GET /api/subscriptions/me, PUT /api/subscriptions/me/plan, POST /api/subscriptions/me/cancel, GET /api/subscriptions/me/invoices
-- [ ] `Api/Controllers/PaymentsController.cs` — Ödeme bilgileri (opsiyonel)
-- [ ] X-User-Id header'dan kullanıcı bilgisi alma
+- [x] `Api/Controllers/PlansController.cs` — GET /api/plans (public)
+- [x] `Api/Controllers/SubscriptionsController.cs` — POST /api/subscriptions, GET /api/subscriptions/me, PUT /api/subscriptions/me/plan, POST /api/subscriptions/me/cancel, GET /api/subscriptions/me/invoices
+- [x] `Api/Controllers/PaymentsController.cs` — Ödeme bilgileri (opsiyonel)
+- [x] X-User-Id header'dan kullanıcı bilgisi alma
 
 ### 5.11 Background Services
-- [ ] `Api/BackgroundServices/SagaOrchestratorService.cs` — Saga state machine çalıştırıcı
-- [ ] `Api/BackgroundServices/OutboxProcessorService.cs` — Outbox event publishing (her 5 saniye)
-- [ ] `Api/BackgroundServices/SubscriptionRenewalService.cs` — Otomatik yenileme (period bitiminde)
-- [ ] Outbox: unprocessed mesajları al → RabbitMQ publish → processedAt güncelle
-- [ ] Outbox: max 3 retry, sonra error logla
+- [x] `Api/BackgroundServices/SagaOrchestratorService.cs` — Saga state machine çalıştırıcı
+- [x] `Api/BackgroundServices/OutboxProcessorService.cs` — Outbox event publishing (her 5 saniye)
+- [x] `Api/BackgroundServices/SubscriptionRenewalService.cs` — Otomatik yenileme (period bitiminde)
+- [x] Outbox: unprocessed mesajları al → RabbitMQ publish → processedAt güncelle
+- [x] Outbox: max 3 retry, sonra error logla
 
 ### 5.12 Consul Entegrasyonu
-- [ ] Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] `/health` endpoint (PostgreSQL, RabbitMQ bağlantı durumu)
+- [x] Consul'a self-registration
+- [x] Health check kaydı
+- [x] `/health` endpoint (PostgreSQL, RabbitMQ bağlantı durumu)
 
 ---
 
 ## 6. Mevcut Servis Güncellemeleri
 
 ### 6.1 User Service — Rating Endpoint
-- [ ] `Domain/Entities/ContentRating.cs` — Yeni entity (UserId, ContentId, Rating, RatedAt)
-- [ ] EF Core migration: content_ratings tablosu ekle
-- [ ] `Application/Commands/RateContent/RateContentCommand.cs`
-- [ ] `Application/Commands/RateContent/RateContentHandler.cs`
-- [ ] POST /api/users/me/ratings endpoint (request: contentId, rating)
-- [ ] GET /api/users/me/ratings endpoint (kullanıcının tüm puanları)
-- [ ] `Application/Events/ContentRatedEvent.cs` — RabbitMQ'ya publish (`user.events` exchange, `content.rated`)
+- [x] `Domain/Entities/ContentRating.cs` — Yeni entity (UserId, ContentId, Rating, RatedAt)
+- [x] EF Core migration: content_ratings tablosu ekle
+- [x] `Application/Commands/RateContent/RateContentCommand.cs`
+- [x] `Application/Commands/RateContent/RateContentHandler.cs`
+- [x] POST /api/users/me/ratings endpoint (request: contentId, rating)
+- [x] GET /api/users/me/ratings endpoint (kullanıcının tüm puanları)
+- [x] `Application/Events/ContentRatedEvent.cs` — RabbitMQ'ya publish (`user.events` exchange, `content.rated`)
 
 ### 6.2 User Service — Subscription Tier Güncelleme
-- [ ] `SubscriptionCreated` event consumer ekle (`user.subscription-sync` queue)
-- [ ] `SubscriptionCancelled` event consumer ekle
-- [ ] `PlanChanged` event consumer ekle
-- [ ] Kullanıcının `Role/Tier` alanını güncelle (Free → Basic/Standard/Premium)
+- [x] `SubscriptionCreated` event consumer ekle (`user.subscription-sync` queue)
+- [x] `SubscriptionCancelled` event consumer ekle
+- [x] `PlanChanged` event consumer ekle
+- [x] Kullanıcının `Role/Tier` alanını güncelle (Free → Basic/Standard/Premium)
 
 ### 6.3 Catalog Service — Outbox Pattern
-- [ ] `Infrastructure/Outbox/OutboxMessage.cs` — Outbox entity
-- [ ] `Infrastructure/Outbox/OutboxRepository.cs` — Outbox repository
-- [ ] `Infrastructure/Outbox/OutboxProcessor.cs` — Background service
-- [ ] Her write operasyonunda (create, update, delete) outbox collection'a event yaz
-- [ ] MongoDB multi-document transaction kullanımı (replica set)
-- [ ] OutboxProcessor: her 5 saniyede unprocessed mesajları al → RabbitMQ publish
-- [ ] Mevcut direkt RabbitMQ publish'i outbox pattern'e geçir
-- [ ] `catalog.events` exchange'e event publish (content.created, content.updated, content.deleted)
+- [x] `Infrastructure/Outbox/OutboxMessage.cs` — Outbox entity
+- [x] `Infrastructure/Outbox/OutboxRepository.cs` — Outbox repository
+- [x] `Infrastructure/Outbox/OutboxProcessor.cs` — Background service
+- [x] Her write operasyonunda (create, update, delete) outbox collection'a event yaz
+- [x] MongoDB multi-document transaction kullanımı (replica set)
+- [x] OutboxProcessor: her 5 saniyede unprocessed mesajları al → RabbitMQ publish
+- [x] Mevcut direkt RabbitMQ publish'i outbox pattern'e geçir
+- [x] `catalog.events` exchange'e event publish (content.created, content.updated, content.deleted)
 
 ### 6.4 Streaming Service — WatchCompleted Event
-- [ ] `internal/handler/progress.go` güncelle
-- [ ] %90+ izleme tamamlandığında WatchCompleted event publish et
-- [ ] `watch.events` exchange'e publish (routing_key: `watch.completed`)
-- [ ] Event payload: userId, contentId, completionPercentage, watchedAt
-- [ ] Aynı içerik için duplicate event engelleme (Redis flag)
+- [x] `internal/handler/progress.go` güncelle
+- [x] %90+ izleme tamamlandığında WatchCompleted event publish et
+- [x] `watch.events` exchange'e publish (routing_key: `watch.completed`)
+- [x] Event payload: userId, contentId, completionPercentage, watchedAt
+- [x] Aynı içerik için duplicate event engelleme (Redis flag)
 
 ---
 

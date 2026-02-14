@@ -3,16 +3,24 @@ package progress
 import (
 	"context"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 const completionThreshold = 95.0
+const watchCompletedThreshold = 90.0
 
-type Service struct {
-	repo Repository
+type WatchCompletedPublisher interface {
+	PublishWatchCompleted(ctx context.Context, userID, contentID string, percentage float64) error
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+type Service struct {
+	repo      Repository
+	publisher WatchCompletedPublisher
+}
+
+func NewService(repo Repository, publisher WatchCompletedPublisher) *Service {
+	return &Service{repo: repo, publisher: publisher}
 }
 
 func (s *Service) SaveProgress(ctx context.Context, userID, contentID string, positionSeconds, durationSeconds int64) error {
@@ -21,6 +29,16 @@ func (s *Service) SaveProgress(ctx context.Context, userID, contentID string, po
 	}
 
 	percentage := float64(positionSeconds) / float64(durationSeconds) * 100
+
+	// Publish watch completed event when >= 90%
+	if percentage >= watchCompletedThreshold && s.publisher != nil {
+		if err := s.publisher.PublishWatchCompleted(ctx, userID, contentID, percentage); err != nil {
+			log.Warn().Err(err).
+				Str("userId", userID).
+				Str("contentId", contentID).
+				Msg("failed to publish watch completed event")
+		}
+	}
 
 	// If completed (>= 95%), remove from continue-watching
 	if percentage >= completionThreshold {
