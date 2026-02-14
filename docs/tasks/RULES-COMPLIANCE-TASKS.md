@@ -82,25 +82,25 @@
 ## 3. [YÜKSEK] Observability Endpoint'leri (Kural 13.1)
 
 ### 3.1 Gateway — Health Endpoint'leri Ayır
-- [ ] `/health` → `/health/live` (liveness — sadece process alive)
-- [ ] `/health/ready` ekle (readiness — downstream bağımlılık kontrolü)
-- [ ] `/metrics` endpoint'i ekle (Prometheus format)
+- [x] `/health` → `/health/live` (liveness — sadece process alive)
+- [x] `/health/ready` ekle (readiness — downstream bağımlılık kontrolü)
+- [ ] `/metrics` endpoint'i ekle (Prometheus format) — Faz 4'e bırakıldı
 
 ### 3.2 User Service — Health Endpoint'leri Ayır
-- [ ] `/health` → `/health/live` + `/health/ready` olarak ayır
-- [ ] `/metrics` endpoint'i ekle
+- [x] `/health` → `/health/live` + `/health/ready` olarak ayır
+- [ ] `/metrics` endpoint'i ekle — Faz 4'e bırakıldı
 
 ### 3.3 Catalog Service — Health Endpoint'leri Ayır
-- [ ] `/health` → `/health/live` + `/health/ready` olarak ayır
-- [ ] `/metrics` endpoint'i ekle
+- [x] `/health` → `/health/live` + `/health/ready` olarak ayır
+- [ ] `/metrics` endpoint'i ekle — Faz 4'e bırakıldı
 
 ### 3.4 Streaming Service — Health Endpoint'leri Ayır
-- [ ] `/health` → `/health/live` + `/health/ready` olarak ayır
-- [ ] `/metrics` endpoint'i ekle
+- [x] `/health` → `/health/live` + `/health/ready` olarak ayır
+- [ ] `/metrics` endpoint'i ekle — Faz 4'e bırakıldı
 
 ### 3.5 Encoding Service — Health Endpoint'leri Ayır
-- [ ] `/health` → `/health/live` + `/health/ready` olarak ayır
-- [ ] `/metrics` endpoint'i ekle
+- [x] `/health` → `/health/live` + `/health/ready` olarak ayır
+- [ ] `/metrics` endpoint'i ekle — Faz 4'e bırakıldı
 
 > **Not:** Bu görevler Faz 4 (Production-Ready) planıyla örtüşüyor. Faz 4'te daha kapsamlı yapılacaksa sadece `/health/live` ve `/health/ready` ayrımı şimdi yapılıp `/metrics` Faz 4'e bırakılabilir.
 

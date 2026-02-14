@@ -55,7 +55,19 @@ struct ComponentStatus {
     status: &'static str,
 }
 
-async fn health_check(State(state): State<AppState>) -> (StatusCode, Json<HealthResponse>) {
+/// Liveness probe — returns 200 if the process is alive, no dependency checks.
+async fn liveness_check() -> (StatusCode, Json<HealthResponse>) {
+    (
+        StatusCode::OK,
+        Json(HealthResponse {
+            status: "healthy",
+            components: HashMap::new(),
+        }),
+    )
+}
+
+/// Readiness probe — checks MinIO and FFmpeg availability.
+async fn readiness_check(State(state): State<AppState>) -> (StatusCode, Json<HealthResponse>) {
     let mut components = HashMap::new();
     let mut all_healthy = true;
 
@@ -177,7 +189,9 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app = Router::new()
-        .route("/health", get(health_check))
+        .route("/health", get(liveness_check))
+        .route("/health/live", get(liveness_check))
+        .route("/health/ready", get(readiness_check))
         .merge(api::routes::encoding_routes())
         .layer(TraceLayer::new_for_http())
         .with_state(app_state);

@@ -19,13 +19,13 @@ consul:
 services:
   user-service:
     url: "http://user-service:8080"
-    health_path: "/health"
+    health_path: "/health/ready"
   catalog-service:
     url: "http://catalog-service:5100"
-    health_path: "/health"
+    health_path: "/health/ready"
   streaming-service:
     url: "http://streaming-service:5003"
-    health_path: "/health"
+    health_path: "/health/ready"
 
 logging:
   level: "info"

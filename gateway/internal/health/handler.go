@@ -48,10 +48,32 @@ func NewHandler(services map[string]config.ServiceEntry, resolver *discovery.Res
 	}
 }
 
-// ServeHTTP handles GET /health requests. It concurrently probes all
-// configured upstream services and returns the aggregated result.
-// Returns 200 if all services are healthy, 503 if any are unhealthy.
+// ServeHTTP handles GET /health requests (backward compatibility).
+// Delegates to ServeLive.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.ServeLive(w, r)
+}
+
+// ServeLive handles GET /health/live requests (liveness probe).
+// Returns 200 if the gateway process is alive — no upstream checks.
+func (h *Handler) ServeLive(w http.ResponseWriter, r *http.Request) {
+	resp := Response{
+		Status:  "healthy",
+		Gateway: "healthy",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Error().Err(err).Msg("failed to encode health response")
+	}
+}
+
+// ServeReady handles GET /health/ready requests (readiness probe).
+// Concurrently probes all configured upstream services and returns the
+// aggregated result. Returns 200 if healthy/degraded, 503 if all unhealthy.
+func (h *Handler) ServeReady(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 

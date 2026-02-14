@@ -12,6 +12,7 @@ using UserService.Application.Mappings;
 using UserService.Infrastructure;
 using Serilog;
 using Serilog.Formatting.Compact;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -113,7 +114,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("DefaultConnection")!,
+        name: "postgresql",
+        tags: new[] { "ready" });
 
 // CORS
 builder.Services.AddCors(options =>
@@ -179,7 +184,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
 
 // -------------------------------------------------------------------
 // Consul service registration (optional, non-blocking)
@@ -206,7 +216,7 @@ if (builder.Configuration.GetSection("Consul").Exists())
         Tags = new[] { "user", "auth", "api", "v1" },
         Check = new AgentServiceCheck
         {
-            HTTP = $"http://{serviceHost}:{servicePort}/health",
+            HTTP = $"http://{serviceHost}:{servicePort}/health/live",
             Interval = TimeSpan.FromSeconds(10),
             Timeout = TimeSpan.FromSeconds(5),
             DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)

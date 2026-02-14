@@ -64,7 +64,7 @@ impl ConsulClient {
             tags: vec!["encoding".into(), "api".into(), "v1".into()],
             check: HealthCheck {
                 http: format!(
-                    "http://{}:{}/health",
+                    "http://{}:{}/health/live",
                     config.service_name, http_port
                 ),
                 interval: format!("{}s", config.health_check_interval_secs),

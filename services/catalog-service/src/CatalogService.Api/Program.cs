@@ -6,6 +6,7 @@ using CatalogService.Infrastructure.Seed;
 using Consul;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -62,7 +63,11 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp =>
     }));
 
 // Health checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddMongoDb(
+        builder.Configuration.GetValue<string>("MongoDB:ConnectionString") ?? "mongodb://localhost:27017",
+        name: "mongodb",
+        tags: new[] { "ready" });
 
 // CORS
 builder.Services.AddCors(options =>
@@ -99,7 +104,12 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
 
 // ---------------------------------------------------------------------------
 // Seed data on startup
@@ -129,7 +139,7 @@ var registration = new AgentServiceRegistration
     Tags = new[] { "catalog", "api", "v1" },
     Check = new AgentServiceCheck
     {
-        HTTP = $"http://{serviceHost}:{servicePort}/health",
+        HTTP = $"http://{serviceHost}:{servicePort}/health/live",
         Interval = TimeSpan.FromSeconds(10),
         Timeout = TimeSpan.FromSeconds(5),
         DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)

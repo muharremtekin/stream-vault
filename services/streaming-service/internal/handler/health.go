@@ -34,7 +34,23 @@ type healthResponse struct {
 	Components map[string]componentStatus `json:"components"`
 }
 
+// ServeHTTP handles GET /health requests (backward compatibility).
+// Delegates to ServeLive.
 func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.ServeLive(w, r)
+}
+
+// ServeLive handles GET /health/live requests (liveness probe).
+// Returns 200 if the process is alive — no dependency checks.
+func (h *HealthHandler) ServeLive(w http.ResponseWriter, r *http.Request) {
+	WriteJSON(w, http.StatusOK, healthResponse{
+		Status: "healthy",
+	})
+}
+
+// ServeReady handles GET /health/ready requests (readiness probe).
+// Checks all dependencies (MinIO, Redis, RabbitMQ) and returns 200/503.
+func (h *HealthHandler) ServeReady(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 

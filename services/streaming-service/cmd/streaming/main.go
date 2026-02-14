@@ -211,6 +211,8 @@ func buildHTTPRouter(cfg *config.Config, store storage.Storage, pub messaging.Pu
 	// Health
 	healthH := handler.NewHealthHandler(store, redisClient, rabbitCheck)
 	mux.HandleFunc("GET /health", healthH.ServeHTTP)
+	mux.HandleFunc("GET /health/live", healthH.ServeLive)
+	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
 
 	// Upload (admin only)
 	uploadH := handler.NewUploadHandler(store, pub, cfg.Upload, cfg.MinIO)

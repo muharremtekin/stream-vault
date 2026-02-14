@@ -54,6 +54,8 @@ func main() {
 	// ---- Build Top-Level Mux ----
 	topMux := http.NewServeMux()
 	topMux.Handle("/health", healthHandler)
+	topMux.HandleFunc("/health/live", healthHandler.ServeLive)
+	topMux.HandleFunc("/health/ready", healthHandler.ServeReady)
 	topMux.Handle("/", router.Handler())
 
 	// ---- Rate Limiter ----
