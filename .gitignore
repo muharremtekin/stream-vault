@@ -11,8 +11,12 @@
 .DS_Store
 Thumbs.db
 
+# Security
+*.pem
+*.key
+*.p12
+
 # Go
-gateway/tmp/
 gateway/gateway
 
 # .NET
@@ -21,8 +25,24 @@ gateway/gateway
 *.user
 *.suo
 
+# Rust
+**/target/
+
+# Node.js
+**/node_modules/
+**/.next/
+
 # Logs
 *.log
+
+# Data
+data/
+*_data/
+
+# Temporary
+tmp/
+temp/
+*.tmp
 
 # Docker
 docker-compose.local.yml
