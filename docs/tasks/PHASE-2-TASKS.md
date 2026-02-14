@@ -251,26 +251,26 @@
 ## 6. API Gateway Güncellemeleri
 
 ### 6.1 Yeni Route'lar
-- [ ] Streaming route'ları ekle: `/stream/{id}/manifest.m3u8`, `/stream/{id}/{quality}/playlist.m3u8`, `/stream/{id}/{quality}/segment_*.ts`
-- [ ] Progress route'ları: `/api/stream/{id}/progress` (GET+POST), `/api/stream/continue-watching`
-- [ ] Upload route'u: `/api/stream/upload` (Admin only, multipart proxy)
-- [ ] Encoding route'ları: `/api/encoding/jobs/{id}`, `/api/encoding/jobs` (Admin only)
+- [x] Streaming route'ları ekle: `/stream/{id}/manifest.m3u8`, `/stream/{id}/{quality}/playlist.m3u8`, `/stream/{id}/{quality}/segment_*.ts`
+- [x] Progress route'ları: `/api/stream/{id}/progress` (GET+POST), `/api/stream/continue-watching`
+- [x] Upload route'u: `/api/stream/upload` (Admin only, multipart proxy)
+- [x] Encoding route'ları: `/api/encoding/jobs/{id}`, `/api/encoding/jobs` (Admin only)
 
 ### 6.2 Streaming Middleware
-- [ ] `internal/middleware/streaming_auth.go` — Subscription tier kontrolü
-- [ ] JWT payload'dan veya User Service'ten tier bilgisi al
-- [ ] `X-User-Tier` header'ını downstream'e ekle
-- [ ] Admin route'lar için rol kontrolü
+- [x] `internal/middleware/streaming_auth.go` — Subscription tier kontrolü
+- [x] JWT payload'dan veya User Service'ten tier bilgisi al
+- [x] `X-User-Tier` header'ını downstream'e ekle
+- [x] Admin route'lar için rol kontrolü
 
 ### 6.3 Streaming Proxy
-- [ ] `internal/proxy/streaming_proxy.go` — Streaming özel proxy
-- [ ] Range request desteği (Accept-Ranges header forwarding)
-- [ ] Multipart upload proxy (buffering yapmadan streaming)
-- [ ] Chunked transfer encoding desteği
+- [x] `internal/proxy/streaming_proxy.go` — Streaming özel proxy
+- [x] Range request desteği (Accept-Ranges header forwarding)
+- [x] Multipart upload proxy (buffering yapmadan streaming)
+- [x] Chunked transfer encoding desteği
 
 ### 6.4 Config Güncelleme
-- [ ] `gateway/config.yaml` — Streaming ve Encoding servis tanımları
-- [ ] Consul'dan streaming-service ve encoding-service çözümleme
+- [x] `gateway/config.yaml` — Streaming ve Encoding servis tanımları
+- [x] Consul'dan streaming-service ve encoding-service çözümleme
 
 ---
 

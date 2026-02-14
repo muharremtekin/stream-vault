@@ -83,6 +83,7 @@ func main() {
 		middleware.CORS(middleware.DefaultCORSOptions()),
 		rateLimitMiddleware,
 		middleware.Auth(cfg.JWT.Secret, cfg.JWT.Issuer),
+		middleware.StreamingAuth(),
 	)
 
 	// ---- HTTP Server ----

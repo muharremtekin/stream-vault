@@ -155,17 +155,17 @@
 ## 7. [ORTA] .gitignore Eksik Pattern'leri Ekle (Kural 2.3)
 
 ### 7.1 Eksik Pattern'leri Ekle
-- [ ] `*.pem` ekle
-- [ ] `*.key` ekle
-- [ ] `*.p12` ekle
-- [ ] `**/target/` ekle (Rust build output)
-- [ ] `**/node_modules/` ekle
-- [ ] `**/.next/` ekle
-- [ ] `data/` ekle
-- [ ] `*_data/` ekle
-- [ ] `tmp/` ekle
-- [ ] `temp/` ekle
-- [ ] `*.tmp` ekle
+- [x] `*.pem` ekle
+- [x] `*.key` ekle
+- [x] `*.p12` ekle
+- [x] `**/target/` ekle (Rust build output)
+- [x] `**/node_modules/` ekle
+- [x] `**/.next/` ekle
+- [x] `data/` ekle
+- [x] `*_data/` ekle
+- [x] `tmp/` ekle
+- [x] `temp/` ekle
+- [x] `*.tmp` ekle
 
 ---
 

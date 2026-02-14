@@ -1,7 +1,7 @@
 server:
   port: 8080
-  read_timeout: 15s
-  write_timeout: 15s
+  read_timeout: 300s
+  write_timeout: 300s
 
 jwt:
   secret: ""
@@ -25,6 +25,9 @@ services:
     health_path: "/health/ready"
   streaming-service:
     url: "http://streaming-service:5003"
+    health_path: "/health/ready"
+  encoding-service:
+    url: "http://encoding-service:5004"
     health_path: "/health/ready"
 
 logging:

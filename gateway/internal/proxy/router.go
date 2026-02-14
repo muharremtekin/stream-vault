@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"net/http"
+	"net/http/httputil"
 
 	"github.com/rs/zerolog/log"
 	"github.com/streamvault/gateway/internal/discovery"
@@ -16,6 +17,9 @@ type Route struct {
 	ServiceName string
 	// StripPrefix controls whether PathPrefix is stripped before proxying.
 	StripPrefix bool
+	// Streaming enables a streaming-optimised reverse proxy that flushes
+	// response bytes immediately instead of buffering (FlushInterval: -1).
+	Streaming bool
 }
 
 // DefaultRoutes returns the standard set of gateway routes that map public
@@ -51,10 +55,17 @@ func DefaultRoutes() []Route {
 			PathPrefix:  "/api/stream",
 			ServiceName: "streaming-service",
 			StripPrefix: false,
+			Streaming:   true,
 		},
 		{
 			PathPrefix:  "/stream",
 			ServiceName: "streaming-service",
+			StripPrefix: false,
+			Streaming:   true,
+		},
+		{
+			PathPrefix:  "/api/encoding",
+			ServiceName: "encoding-service",
 			StripPrefix: false,
 		},
 	}
@@ -95,7 +106,12 @@ func (rt *Router) Handler() http.Handler {
 				return
 			}
 
-			proxy, err := rt.manager.GetProxy(addr, r.StripPrefix, r.PathPrefix)
+			var proxy *httputil.ReverseProxy
+			if r.Streaming {
+				proxy, err = rt.manager.GetStreamingProxy(addr, r.StripPrefix, r.PathPrefix)
+			} else {
+				proxy, err = rt.manager.GetProxy(addr, r.StripPrefix, r.PathPrefix)
+			}
 			if err != nil {
 				log.Error().Err(err).Str("address", addr).Msg("failed to create reverse proxy")
 				middleware.WriteErrorResponse(w, http.StatusBadGateway, "bad gateway")

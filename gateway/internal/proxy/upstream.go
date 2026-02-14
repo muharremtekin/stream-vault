@@ -166,6 +166,79 @@ func (um *UpstreamManager) GetProxy(address string, stripPrefix bool, pathPrefix
 	return proxy, nil
 }
 
+// GetStreamingProxy returns a reverse proxy optimised for streaming responses.
+// It behaves like GetProxy but sets FlushInterval to -1 so that response bytes
+// are forwarded to the client immediately instead of being buffered. This is
+// critical for HLS manifests and video segments.
+func (um *UpstreamManager) GetStreamingProxy(address string, stripPrefix bool, pathPrefix string) (*httputil.ReverseProxy, error) {
+	cacheKey := fmt.Sprintf("%s|%v|%s|streaming", address, stripPrefix, pathPrefix)
+
+	um.mu.RLock()
+	if proxy, ok := um.proxies[cacheKey]; ok {
+		um.mu.RUnlock()
+		return proxy, nil
+	}
+	um.mu.RUnlock()
+
+	if !strings.HasPrefix(address, "http://") && !strings.HasPrefix(address, "https://") {
+		address = "http://" + address
+	}
+
+	target, err := url.Parse(address)
+	if err != nil {
+		return nil, fmt.Errorf("parsing upstream url %q: %w", address, err)
+	}
+
+	proxy := &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			req.URL.Scheme = target.Scheme
+			req.URL.Host = target.Host
+			req.Host = target.Host
+
+			if stripPrefix && pathPrefix != "" {
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, pathPrefix)
+				if req.URL.Path == "" {
+					req.URL.Path = "/"
+				}
+			}
+
+			if req.URL.RawPath != "" {
+				if stripPrefix && pathPrefix != "" {
+					req.URL.RawPath = strings.TrimPrefix(req.URL.RawPath, pathPrefix)
+					if req.URL.RawPath == "" {
+						req.URL.RawPath = "/"
+					}
+				}
+			}
+		},
+		Transport:     um.Transport,
+		FlushInterval: -1,
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			log.Error().
+				Err(err).
+				Str("upstream", address).
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Msg("upstream request failed")
+
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "upstream service unavailable")
+		},
+		ModifyResponse: func(resp *http.Response) error {
+			log.Debug().
+				Str("upstream", address).
+				Int("status", resp.StatusCode).
+				Msg("upstream response received")
+			return nil
+		},
+	}
+
+	um.mu.Lock()
+	um.proxies[cacheKey] = proxy
+	um.mu.Unlock()
+
+	return proxy, nil
+}
+
 // RemoveProxy evicts a cached proxy for the given address. This is useful
 // when a service instance becomes unhealthy and should no longer be used.
 func (um *UpstreamManager) RemoveProxy(address string) {
