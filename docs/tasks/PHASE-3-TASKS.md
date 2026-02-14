@@ -406,32 +406,32 @@
 ## 7. API Gateway Güncellemeleri
 
 ### 7.1 Search Route'ları
-- [ ] GET `/api/search` → search-service (Auth: ✓)
-- [ ] GET `/api/search/autocomplete` → search-service (Auth: ✓)
-- [ ] GET `/api/search/trending` → search-service (Auth: ✗, public)
+- [x] GET `/api/search` → search-service (Auth: ✓)
+- [x] GET `/api/search/autocomplete` → search-service (Auth: ✓)
+- [x] GET `/api/search/trending` → search-service (Auth: ✗, public)
 
 ### 7.2 Recommendation Route'ları
-- [ ] GET `/api/recommendations` → recommendation-service (Auth: ✓)
-- [ ] GET `/api/recommendations/similar/{id}` → recommendation-service (Auth: ✓)
-- [ ] GET `/api/recommendations/home` → recommendation-service (Auth: ✓)
-- [ ] POST `/api/recommendations/feedback` → recommendation-service (Auth: ✓)
+- [x] GET `/api/recommendations` → recommendation-service (Auth: ✓)
+- [x] GET `/api/recommendations/similar/{id}` → recommendation-service (Auth: ✓)
+- [x] GET `/api/recommendations/home` → recommendation-service (Auth: ✓)
+- [x] POST `/api/recommendations/feedback` → recommendation-service (Auth: ✓)
 
 ### 7.3 Subscription Route'ları
-- [ ] GET `/api/plans` → subscription-service (Auth: ✗, public)
-- [ ] POST `/api/subscriptions` → subscription-service (Auth: ✓)
-- [ ] GET `/api/subscriptions/me` → subscription-service (Auth: ✓)
-- [ ] PUT `/api/subscriptions/me/plan` → subscription-service (Auth: ✓)
-- [ ] POST `/api/subscriptions/me/cancel` → subscription-service (Auth: ✓)
-- [ ] GET `/api/subscriptions/me/invoices` → subscription-service (Auth: ✓)
+- [x] GET `/api/plans` → subscription-service (Auth: ✗, public)
+- [x] POST `/api/subscriptions` → subscription-service (Auth: ✓)
+- [x] GET `/api/subscriptions/me` → subscription-service (Auth: ✓)
+- [x] PUT `/api/subscriptions/me/plan` → subscription-service (Auth: ✓)
+- [x] POST `/api/subscriptions/me/cancel` → subscription-service (Auth: ✓)
+- [x] GET `/api/subscriptions/me/invoices` → subscription-service (Auth: ✓)
 
 ### 7.4 User Service Yeni Route'ları
-- [ ] POST `/api/users/me/ratings` → user-service (Auth: ✓)
-- [ ] GET `/api/users/me/ratings` → user-service (Auth: ✓)
+- [x] POST `/api/users/me/ratings` → user-service (Auth: ✓)
+- [x] GET `/api/users/me/ratings` → user-service (Auth: ✓)
 
 ### 7.5 Config Güncelleme
-- [ ] `gateway/config.yaml` — search-service, recommendation-service, subscription-service tanımları
-- [ ] Consul'dan yeni servisleri çözümleme
-- [ ] Public route listesini güncelle (`/api/search/trending`, `/api/plans`)
+- [x] `gateway/config.yaml` — search-service, recommendation-service, subscription-service tanımları
+- [x] Consul'dan yeni servisleri çözümleme
+- [x] Public route listesini güncelle (`/api/search/trending`, `/api/plans`)
 
 ---
 

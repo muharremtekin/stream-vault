@@ -68,6 +68,26 @@ func DefaultRoutes() []Route {
 			ServiceName: "encoding-service",
 			StripPrefix: false,
 		},
+		{
+			PathPrefix:  "/api/search",
+			ServiceName: "search-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/api/recommendations",
+			ServiceName: "recommendation-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/api/plans",
+			ServiceName: "subscription-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/api/subscriptions",
+			ServiceName: "subscription-service",
+			StripPrefix: false,
+		},
 	}
 }
 

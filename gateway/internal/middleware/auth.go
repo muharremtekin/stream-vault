@@ -12,6 +12,8 @@ import (
 var publicPrefixes = []string{
 	"/api/auth/",
 	"/api/catalog/",
+	"/api/search/trending",
+	"/api/plans/",
 	"/health",
 }
 
@@ -61,8 +63,8 @@ func isPublicRoute(path string) bool {
 			return true
 		}
 	}
-	// Exact match for /health without trailing slash.
-	if path == "/health" {
+	// Exact matches for paths without trailing slash.
+	if path == "/health" || path == "/api/plans" {
 		return true
 	}
 	return false

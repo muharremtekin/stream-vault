@@ -84,6 +84,40 @@ func TestAuth_PublicRoute_Health_BypassesAuth(t *testing.T) {
 	}
 }
 
+func TestAuth_PublicRoute_SearchTrending_BypassesAuth(t *testing.T) {
+	called := false
+	handler := Auth(testSecret, testIssuer)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/search/trending", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if !called {
+		t.Error("expected next handler to be called for public route /api/search/trending")
+	}
+}
+
+func TestAuth_PublicRoute_Plans_BypassesAuth(t *testing.T) {
+	called := false
+	handler := Auth(testSecret, testIssuer)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	req := httptest.NewRequest(http.MethodGet, "/api/plans", nil)
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if !called {
+		t.Error("expected next handler to be called for public route /api/plans")
+	}
+}
+
 func TestAuth_ProtectedRoute_NoToken_Returns401(t *testing.T) {
 	handler := Auth(testSecret, testIssuer)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("next handler should not be called without token")
@@ -199,6 +233,14 @@ func TestIsPublicRoute(t *testing.T) {
 		{"/api/catalog/movies", true},
 		{"/api/catalog/genres", true},
 		{"/health", true},
+		{"/api/search/trending", true},
+		{"/api/search/trending/", true},
+		{"/api/plans", true},
+		{"/api/plans/", true},
+		{"/api/search", false},
+		{"/api/search/autocomplete", false},
+		{"/api/recommendations", false},
+		{"/api/subscriptions", false},
 		{"/api/users/me", false},
 		{"/api/profiles", false},
 		{"/api/watchlist", false},

@@ -29,6 +29,15 @@ services:
   encoding-service:
     url: "http://encoding-service:5004"
     health_path: "/health/ready"
+  search-service:
+    url: "http://search-service:5005"
+    health_path: "/health/ready"
+  recommendation-service:
+    url: "http://recommendation-service:5006"
+    health_path: "/health/ready"
+  subscription-service:
+    url: "http://subscription-service:5007"
+    health_path: "/health/ready"
 
 logging:
   level: "info"
