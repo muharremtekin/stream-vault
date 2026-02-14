@@ -61,8 +61,8 @@ public class JwtTokenServiceTests : IDisposable
         var jwtToken = handler.ReadJwtToken(token);
 
         Assert.Equal("StreamVault.UserService.Test", jwtToken.Issuer);
-        Assert.Contains(jwtToken.Claims, c => c.Type == JwtRegisteredClaimNames.Email && c.Value == user.Email);
         Assert.Contains(jwtToken.Claims, c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == user.Id.ToString());
+        Assert.DoesNotContain(jwtToken.Claims, c => c.Type == JwtRegisteredClaimNames.Email);
     }
 
     [Fact]
@@ -165,8 +165,7 @@ public class JwtTokenServiceTests : IDisposable
         // .NET maps "sub" → ClaimTypes.NameIdentifier when validating
         Assert.Equal(user.Id.ToString(),
             principal.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-        Assert.Equal(user.Email,
-            principal.FindFirst(ClaimTypes.Email)?.Value);
+        Assert.Null(principal.FindFirst(ClaimTypes.Email));
     }
 
     [Fact]
