@@ -49,6 +49,6 @@ services:
       - "5006:5006"
       - "50054:50054"
 
-  # subscription-service:
-  #   ports:
-  #     - "5007:5007"
+  subscription-service:
+    ports:
+      - "5007:5007"

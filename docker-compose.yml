@@ -399,31 +399,36 @@ services:
           cpus: "0.25"
           memory: 256M
 
-  # subscription-service:
-  #   build: ./services/subscription-service
-  #   restart: unless-stopped
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_URLS=http://+:5007
-  #     - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_subscriptions;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
-  #     - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
-  #     - Consul__Address=http://consul:8500
-  #     - ServiceRegistration__Name=subscription-service
-  #     - ServiceRegistration__Port=5007
-  #     - Service__Host=subscription-service
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-  #     consul:
-  #       condition: service_healthy
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "wget --spider --quiet http://localhost:5007/health/live || exit 1"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 15s
+  subscription-service:
+    build: ./services/subscription-service
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5007
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_subscriptions;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
+      - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+      - Consul__Address=http://consul:8500
+      - ServiceRegistration__Name=subscription-service
+      - ServiceRegistration__Port=5007
+      - Service__Host=subscription-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:5007/health/live || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
 
 volumes:
   postgres_data:
