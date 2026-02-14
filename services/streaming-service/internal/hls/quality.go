@@ -30,7 +30,7 @@ func FilterByTier(tier string, available []QualityProfile) []QualityProfile {
 
 func tierToLevel(tier string) int {
 	switch strings.ToLower(tier) {
-	case "premium", "subscription_tier_premium":
+	case "admin", "premium", "subscription_tier_premium":
 		return 4
 	case "standard", "subscription_tier_standard":
 		return 3
