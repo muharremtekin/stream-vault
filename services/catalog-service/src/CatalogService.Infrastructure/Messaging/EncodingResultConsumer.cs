@@ -111,8 +111,10 @@ public class EncodingResultConsumer : BackgroundService
     private async Task HandleMessageAsync(EncodingResultMessage message, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Processing encoding result: JobId={JobId}, ContentId={ContentId}, Status={Status}",
-            message.JobId, message.ContentId, message.Status);
+            "Processing encoding result: EventId={EventId}, EventType={EventType}, Source={Source}, " +
+            "CorrelationId={CorrelationId}, JobId={JobId}, ContentId={ContentId}, Status={Status}",
+            message.EventId, message.EventType, message.Source,
+            message.CorrelationId, message.JobId, message.ContentId, message.Status);
 
         using var scope = _scopeFactory.CreateScope();
         var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -151,8 +153,8 @@ public class EncodingResultConsumer : BackgroundService
         {
             videoStatus = VideoStatus.Error;
             _logger.LogWarning(
-                "Encoding failed for ContentId={ContentId}: {Error}",
-                message.ContentId, message.ErrorMessage);
+                "Encoding failed for ContentId={ContentId}, CorrelationId={CorrelationId}: {Error}",
+                message.ContentId, message.CorrelationId, message.ErrorMessage);
         }
         else
         {

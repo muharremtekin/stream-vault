@@ -15,8 +15,17 @@ pub struct EncodingJob {
 
 /// Outgoing encoding result published to the `encoding` exchange.
 /// Consumed by streaming-service and catalog-service from their respective queues.
+/// Includes event envelope fields per Rule 3.4.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EncodingResult {
+    // Event envelope fields (Rule 3.4)
+    pub event_id: String,
+    pub event_type: String,
+    pub timestamp: String,
+    pub source: String,
+    pub correlation_id: String,
+
+    // Data fields
     pub job_id: String,
     pub content_id: String,
     /// "completed" or "failed"
@@ -63,6 +72,11 @@ mod tests {
     #[test]
     fn test_encoding_result_serialize_completed() {
         let result = EncodingResult {
+            event_id: "550e8400-e29b-41d4-a716-446655440000".into(),
+            event_type: "encoding.job.completed".into(),
+            timestamp: "2024-01-15T10:35:00Z".into(),
+            source: "encoding-service".into(),
+            correlation_id: "abc-123".into(),
             job_id: "abc-123".into(),
             content_id: "movie-456".into(),
             status: "completed".into(),
@@ -82,11 +96,19 @@ mod tests {
         let json = serde_json::to_string(&result).unwrap();
         assert!(!json.contains("error_message"));
         assert!(json.contains("720p"));
+        assert!(json.contains("event_id"));
+        assert!(json.contains("encoding.job.completed"));
+        assert!(json.contains("encoding-service"));
     }
 
     #[test]
     fn test_encoding_result_serialize_failed() {
         let result = EncodingResult {
+            event_id: "660e8400-e29b-41d4-a716-446655440001".into(),
+            event_type: "encoding.job.failed".into(),
+            timestamp: "2024-01-15T10:35:00Z".into(),
+            source: "encoding-service".into(),
+            correlation_id: "abc-123".into(),
             job_id: "abc-123".into(),
             content_id: "movie-456".into(),
             status: "failed".into(),
@@ -99,5 +121,30 @@ mod tests {
         let json = serde_json::to_string(&result).unwrap();
         assert!(json.contains("error_message"));
         assert!(!json.contains("outputs"));
+        assert!(json.contains("encoding.job.failed"));
+    }
+
+    #[test]
+    fn test_encoding_result_deserialize_with_envelope() {
+        let json = r#"{
+            "event_id": "550e8400-e29b-41d4-a716-446655440000",
+            "event_type": "encoding.job.completed",
+            "timestamp": "2024-01-15T10:35:00Z",
+            "source": "encoding-service",
+            "correlation_id": "abc-123",
+            "job_id": "abc-123",
+            "content_id": "movie-456",
+            "status": "completed",
+            "outputs": [],
+            "duration_seconds": 120,
+            "completed_at": "2024-01-15T10:35:00Z"
+        }"#;
+
+        let result: EncodingResult = serde_json::from_str(json).unwrap();
+        assert_eq!(result.event_id, "550e8400-e29b-41d4-a716-446655440000");
+        assert_eq!(result.event_type, "encoding.job.completed");
+        assert_eq!(result.source, "encoding-service");
+        assert_eq!(result.correlation_id, "abc-123");
+        assert_eq!(result.job_id, "abc-123");
     }
 }

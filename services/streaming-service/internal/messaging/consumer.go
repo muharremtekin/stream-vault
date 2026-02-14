@@ -14,6 +14,14 @@ import (
 )
 
 type EncodingResult struct {
+	// Event envelope fields (Rule 3.4)
+	EventID       string `json:"event_id,omitempty"`
+	EventType     string `json:"event_type,omitempty"`
+	Timestamp     string `json:"timestamp,omitempty"`
+	Source        string `json:"source,omitempty"`
+	CorrelationID string `json:"correlation_id,omitempty"`
+
+	// Data fields
 	JobID       string           `json:"job_id"`
 	ContentID   string           `json:"content_id"`
 	Status      string           `json:"status"`
@@ -168,6 +176,10 @@ func (c *Consumer) handleResult(ctx context.Context, msg amqp.Delivery) {
 	}
 
 	log.Info().
+		Str("event_id", result.EventID).
+		Str("event_type", result.EventType).
+		Str("source", result.Source).
+		Str("correlation_id", result.CorrelationID).
 		Str("job_id", result.JobID).
 		Str("content_id", result.ContentID).
 		Str("status", result.Status).

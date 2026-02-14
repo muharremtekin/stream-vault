@@ -4,6 +4,23 @@ namespace CatalogService.Infrastructure.Messaging;
 
 public class EncodingResultMessage
 {
+    // Event envelope fields (Rule 3.4)
+    [JsonPropertyName("event_id")]
+    public string? EventId { get; set; }
+
+    [JsonPropertyName("event_type")]
+    public string? EventType { get; set; }
+
+    [JsonPropertyName("timestamp")]
+    public string? Timestamp { get; set; }
+
+    [JsonPropertyName("source")]
+    public string? Source { get; set; }
+
+    [JsonPropertyName("correlation_id")]
+    public string? CorrelationId { get; set; }
+
+    // Data fields
     [JsonPropertyName("job_id")]
     public string JobId { get; set; } = string.Empty;
 

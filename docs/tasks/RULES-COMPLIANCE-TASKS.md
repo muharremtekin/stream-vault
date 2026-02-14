@@ -109,26 +109,26 @@
 ## 4. [YÜKSEK] Event Payload Düzeltmeleri (Kural 3.4)
 
 ### 4.1 Encoding Service — Event Envelope Ekle
-- [ ] `services/encoding-service/src/messaging/models.rs` — `EncodingResult` struct'ına zorunlu envelope alanları ekle:
+- [x] `services/encoding-service/src/messaging/models.rs` — `EncodingResult` struct'ına zorunlu envelope alanları ekle:
   - `event_id: String` (UUID)
   - `event_type: String` (örn: `"encoding.job.completed"`)
   - `timestamp: String` (ISO 8601 UTC)
   - `source: String` (`"encoding-service"`)
   - `correlation_id: String` (trace-id)
-- [ ] `services/encoding-service/src/messaging/publisher.rs` — Publish sırasında envelope alanlarını doldur
+- [x] `services/encoding-service/src/pipeline/orchestrator.rs` — Publish sırasında envelope alanlarını doldur
 
 ### 4.2 Catalog Service — Consumer'ı Güncel Envelope'a Uyumla
-- [ ] `services/catalog-service/src/CatalogService.Infrastructure/Messaging/EncodingResultMessage.cs` — Yeni envelope alanlarını deserialize edecek şekilde güncelle
-- [ ] Consumer'da `eventType`, `source`, `correlationId` alanlarını loglama ve trace'e ekle
+- [x] `services/catalog-service/src/CatalogService.Infrastructure/Messaging/EncodingResultMessage.cs` — Yeni envelope alanlarını deserialize edecek şekilde güncelle
+- [x] Consumer'da `eventType`, `source`, `correlationId` alanlarını loglama ve trace'e ekle
 
 ---
 
 ## 5. [ORTA] Güvenlik Düzeltmeleri (Kural 8.1)
 
 ### 5.1 JWT Payload'dan Kişisel Veriyi Kaldır
-- [ ] `services/user-service/src/UserService.Infrastructure/Services/JwtTokenService.cs` — JWT claim'lerden `email` alanını kaldır
-- [ ] Gateway veya downstream servislerde email claim'e bağımlılık varsa kontrol et ve düzelt
-- [ ] Email gerekiyorsa `sub` (userId) üzerinden servis çağrısıyla alınmalı
+- [x] `services/user-service/src/UserService.Infrastructure/Services/JwtTokenService.cs` — JWT claim'lerden `email` alanını kaldır
+- [x] Gateway veya downstream servislerde email claim'e bağımlılık varsa kontrol et ve düzelt
+- [x] Email gerekiyorsa `sub` (userId) üzerinden servis çağrısıyla alınmalı
 
 ---
 

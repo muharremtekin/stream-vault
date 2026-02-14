@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use async_trait::async_trait;
 use tracing::{error, info};
+use uuid::Uuid;
 
 use crate::config::{EncodingConfig, MinIOConfig};
 use crate::domain::job::{Job, JobOutput};
@@ -147,6 +148,11 @@ impl JobProcessor for PipelineOrchestrator {
                 store::complete_job(&self.store, &job.job_id, domain_outputs).await;
 
                 let encoding_result = EncodingResult {
+                    event_id: Uuid::new_v4().to_string(),
+                    event_type: "encoding.job.completed".into(),
+                    timestamp: chrono::Utc::now().to_rfc3339(),
+                    source: "encoding-service".into(),
+                    correlation_id: job.job_id.clone(),
                     job_id: job.job_id.clone(),
                     content_id: job.content_id.clone(),
                     status: "completed".into(),
@@ -174,6 +180,11 @@ impl JobProcessor for PipelineOrchestrator {
                 store::fail_job(&self.store, &job.job_id, &format!("{}", e)).await;
 
                 let encoding_result = EncodingResult {
+                    event_id: Uuid::new_v4().to_string(),
+                    event_type: "encoding.job.failed".into(),
+                    timestamp: chrono::Utc::now().to_rfc3339(),
+                    source: "encoding-service".into(),
+                    correlation_id: job.job_id.clone(),
                     job_id: job.job_id.clone(),
                     content_id: job.content_id.clone(),
                     status: "failed".into(),
