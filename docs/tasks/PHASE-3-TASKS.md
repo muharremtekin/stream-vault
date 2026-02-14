@@ -164,14 +164,13 @@
 
 ---
 
-## 4. Recommendation Engine (Rust)
+## 4. Recommendation Engine (Go)
 
 ### 4.1 Proje Kurulumu & Temel Yapı
-- [ ] Cargo projesi oluştur (`services/recommendation-service/`)
-- [ ] `Cargo.toml` — dependency'ler (axum, tokio, sqlx, lapin, redis, tonic, serde, tracing)
-- [ ] `src/config.rs` — config.toml + env var yükleme
-- [ ] `src/main.rs` — Axum + Tonic bootstrap, RabbitMQ consumer başlatma
-- [ ] `src/error.rs` — Hata tipleri (thiserror)
+- [ ] Go projesi oluştur (`services/recommendation-service/`)
+- [ ] `go.mod` oluştur, dependency'leri ekle (pgx, go-redis, amqp091-go, grpc, consul api, viper)
+- [ ] `internal/config/config.go` — config.yaml + Viper ile env var yükleme
+- [ ] `cmd/recommendation/main.go` — HTTP + gRPC server bootstrap, RabbitMQ consumer başlatma
 - [ ] Dockerfile oluştur (multi-stage build)
 - [ ] Makefile oluştur (build, test, lint)
 - [ ] GET /health endpoint (PostgreSQL, Redis, RabbitMQ bağlantı durumu)
@@ -186,29 +185,29 @@
 - [ ] `migrations/002_create_user_profiles.sql` — user_profiles tablosu
 - [ ] `migrations/003_create_content_features.sql` — content_features tablosu
 - [ ] `migrations/004_create_content_similarity.sql` — content_similarity tablosu
-- [ ] `src/model/interaction.rs` — Etkileşim modeli (watch, rating, watchlist)
-- [ ] `src/model/user_profile.rs` — Kullanıcı tercih profili
-- [ ] `src/model/content_features.rs` — İçerik özellik vektörü
-- [ ] `src/model/recommendation.rs` — Öneri sonuç yapısı
-- [ ] `src/store/postgres.rs` — PostgreSQL repository (sqlx)
+- [ ] `internal/model/interaction.go` — Etkileşim modeli (watch, rating, watchlist)
+- [ ] `internal/model/user_profile.go` — Kullanıcı tercih profili
+- [ ] `internal/model/content_features.go` — İçerik özellik vektörü
+- [ ] `internal/model/recommendation.go` — Öneri sonuç yapısı
+- [ ] `internal/store/postgres.go` — PostgreSQL repository (pgx)
 
 ### 4.4 Redis Feature Store
-- [ ] `src/store/redis.rs` — Redis feature store
+- [ ] `internal/store/redis.go` — Redis feature store
 - [ ] Kullanıcı profil cache (`rec:user_profile:{userId}`, TTL: 1 saat)
 - [ ] İçerik feature cache (`rec:content_features:{contentId}`, TTL: 6 saat)
 - [ ] Öneri sonuç cache (`rec:recommendations:{userId}`, TTL: 30 dakika)
 - [ ] Benzer içerik cache (`rec:similar:{contentId}`, TTL: 6 saat)
 
 ### 4.5 Content-Based Filtering
-- [ ] `src/engine/content_based.rs` — Content-based filtering motoru
+- [ ] `internal/engine/content_based.go` — Content-based filtering motoru
 - [ ] İçerik feature vektörü oluşturma (genres, tags, director, year, rating)
 - [ ] Kullanıcı preference profili hesaplama (izleme geçmişi ağırlıklı ortalaması)
-- [ ] `src/engine/similarity.rs` — Cosine similarity hesaplama
+- [ ] `internal/engine/similarity.go` — Cosine similarity hesaplama
 - [ ] İçerik-içerik benzerlik matrisi oluşturma (top-N sakla)
 - [ ] Kullanıcı-içerik benzerlik skoru hesaplama
 
 ### 4.6 Collaborative Filtering
-- [ ] `src/engine/collaborative.rs` — User-based collaborative filtering
+- [ ] `internal/engine/collaborative.go` — User-based collaborative filtering
 - [ ] User-item matrix oluşturma (izleme + rating verisi)
 - [ ] Kullanıcı benzerliği hesaplama (cosine similarity, ortak puanlanmış içerikler üzerinden)
 - [ ] En benzer K kullanıcıyı bulma (K=20)
@@ -216,15 +215,15 @@
 - [ ] Implicit feedback dönüşümü (izleme tamamlama → 7.0, %50+ → 5.0, watchlist → 6.0)
 
 ### 4.7 Hybrid Scorer & Popularity
-- [ ] `src/engine/hybrid.rs` — Hibrit skor hesaplama
+- [ ] `internal/engine/hybrid.go` — Hibrit skor hesaplama
 - [ ] `final_score = α × collab_score + β × content_score + γ × popularity`
 - [ ] Ağırlıklar kullanıcı etkileşim sayısına göre dinamik (cold start: γ yüksek, aktif: α yüksek)
-- [ ] `src/engine/popularity.rs` — Popülerlik bazlı öneri (cold start fallback)
+- [ ] `internal/engine/popularity.go` — Popülerlik bazlı öneri (cold start fallback)
 - [ ] Cold start eşiği: 5 etkileşimden az → popülerlik bazlı
 
 ### 4.8 HTTP API
-- [ ] `src/api/routes.rs` — HTTP endpoint tanımları
-- [ ] `src/api/handlers.rs` — Handler implementasyonları
+- [ ] `internal/handler/routes.go` — HTTP endpoint tanımları
+- [ ] `internal/handler/recommendation.go` — Handler implementasyonları
 - [ ] GET /api/recommendations — Kişisel öneriler (X-User-Id header, limit parametresi)
 - [ ] GET /api/recommendations/similar/{contentId} — Benzer içerikler (limit parametresi)
 - [ ] GET /api/recommendations/home — Ana sayfa section'ları (personal, trending, because_you_watched, genre, new)
@@ -239,13 +238,13 @@
 - [ ] GetHomePageSections RPC
 
 ### 4.10 RabbitMQ Consumers
-- [ ] `src/consumer/watch_consumer.rs` — WatchCompleted event consumer
+- [ ] `internal/consumer/watch_consumer.go` — WatchCompleted event consumer
 - [ ] Etkileşim kaydet (interactions tablosu, type: watch)
 - [ ] Kullanıcı profili güncelleme tetikle
-- [ ] `src/consumer/rating_consumer.rs` — ContentRated event consumer
+- [ ] `internal/consumer/rating_consumer.go` — ContentRated event consumer
 - [ ] Etkileşim kaydet (interactions tablosu, type: rating)
 - [ ] Kullanıcı profili güncelleme tetikle
-- [ ] `src/consumer/catalog_consumer.rs` — ContentAdded event consumer
+- [ ] `internal/consumer/catalog_consumer.go` — ContentAdded event consumer
 - [ ] Content features tablosuna yeni içerik ekle
 - [ ] Feature vektörü hesapla
 
@@ -513,7 +512,7 @@
 5. **Search Service — Autocomplete + Trending** → Edge ngram autocomplete, Redis trend listesi, cache
 6. **Catalog Service — Outbox** → Outbox pattern ekle, catalog.events exchange'e event publish
 7. **Search Service — Consumer** → Catalog event consumer ile ES index senkronizasyonu, watch count consumer
-8. **Recommendation — Temel** → Rust projesi, PostgreSQL migrations, model tanımları, Redis feature store
+8. **Recommendation — Temel** → Go projesi, PostgreSQL migrations, model tanımları, Redis feature store
 9. **Recommendation — Content-Based** → Feature vektörü, cosine similarity, benzer içerik endpoint
 10. **Recommendation — Collaborative** → User-item matrix, kullanıcı benzerliği, hibrit skor, cold start fallback
 11. **Recommendation — Home Page + Events** → Ana sayfa section'ları, RabbitMQ consumer'lar
