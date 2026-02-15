@@ -52,3 +52,9 @@ services:
   subscription-service:
     ports:
       - "5007:5007"
+
+  notification-service:
+    environment:
+      - NOTIFICATION_LOGGING_LEVEL=debug
+    ports:
+      - "5008:5008"

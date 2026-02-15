@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: #1a1a2e; color: #ffffff; padding: 30px; border-radius: 8px;">
+    <h1 style="color: #e94560; margin-top: 0;">Encoding Tamamlandı</h1>
+    <p>Merhaba,</p>
+    <p>Encoding işlemi {{.Status}} durumunda.</p>
+    <table style="width: 100%; margin: 15px 0; color: #ccc;">
+      <tr><td>Job ID:</td><td><strong>{{.JobID}}</strong></td></tr>
+      <tr><td>İçerik ID:</td><td><strong>{{.ContentID}}</strong></td></tr>
+      <tr><td>Tamamlanma:</td><td>{{.CompletedAt}}</td></tr>
+    </table>
+    {{if .ErrorMessage}}<p style="color: #e94560;">Hata: {{.ErrorMessage}}</p>{{end}}
+    <hr style="border-color: #333;">
+    <p style="font-size: 12px; color: #888;">StreamVault Ekibi</p>
+  </div>
+</body>
+</html>

@@ -88,6 +88,17 @@ func DefaultRoutes() []Route {
 			ServiceName: "subscription-service",
 			StripPrefix: false,
 		},
+		{
+			PathPrefix:  "/api/notifications",
+			ServiceName: "notification-service",
+			StripPrefix: false,
+		},
+		{
+			PathPrefix:  "/ws/notifications",
+			ServiceName: "notification-service",
+			StripPrefix: false,
+			Streaming:   true,
+		},
 	}
 }
 

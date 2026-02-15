@@ -15,6 +15,7 @@ var publicPrefixes = []string{
 	"/api/search/trending",
 	"/api/plans/",
 	"/health",
+	"/ws/",
 }
 
 // Claims represents the expected JWT payload structure.

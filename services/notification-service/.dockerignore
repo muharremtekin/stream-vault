@@ -1,0 +1,8 @@
+bin/
+tmp/
+*.tmp
+*.log
+.git
+.gitignore
+README.md
+Makefile

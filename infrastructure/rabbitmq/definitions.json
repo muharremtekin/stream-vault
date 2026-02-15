@@ -133,6 +133,27 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "notification.subscription",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.encoding",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "notification.content",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "bindings": [
@@ -262,6 +283,54 @@
       "destination": "user.subscription-sync",
       "destination_type": "queue",
       "routing_key": "plan.changed",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "notification.subscription",
+      "destination_type": "queue",
+      "routing_key": "subscription.created",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "notification.subscription",
+      "destination_type": "queue",
+      "routing_key": "subscription.cancelled",
+      "arguments": {}
+    },
+    {
+      "source": "subscription.events",
+      "vhost": "/",
+      "destination": "notification.subscription",
+      "destination_type": "queue",
+      "routing_key": "plan.changed",
+      "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "notification.encoding",
+      "destination_type": "queue",
+      "routing_key": "job.completed",
+      "arguments": {}
+    },
+    {
+      "source": "encoding",
+      "vhost": "/",
+      "destination": "notification.encoding",
+      "destination_type": "queue",
+      "routing_key": "job.failed",
+      "arguments": {}
+    },
+    {
+      "source": "catalog.events",
+      "vhost": "/",
+      "destination": "notification.content",
+      "destination_type": "queue",
+      "routing_key": "content.created",
       "arguments": {}
     }
   ],

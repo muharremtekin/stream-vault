@@ -433,6 +433,33 @@ services:
           cpus: "0.25"
           memory: 256M
 
+  notification-service:
+    build: ./services/notification-service
+    restart: unless-stopped
+    environment:
+      - NOTIFICATION_MONGODB_URI=mongodb://mongo:27017
+      - NOTIFICATION_MONGODB_DATABASE=streamvault_notifications
+      - NOTIFICATION_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+      - NOTIFICATION_CONSUL_ADDRESS=consul:8500
+    depends_on:
+      mongo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5008/health/live"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
   # --- Observability ---
 
   jaeger:

@@ -38,6 +38,9 @@ services:
   subscription-service:
     url: "http://subscription-service:5007"
     health_path: "/health/ready"
+  notification-service:
+    url: "http://notification-service:5008"
+    health_path: "/health/ready"
 
 logging:
   level: "info"

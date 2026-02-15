@@ -1,0 +1,35 @@
+server:
+  http_port: 5008
+  grpc_port: 50055
+  read_timeout: 30s
+  write_timeout: 30s
+
+consul:
+  address: "consul:8500"
+  health_check_interval: 10s
+
+mongodb:
+  uri: "mongodb://mongo:27017"
+  database: "streamvault_notifications"
+
+rabbitmq:
+  url: "amqp://rabbitmq:5672/"
+  subscription_queue: "notification.subscription"
+  encoding_queue: "notification.encoding"
+  content_queue: "notification.content"
+  prefetch: 10
+
+websocket:
+  read_buffer_size: 1024
+  write_buffer_size: 1024
+  ping_interval: 30s
+  pong_timeout: 10s
+  max_connections_per_user: 5
+
+jwt:
+  secret: ""
+  issuer: "StreamVault.UserService"
+
+logging:
+  level: "info"
+  format: "json"
