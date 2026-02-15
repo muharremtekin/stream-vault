@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/search-service/internal/elasticsearch"
+	"github.com/streamvault/search-service/internal/metrics"
 	"github.com/streamvault/search-service/internal/model"
 )
 
@@ -27,9 +28,11 @@ func NewCachedSearcher(searcher *elasticsearch.Searcher, cache *Cache) *CachedSe
 // Search tries the cache first, then falls back to Elasticsearch.
 func (cs *CachedSearcher) Search(ctx context.Context, req model.SearchRequest) (*model.SearchResponse, error) {
 	if resp, err := cs.cache.GetSearchResult(ctx, req); err == nil {
+		metrics.SearchCacheHitsTotal.Inc()
 		log.Debug().Str("query", req.Query).Msg("search cache hit")
 		return resp, nil
 	}
+	metrics.SearchCacheMissesTotal.Inc()
 
 	resp, err := cs.searcher.Search(ctx, req)
 	if err != nil {
@@ -48,9 +51,11 @@ func (cs *CachedSearcher) Search(ctx context.Context, req model.SearchRequest) (
 // Autocomplete tries the cache first, then falls back to Elasticsearch.
 func (cs *CachedSearcher) Autocomplete(ctx context.Context, req model.AutocompleteRequest) (*model.AutocompleteResponse, error) {
 	if resp, err := cs.cache.GetAutocompleteResult(ctx, req); err == nil {
+		metrics.SearchCacheHitsTotal.Inc()
 		log.Debug().Str("query", req.Query).Msg("autocomplete cache hit")
 		return resp, nil
 	}
+	metrics.SearchCacheMissesTotal.Inc()
 
 	resp, err := cs.searcher.Autocomplete(ctx, req)
 	if err != nil {

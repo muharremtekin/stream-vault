@@ -13,6 +13,7 @@ use crate::error::Result;
 use crate::messaging::consumer::JobProcessor;
 use crate::messaging::models::{EncodingJob, EncodingResult};
 use crate::messaging::publisher::ResultPublisher;
+use crate::metrics;
 use crate::storage::StorageClient;
 use crate::store::{self, JobStore};
 
@@ -121,6 +122,8 @@ impl JobProcessor for PipelineOrchestrator {
         let start = Instant::now();
         let job_dir = self.temp_dir.join(&job.job_id);
 
+        metrics::ENCODING_ACTIVE_JOBS.inc();
+
         // Insert job into store
         let domain_job = Job::from_encoding_job(&job);
         store::insert_job(&self.store, domain_job).await;
@@ -137,6 +140,9 @@ impl JobProcessor for PipelineOrchestrator {
         match result {
             Ok(outputs) => {
                 let elapsed = start.elapsed();
+                metrics::ENCODING_ACTIVE_JOBS.dec();
+                metrics::ENCODING_JOBS_TOTAL.with_label_values(&["completed"]).inc();
+                metrics::ENCODING_JOB_DURATION_SECONDS.with_label_values(&["all"]).observe(elapsed.as_secs_f64());
                 info!(
                     job_id = %job.job_id,
                     content_id = %job.content_id,
@@ -170,6 +176,9 @@ impl JobProcessor for PipelineOrchestrator {
             }
             Err(e) => {
                 let elapsed = start.elapsed();
+                metrics::ENCODING_ACTIVE_JOBS.dec();
+                metrics::ENCODING_JOBS_TOTAL.with_label_values(&["failed"]).inc();
+                metrics::ENCODING_JOB_DURATION_SECONDS.with_label_values(&["all"]).observe(elapsed.as_secs_f64());
                 error!(
                     job_id = %job.job_id,
                     content_id = %job.content_id,

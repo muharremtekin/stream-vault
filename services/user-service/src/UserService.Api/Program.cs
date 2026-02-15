@@ -15,6 +15,7 @@ using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Compact;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Prometheus;
 using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -203,6 +204,7 @@ if (app.Environment.IsDevelopment())
 app.UseCorrelationId();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
+app.UseHttpMetrics();
 
 app.UseCors("AllowAll");
 
@@ -216,6 +218,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 });
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
+app.MapMetrics();
 
 // -------------------------------------------------------------------
 // Consul service registration (optional, non-blocking)

@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/rs/zerolog/log"
+
+	"github.com/streamvault/notification-service/internal/metrics"
 )
 
 // Hub manages WebSocket client connections grouped by user ID.
@@ -52,6 +54,7 @@ func (h *Hub) Run() {
 			}
 			h.clients[client.UserID][client] = true
 			h.mu.Unlock()
+			metrics.NotificationWSActiveConnections.Inc()
 			log.Debug().
 				Str("user_id", client.UserID).
 				Int("total", h.ClientCount()).
@@ -66,6 +69,7 @@ func (h *Hub) Run() {
 					if len(conns) == 0 {
 						delete(h.clients, client.UserID)
 					}
+					metrics.NotificationWSActiveConnections.Dec()
 				}
 			}
 			h.mu.Unlock()
@@ -92,6 +96,7 @@ func (h *Hub) SendToUser(userID string, msg *Message) {
 	for client := range conns {
 		select {
 		case client.send <- data:
+			metrics.NotificationWSMessagesSentTotal.Inc()
 		default:
 			h.mu.Lock()
 			if _, ok := h.clients[userID]; ok {
@@ -121,6 +126,7 @@ func (h *Hub) Broadcast(msg *Message) {
 		for client := range conns {
 			select {
 			case client.send <- data:
+				metrics.NotificationWSMessagesSentTotal.Inc()
 			default:
 			}
 		}

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -22,6 +23,7 @@ import (
 	"github.com/streamvault/notification-service/internal/discovery"
 	"github.com/streamvault/notification-service/internal/dispatcher"
 	"github.com/streamvault/notification-service/internal/handler"
+	"github.com/streamvault/notification-service/internal/metrics"
 	"github.com/streamvault/notification-service/internal/middleware"
 	"github.com/streamvault/notification-service/internal/store"
 	"github.com/streamvault/notification-service/internal/telemetry"
@@ -172,6 +174,7 @@ func main() {
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
+		metrics.Middleware(),
 		middleware.Logging(),
 	)
 
@@ -247,6 +250,8 @@ func buildHTTPRouter(
 	mux.HandleFunc("GET /health", healthH.ServeLive)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// WebSocket endpoint
 	mux.HandleFunc("GET /ws/notifications", wsHandler.ServeWS)

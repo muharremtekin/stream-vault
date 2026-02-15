@@ -9,6 +9,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
+
+	"github.com/streamvault/gateway/internal/metrics"
 )
 
 // RateLimiter holds the Redis client and rate limit parameters for the
@@ -105,6 +107,7 @@ func (rl *RateLimiter) Middleware() func(http.Handler) http.Handler {
 			}
 
 			if allowed == 0 {
+				metrics.GatewayRateLimitHitsTotal.Inc()
 				log.Warn().Str("client_ip", clientIP).Msg("rate limit exceeded")
 				w.Header().Set("Retry-After", "1")
 				WriteErrorResponse(w, http.StatusTooManyRequests, "rate limit exceeded, try again later")

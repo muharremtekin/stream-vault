@@ -9,6 +9,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
+	"github.com/streamvault/recommendation-service/internal/metrics"
 	"github.com/streamvault/recommendation-service/internal/model"
 )
 
@@ -36,12 +37,14 @@ func (c *Cache) GetUserProfile(ctx context.Context, userID string) (*model.UserP
 	key := fmt.Sprintf("rec:user_profile:%s", userID)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err != nil {
+		metrics.RecommendationCacheMissesTotal.Inc()
 		return nil, err
 	}
 	var profile model.UserProfile
 	if err := json.Unmarshal(data, &profile); err != nil {
 		return nil, fmt.Errorf("unmarshalling cached user profile: %w", err)
 	}
+	metrics.RecommendationCacheHitsTotal.Inc()
 	return &profile, nil
 }
 
@@ -71,12 +74,14 @@ func (c *Cache) GetContentFeatures(ctx context.Context, contentID string) (*mode
 	key := fmt.Sprintf("rec:content_features:%s", contentID)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err != nil {
+		metrics.RecommendationCacheMissesTotal.Inc()
 		return nil, err
 	}
 	var features model.ContentFeatures
 	if err := json.Unmarshal(data, &features); err != nil {
 		return nil, fmt.Errorf("unmarshalling cached content features: %w", err)
 	}
+	metrics.RecommendationCacheHitsTotal.Inc()
 	return &features, nil
 }
 
@@ -119,12 +124,14 @@ func (c *Cache) GetRecommendations(ctx context.Context, userID string) (*Recomme
 	key := fmt.Sprintf("rec:recommendations:%s", userID)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err != nil {
+		metrics.RecommendationCacheMissesTotal.Inc()
 		return nil, err
 	}
 	var result RecommendationResult
 	if err := json.Unmarshal(data, &result); err != nil {
 		return nil, fmt.Errorf("unmarshalling cached recommendations: %w", err)
 	}
+	metrics.RecommendationCacheHitsTotal.Inc()
 	return &result, nil
 }
 
@@ -165,12 +172,14 @@ func (c *Cache) GetSimilarContent(ctx context.Context, contentID string) (*Simil
 	key := fmt.Sprintf("rec:similar:%s", contentID)
 	data, err := c.client.Get(ctx, key).Bytes()
 	if err != nil {
+		metrics.RecommendationCacheMissesTotal.Inc()
 		return nil, err
 	}
 	var result SimilarResult
 	if err := json.Unmarshal(data, &result); err != nil {
 		return nil, fmt.Errorf("unmarshalling cached similar content: %w", err)
 	}
+	metrics.RecommendationCacheHitsTotal.Inc()
 	return &result, nil
 }
 

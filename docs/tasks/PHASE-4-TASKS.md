@@ -228,34 +228,34 @@
 ## 4. Prometheus Metrikleri
 
 ### 4.1 Go Servisleri — /metrics Endpoint
-- [ ] Gateway — Prometheus metrics endpoint (`GET /metrics`)
-  - [ ] `prometheus/client_golang` paketi ekle
-  - [ ] RED metrikleri: `http_requests_total`, `http_request_errors_total`, `http_request_duration_seconds` (histogram)
-  - [ ] Business: `gateway_active_connections`, `gateway_rate_limit_hits_total`, `gateway_circuit_breaker_state{service, state}`
-- [ ] Streaming Service — Prometheus metrics endpoint
-  - [ ] RED metrikleri (HTTP + gRPC)
-  - [ ] Business: `streaming_active_viewers`, `streaming_concurrent_viewers{tier}`, `streaming_segment_serve_duration_seconds{quality}`, `streaming_progress_saves_total`, `streaming_bandwidth_bytes_total{quality}`
-- [ ] Notification Service — Prometheus metrics endpoint
-  - [ ] RED metrikleri
-  - [ ] Business: `notification_sent_total{channel, category}`, `notification_failed_total{channel, reason}`, `notification_ws_active_connections`, `notification_ws_messages_sent_total`
-- [ ] Search Service — Prometheus metrics endpoint
-  - [ ] Business: `search_queries_total{type}`, `search_query_duration_seconds`, `search_results_count{type}`, `search_cache_hit_ratio`, `search_index_document_count`
+- [x] Gateway — Prometheus metrics endpoint (`GET /metrics`)
+  - [x] `prometheus/client_golang` paketi ekle
+  - [x] RED metrikleri: `http_requests_total`, `http_request_errors_total`, `http_request_duration_seconds` (histogram)
+  - [x] Business: `gateway_active_connections`, `gateway_rate_limit_hits_total`, `gateway_circuit_breaker_state{service, state}`
+- [x] Streaming Service — Prometheus metrics endpoint
+  - [x] RED metrikleri (HTTP + gRPC)
+  - [x] Business: `streaming_active_viewers`, `streaming_concurrent_viewers{tier}`, `streaming_segment_serve_duration_seconds{quality}`, `streaming_progress_saves_total`, `streaming_bandwidth_bytes_total{quality}`
+- [x] Notification Service — Prometheus metrics endpoint
+  - [x] RED metrikleri
+  - [x] Business: `notification_sent_total{channel, category}`, `notification_failed_total{channel, reason}`, `notification_ws_active_connections`, `notification_ws_messages_sent_total`
+- [x] Search Service — Prometheus metrics endpoint
+  - [x] Business: `search_queries_total{type}`, `search_query_duration_seconds`, `search_results_count{type}`, `search_cache_hit_ratio`, `search_index_document_count`
 
 ### 4.2 Rust Servisleri — /metrics Endpoint
-- [ ] Encoding Service — Prometheus metrics endpoint
-  - [ ] `prometheus` veya `metrics` crate ekle (`Cargo.toml`)
-  - [ ] RED metrikleri (HTTP + gRPC)
-  - [ ] Business: `encoding_jobs_total{status}`, `encoding_job_duration_seconds{quality}`, `encoding_active_jobs`, `encoding_queue_depth`, `encoding_ffmpeg_cpu_usage`
-- [ ] Recommendation Service — Prometheus metrics endpoint
-  - [ ] Business: `recommendation_requests_total{algorithm}`, `recommendation_computation_duration_seconds`, `recommendation_cache_hit_ratio`, `recommendation_cold_start_fallback_total`
+- [x] Encoding Service — Prometheus metrics endpoint
+  - [x] `prometheus` veya `metrics` crate ekle (`Cargo.toml`)
+  - [x] RED metrikleri (HTTP + gRPC)
+  - [x] Business: `encoding_jobs_total{status}`, `encoding_job_duration_seconds{quality}`, `encoding_active_jobs`, `encoding_queue_depth`, `encoding_ffmpeg_cpu_usage`
+- [x] Recommendation Service — Prometheus metrics endpoint
+  - [x] Business: `recommendation_requests_total{algorithm}`, `recommendation_computation_duration_seconds`, `recommendation_cache_hit_ratio`, `recommendation_cold_start_fallback_total`
 
 ### 4.3 .NET Servisleri — /metrics Endpoint
-- [ ] User Service — Prometheus metrics endpoint
-  - [ ] NuGet: `prometheus-net.AspNetCore` veya OpenTelemetry metrics exporter
-  - [ ] RED metrikleri + USE metrikleri (`dotnet_threadpool_threads_total`, `process_resident_memory_bytes`)
-- [ ] Catalog Service — aynı metrics entegrasyonu
-- [ ] Subscription Service — Prometheus metrics endpoint
-  - [ ] Business: `subscription_active_total{tier}`, `subscription_created_total`, `subscription_cancelled_total`, `payment_processed_total{status}`, `saga_completed_total{saga_type, result}`, `saga_duration_seconds{saga_type}`, `outbox_messages_pending`, `outbox_process_duration_seconds`
+- [x] User Service — Prometheus metrics endpoint
+  - [x] NuGet: `prometheus-net.AspNetCore` veya OpenTelemetry metrics exporter
+  - [x] RED metrikleri + USE metrikleri (`dotnet_threadpool_threads_total`, `process_resident_memory_bytes`)
+- [x] Catalog Service — aynı metrics entegrasyonu
+- [x] Subscription Service — Prometheus metrics endpoint
+  - [x] Business: `subscription_active_total{tier}`, `subscription_created_total`, `subscription_cancelled_total`, `payment_processed_total{status}`, `saga_completed_total{saga_type, result}`, `saga_duration_seconds{saga_type}`, `outbox_messages_pending`, `outbox_process_duration_seconds`
 
 ### 4.4 Prometheus Doğrulama
 - [ ] Prometheus UI'da (`http://localhost:9090/targets`) tüm servisler "UP" görünüyor

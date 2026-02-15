@@ -7,6 +7,7 @@ using Consul;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Prometheus;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -111,6 +112,7 @@ var app = builder.Build();
 app.UseCorrelationId();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
+app.UseHttpMetrics();
 
 if (app.Environment.IsDevelopment())
 {
@@ -132,6 +134,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 });
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
+app.MapMetrics();
 
 // ---------------------------------------------------------------------------
 // Seed data on startup

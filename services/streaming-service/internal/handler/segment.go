@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/streaming-service/internal/config"
+	"github.com/streamvault/streaming-service/internal/metrics"
 	"github.com/streamvault/streaming-service/internal/storage"
 )
 
@@ -35,6 +36,10 @@ func (h *SegmentHandler) ServeSegment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	start := time.Now()
+	metrics.StreamingActiveViewers.Inc()
+	defer metrics.StreamingActiveViewers.Dec()
+
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
 
@@ -57,7 +62,11 @@ func (h *SegmentHandler) ServeSegment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.WriteHeader(http.StatusOK)
-	if _, err := io.Copy(w, reader); err != nil {
+	n, err := io.Copy(w, reader)
+	if err != nil {
 		log.Warn().Err(err).Str("key", key).Msg("error streaming segment to client")
 	}
+
+	metrics.StreamingSegmentServeDuration.WithLabelValues(quality).Observe(time.Since(start).Seconds())
+	metrics.StreamingBandwidthBytesTotal.WithLabelValues(quality).Add(float64(n))
 }

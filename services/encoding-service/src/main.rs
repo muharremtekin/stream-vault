@@ -5,6 +5,7 @@ mod domain;
 mod error;
 mod grpc;
 mod messaging;
+mod metrics;
 mod pipeline;
 mod storage;
 mod store;
@@ -203,7 +204,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/health", get(liveness_check))
         .route("/health/live", get(liveness_check))
         .route("/health/ready", get(readiness_check))
+        .route("/metrics", get(metrics::metrics_handler))
         .merge(api::routes::encoding_routes())
+        .layer(axum::middleware::from_fn(metrics::metrics_middleware))
         .layer(TraceLayer::new_for_http())
         .with_state(app_state);
 

@@ -2,6 +2,7 @@ using Consul;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Prometheus;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -151,6 +152,7 @@ if (app.Environment.IsDevelopment())
 app.UseCorrelationId();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
+app.UseHttpMetrics();
 
 app.UseCors("AllowAll");
 
@@ -161,6 +163,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
     Predicate = check => check.Tags.Contains("ready")
 });
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
+app.MapMetrics();
 
 // -------------------------------------------------------------------
 // Consul service registration (optional, non-blocking)

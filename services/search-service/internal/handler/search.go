@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/streamvault/search-service/internal/metrics"
 	"github.com/streamvault/search-service/internal/model"
 )
 
@@ -43,12 +45,18 @@ func (h *SearchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metrics.SearchQueriesTotal.WithLabelValues("search").Inc()
+
+	start := time.Now()
 	resp, err := h.searcher.Search(r.Context(), req)
+	metrics.SearchQueryDurationSeconds.Observe(time.Since(start).Seconds())
+
 	if err != nil {
 		log.Error().Err(err).Str("query", req.Query).Msg("search failed")
 		WriteErrorResponse(w, r, http.StatusInternalServerError, "SEARCH_ERROR", "search request failed")
 		return
 	}
 
+	metrics.SearchResultsCount.WithLabelValues("search").Observe(float64(resp.TotalCount))
 	WriteJSON(w, http.StatusOK, resp)
 }

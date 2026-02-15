@@ -13,11 +13,13 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/streamvault/gateway/internal/config"
 	"github.com/streamvault/gateway/internal/discovery"
 	"github.com/streamvault/gateway/internal/health"
+	"github.com/streamvault/gateway/internal/metrics"
 	"github.com/streamvault/gateway/internal/middleware"
 	"github.com/streamvault/gateway/internal/proxy"
 	"github.com/streamvault/gateway/internal/telemetry"
@@ -77,6 +79,7 @@ func main() {
 	topMux.Handle("/health", healthHandler)
 	topMux.HandleFunc("/health/live", healthHandler.ServeLive)
 	topMux.HandleFunc("/health/ready", healthHandler.ServeReady)
+	topMux.Handle("/metrics", promhttp.Handler())
 	topMux.Handle("/", router.Handler())
 
 	// ---- Rate Limiter ----
@@ -100,6 +103,7 @@ func main() {
 	handler := applyMiddleware(topMux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
+		metrics.Middleware(),
 		middleware.Logging(),
 		middleware.CORS(middleware.DefaultCORSOptions()),
 		rateLimitMiddleware,

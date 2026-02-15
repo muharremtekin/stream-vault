@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
@@ -30,6 +31,7 @@ import (
 	"github.com/streamvault/recommendation-service/internal/engine"
 	"github.com/streamvault/recommendation-service/internal/grpcserver"
 	"github.com/streamvault/recommendation-service/internal/handler"
+	"github.com/streamvault/recommendation-service/internal/metrics"
 	"github.com/streamvault/recommendation-service/internal/middleware"
 	"github.com/streamvault/recommendation-service/internal/repository"
 	"github.com/streamvault/recommendation-service/internal/telemetry"
@@ -181,6 +183,7 @@ func main() {
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
+		metrics.Middleware(),
 		middleware.Logging(),
 	)
 
@@ -204,6 +207,7 @@ func main() {
 	// Start gRPC server
 	grpcSrv := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.ChainUnaryInterceptor(metrics.GRPCUnaryInterceptor()),
 	)
 	recGRPC := grpcserver.NewRecommendationServer(recEngine)
 	recv1.RegisterRecommendationServiceServer(grpcSrv, recGRPC)
@@ -288,6 +292,7 @@ func buildHTTPRouter(pool *pgxpool.Pool, redisClient *redis.Client,
 	mux.HandleFunc("GET /health", healthH.ServeLive)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Register recommendation routes
 	handler.RegisterRecommendationRoutes(mux, recommender)

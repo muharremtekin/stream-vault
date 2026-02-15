@@ -5,6 +5,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/streamvault/search-service/internal/metrics"
 	"github.com/streamvault/search-service/internal/model"
 )
 
@@ -27,6 +28,7 @@ func (h *AutocompleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	metrics.SearchQueriesTotal.WithLabelValues("autocomplete").Inc()
 	resp, err := h.searcher.Autocomplete(r.Context(), req)
 	if err != nil {
 		log.Error().Err(err).Str("query", req.Query).Msg("autocomplete failed")

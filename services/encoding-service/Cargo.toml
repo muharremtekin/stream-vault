@@ -51,6 +51,10 @@ opentelemetry-otlp = { version = "0.27", features = ["http-proto", "reqwest-clie
 thiserror = "2"
 anyhow = "1"
 
+# Prometheus metrics
+prometheus = "0.13"
+lazy_static = "1"
+
 # Utilities
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }

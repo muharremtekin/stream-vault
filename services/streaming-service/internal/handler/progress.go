@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/streamvault/streaming-service/internal/metrics"
 	"github.com/streamvault/streaming-service/internal/progress"
 )
 
@@ -55,6 +56,7 @@ func (h *ProgressHandler) SaveProgress(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	metrics.StreamingProgressSavesTotal.Inc()
 	WriteJSON(w, http.StatusOK, map[string]string{"status": "saved"})
 }
 

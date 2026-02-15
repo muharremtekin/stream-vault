@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/recommendation-service/internal/cache"
+	"github.com/streamvault/recommendation-service/internal/metrics"
 	"github.com/streamvault/recommendation-service/internal/model"
 	"github.com/streamvault/recommendation-service/internal/repository"
 )
@@ -103,6 +104,7 @@ func (e *Engine) GetRecommendations(ctx context.Context, userID string, limit in
 	var items []RecommendedItem
 
 	if interactionCount < coldStartThreshold {
+		metrics.RecommendationColdStartFallbackTotal.Inc()
 		items, err = e.popularityRecommend(ctx, userID, limit)
 	} else {
 		items, err = e.hybridRecommend(ctx, userID, interactionCount, limit)

@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/streaming-service/internal/handler"
+	"github.com/streamvault/streaming-service/internal/metrics"
 )
 
 var concurrentCheckScript = redis.NewScript(`
@@ -77,8 +78,16 @@ func ConcurrentStreams(redisClient *redis.Client, concurrentTTL time.Duration) f
 				return
 			}
 
+			tier := strings.ToLower(role)
+			if tier == "" {
+				tier = "free"
+			}
+			metrics.StreamingConcurrentViewers.WithLabelValues(tier).Inc()
+
 			rec := newResponseRecorder(w)
 			next.ServeHTTP(rec, r)
+
+			metrics.StreamingConcurrentViewers.WithLabelValues(tier).Dec()
 
 			// Remove phantom session if handler returned non-2xx
 			if rec.statusCode < 200 || rec.statusCode >= 300 {

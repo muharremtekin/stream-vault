@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/recommendation-service/internal/engine"
+	"github.com/streamvault/recommendation-service/internal/metrics"
 )
 
 // RecommendationHandler handles recommendation HTTP endpoints.
@@ -22,6 +23,8 @@ func NewRecommendationHandler(recommender engine.Recommender) *RecommendationHan
 
 // ServeRecommendations handles GET /api/recommendations.
 func (h *RecommendationHandler) ServeRecommendations(w http.ResponseWriter, r *http.Request) {
+	metrics.RecommendationRequestsTotal.WithLabelValues("personal").Inc()
+
 	userID := r.Header.Get("X-User-Id")
 	if userID == "" {
 		WriteErrorResponse(w, r, http.StatusBadRequest, "MISSING_USER_ID", "X-User-Id header is required")
@@ -46,6 +49,8 @@ func (h *RecommendationHandler) ServeRecommendations(w http.ResponseWriter, r *h
 
 // ServeSimilar handles GET /api/recommendations/similar/{contentId}.
 func (h *RecommendationHandler) ServeSimilar(w http.ResponseWriter, r *http.Request) {
+	metrics.RecommendationRequestsTotal.WithLabelValues("similar").Inc()
+
 	contentID := r.PathValue("contentId")
 	if contentID == "" {
 		WriteErrorResponse(w, r, http.StatusBadRequest, "MISSING_CONTENT_ID", "contentId path parameter is required")
@@ -70,6 +75,8 @@ func (h *RecommendationHandler) ServeSimilar(w http.ResponseWriter, r *http.Requ
 
 // ServeHomePage handles GET /api/recommendations/home.
 func (h *RecommendationHandler) ServeHomePage(w http.ResponseWriter, r *http.Request) {
+	metrics.RecommendationRequestsTotal.WithLabelValues("home").Inc()
+
 	userID := r.Header.Get("X-User-Id")
 	// userID is optional for home page — anonymous users get trending + new
 

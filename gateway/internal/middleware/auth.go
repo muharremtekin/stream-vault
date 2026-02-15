@@ -65,7 +65,7 @@ func isPublicRoute(path string) bool {
 		}
 	}
 	// Exact matches for paths without trailing slash.
-	if path == "/health" || path == "/api/plans" {
+	if path == "/health" || path == "/api/plans" || path == "/metrics" {
 		return true
 	}
 	return false

@@ -16,11 +16,13 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 
 	"github.com/streamvault/streaming-service/internal/config"
+	"github.com/streamvault/streaming-service/internal/metrics"
 	"github.com/streamvault/streaming-service/internal/discovery"
 	"github.com/streamvault/streaming-service/internal/handler"
 	"github.com/streamvault/streaming-service/internal/messaging"
@@ -141,6 +143,7 @@ func main() {
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
+		metrics.Middleware(),
 		middleware.Logging(),
 	)
 
@@ -164,6 +167,7 @@ func main() {
 	// Start gRPC server
 	grpcSrv := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.ChainUnaryInterceptor(metrics.GRPCUnaryInterceptor()),
 	)
 	streamingSrv := newGRPCServer(minioStore, progressSvc, redisClient, cfg.MinIO)
 	registerGRPC(grpcSrv, streamingSrv)
@@ -241,6 +245,7 @@ func buildHTTPRouter(cfg *config.Config, store storage.Storage, pub messaging.Pu
 	mux.HandleFunc("GET /health", healthH.ServeHTTP)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Upload (admin only)
 	uploadH := handler.NewUploadHandler(store, pub, cfg.Upload, cfg.MinIO)

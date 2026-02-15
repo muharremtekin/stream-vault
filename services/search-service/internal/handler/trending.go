@@ -8,6 +8,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/search-service/internal/cache"
+	"github.com/streamvault/search-service/internal/metrics"
 	"github.com/streamvault/search-service/internal/model"
 	"github.com/streamvault/search-service/internal/trending"
 )
@@ -32,6 +33,7 @@ func NewTrendingHandler(trendingSvc *trending.Service, cache *cache.Cache) *Tren
 func (h *TrendingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	req := model.ParseTrendingRequest(r)
 
+	metrics.SearchQueriesTotal.WithLabelValues("trending").Inc()
 	if !validWindows[req.TimeWindow] {
 		WriteErrorResponse(w, r, http.StatusBadRequest, "VALIDATION_ERROR", "window must be day, week, or month")
 		return

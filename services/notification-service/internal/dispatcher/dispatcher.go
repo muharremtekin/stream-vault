@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/streamvault/notification-service/internal/metrics"
 	"github.com/streamvault/notification-service/internal/store"
 )
 
@@ -92,6 +93,12 @@ func (d *Dispatcher) Dispatch(ctx context.Context, req *DispatchRequest) (*store
 		case "inapp":
 			// In-app delivery happens after the notification is saved (below).
 			status = "pending"
+		}
+
+		if status == "sent" {
+			metrics.NotificationSentTotal.WithLabelValues(ch, req.Category).Inc()
+		} else if status == "failed" {
+			metrics.NotificationFailedTotal.WithLabelValues(ch, "send_error").Inc()
 		}
 
 		cs := store.ChannelStatus{

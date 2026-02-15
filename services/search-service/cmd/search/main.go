@@ -16,6 +16,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
@@ -28,6 +29,7 @@ import (
 	"github.com/streamvault/search-service/internal/elasticsearch"
 	"github.com/streamvault/search-service/internal/grpcserver"
 	"github.com/streamvault/search-service/internal/handler"
+	"github.com/streamvault/search-service/internal/metrics"
 	"github.com/streamvault/search-service/internal/middleware"
 	"github.com/streamvault/search-service/internal/telemetry"
 	"github.com/streamvault/search-service/internal/trending"
@@ -162,6 +164,7 @@ func main() {
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
+		metrics.Middleware(),
 		middleware.Logging(),
 	)
 
@@ -183,7 +186,10 @@ func main() {
 	}()
 
 	// Start gRPC server
-	grpcSrv := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
+	grpcSrv := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.ChainUnaryInterceptor(metrics.GRPCUnaryInterceptor()),
+	)
 	searchGRPC := grpcserver.NewSearchServer(cachedSearcher, trendingSvc)
 	searchv1.RegisterSearchServiceServer(grpcSrv, searchGRPC)
 	reflection.Register(grpcSrv)
@@ -265,6 +271,7 @@ func buildHTTPRouter(esClient *elasticsearch.Client, redisClient *redis.Client,
 	mux.HandleFunc("GET /health", healthH.ServeLive)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Search
 	searchH := handler.NewSearchHandler(cachedSearcher)
