@@ -268,41 +268,41 @@
 ## 5. Grafana Dashboard'ları
 
 ### 5.1 Services Overview Dashboard
-- [ ] `observability/grafana/provisioning/dashboards/services-overview.json` oluştur
-- [ ] Stat panel'ler: Total Requests/s, Error Rate %, Ortalama Latency, Healthy Services sayısı
-- [ ] Request Rate by Service — Line Chart
-- [ ] Error Rate by Service — Line Chart
-- [ ] P50/P95/P99 Latency by Service — Line Chart
-- [ ] Service Health Matrix — Table (service, status, uptime, error%, P99)
+- [x] `observability/grafana/provisioning/dashboards/services-overview.json` oluştur
+- [x] Stat panel'ler: Total Requests/s, Error Rate %, Ortalama Latency, Healthy Services sayısı
+- [x] Request Rate by Service — Line Chart
+- [x] Error Rate by Service — Line Chart
+- [x] P50/P95/P99 Latency by Service — Line Chart
+- [x] Service Health Matrix — Table (service, status, uptime, error%, P99)
 
 ### 5.2 Streaming & Encoding Dashboard
-- [ ] `observability/grafana/provisioning/dashboards/streaming-dashboard.json` oluştur
-- [ ] Stat panel'ler: Active Viewers, Segment Latency, Active Encoding Jobs, Queue Depth
-- [ ] Active Viewers by Quality — Stacked Area Chart
-- [ ] Segment Serve Duration by Quality — Histogram
-- [ ] Encoding Job Pipeline — durum bazlı sayaç
-- [ ] Bandwidth Usage — Line Chart
+- [x] `observability/grafana/provisioning/dashboards/streaming-dashboard.json` oluştur
+- [x] Stat panel'ler: Active Viewers, Segment Latency, Active Encoding Jobs, Queue Depth
+- [x] Active Viewers by Quality — Stacked Area Chart
+- [x] Segment Serve Duration by Quality — Histogram
+- [x] Encoding Job Pipeline — durum bazlı sayaç
+- [x] Bandwidth Usage — Line Chart
 
 ### 5.3 Business Metrics Dashboard
-- [ ] `observability/grafana/provisioning/dashboards/business-dashboard.json` oluştur
-- [ ] Stat panel'ler: Active Subscriptions, MRR (TRY), Search Queries/s, Churn Rate
-- [ ] Subscriptions by Tier — Pie Chart
-- [ ] Daily Active Viewers — Line Chart
-- [ ] Payment Success Rate — Gauge
-- [ ] Notification Sent by Channel — Stacked Bar Chart
+- [x] `observability/grafana/provisioning/dashboards/business-dashboard.json` oluştur
+- [x] Stat panel'ler: Active Subscriptions, MRR (TRY), Search Queries/s, Churn Rate
+- [x] Subscriptions by Tier — Pie Chart
+- [x] Daily Active Viewers — Line Chart
+- [x] Payment Success Rate — Gauge
+- [x] Notification Sent by Channel — Stacked Bar Chart
 
 ### 5.4 Gateway Dashboard (Opsiyonel)
-- [ ] `observability/grafana/provisioning/dashboards/gateway-dashboard.json` oluştur
-- [ ] Route bazlı request rate ve latency
-- [ ] Rate limit hit sayısı
-- [ ] Circuit breaker state görselleştirmesi
+- [x] `observability/grafana/provisioning/dashboards/gateway-dashboard.json` oluştur
+- [x] Route bazlı request rate ve latency
+- [x] Rate limit hit sayısı
+- [x] Circuit breaker state görselleştirmesi
 
 ### 5.5 Alert Kuralları
-- [ ] Error rate > %5 → alert (en az 1 rule tanımlı)
-- [ ] P99 latency > 2s → alert
-- [ ] Servis down → alert
+- [x] Error rate > %5 → alert (en az 1 rule tanımlı)
+- [x] P99 latency > 2s → alert
+- [x] Servis down → alert
 - [ ] Encoding queue depth > 50 → alert (opsiyonel)
-- [ ] Alert notification channel tanımla (Grafana webhook veya log)
+- [x] Alert notification channel tanımla (Grafana webhook veya log)
 
 ---
 

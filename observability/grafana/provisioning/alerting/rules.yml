@@ -1,0 +1,165 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: StreamVault Alerts
+    folder: StreamVault
+    interval: 1m
+    rules:
+      - uid: streamvault-high-error-rate
+        title: High Error Rate (>5%)
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: ""
+            model:
+              expr: sum(rate(http_request_errors_total[5m]))
+              instant: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: ""
+            model:
+              expr: sum(rate(http_requests_total[5m]))
+              instant: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: B
+          - refId: C
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "-100"
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                type: __expr__
+                uid: "-100"
+              expression: ($A / $B) * 100
+              type: math
+              refId: C
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: "Overall error rate has exceeded 5% for 5 minutes"
+          description: "Current error rate: {{ $values.C }}%"
+        labels:
+          severity: critical
+
+      - uid: streamvault-high-p99-latency
+        title: High P99 Latency (>2s)
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: ""
+            model:
+              expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])))
+              instant: false
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "-100"
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                type: __expr__
+                uid: "-100"
+              expression: $A
+              type: threshold
+              refId: B
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: "P99 latency has exceeded 2 seconds for 5 minutes"
+          description: "Current P99 latency: {{ $values.A }}s"
+        labels:
+          severity: warning
+
+      - uid: streamvault-service-down
+        title: Service Down
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: ""
+            model:
+              expr: "up{job=~\"gateway|user-service|catalog-service|streaming-service|encoding-service|search-service|recommendation-service|subscription-service|notification-service\"}"
+              instant: true
+              intervalMs: 15000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasourceUid: "-100"
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                type: __expr__
+                uid: "-100"
+              expression: $A
+              type: threshold
+              refId: B
+        for: 1m
+        noDataState: Alerting
+        execErrState: Error
+        annotations:
+          summary: "A StreamVault service is unreachable"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} is down"
+        labels:
+          severity: critical

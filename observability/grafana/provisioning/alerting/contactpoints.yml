@@ -1,0 +1,12 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: StreamVault Default
+    receivers:
+      - uid: streamvault-default-receiver
+        type: email
+        disableResolveMessage: false
+        settings:
+          addresses: "admin@streamvault.local"
+          singleEmail: true
