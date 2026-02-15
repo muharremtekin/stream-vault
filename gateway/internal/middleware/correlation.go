@@ -7,6 +7,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const correlationIDHeader = "X-Correlation-Id"
@@ -30,7 +31,15 @@ func CorrelationID() func(http.Handler) http.Handler {
 			w.Header().Set(correlationIDHeader, cid)
 
 			// Add to zerolog context for structured logging.
-			logger := log.With().Str("correlation_id", cid).Logger()
+			logCtx := log.With().Str("correlation_id", cid)
+
+			// Enrich log context with trace_id from OpenTelemetry span.
+			span := trace.SpanFromContext(r.Context())
+			if span.SpanContext().HasTraceID() {
+				logCtx = logCtx.Str("trace_id", span.SpanContext().TraceID().String())
+			}
+
+			logger := logCtx.Logger()
 			ctx := logger.WithContext(r.Context())
 
 			// Also store in context via zerolog so downstream code

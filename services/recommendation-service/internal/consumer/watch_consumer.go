@@ -7,11 +7,15 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/recommendation-service/internal/cache"
 	"github.com/streamvault/recommendation-service/internal/config"
 	"github.com/streamvault/recommendation-service/internal/model"
 	"github.com/streamvault/recommendation-service/internal/repository"
+	"github.com/streamvault/recommendation-service/internal/telemetry"
 )
 
 // WatchConsumer consumes watch.completed events and records interactions.
@@ -81,7 +85,20 @@ func (c *WatchConsumer) consumeLoop(ctx context.Context) error {
 	}
 }
 
+var watchTracer = otel.Tracer("recommendation-service/consumer/watch")
+
 func (c *WatchConsumer) handleMessage(ctx context.Context, msg amqp.Delivery) {
+	ctx = telemetry.ExtractAMQP(ctx, msg.Headers)
+	ctx, span := watchTracer.Start(ctx, "rabbitmq.consume",
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "rabbitmq"),
+			attribute.String("messaging.source.name", c.base.queue),
+			attribute.String("messaging.operation", "receive"),
+		),
+	)
+	defer span.End()
+
 	var event model.Event
 	if err := json.Unmarshal(msg.Body, &event); err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal watch event envelope")

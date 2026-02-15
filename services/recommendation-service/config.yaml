@@ -27,3 +27,9 @@ rabbitmq:
 logging:
   level: "info"
   format: "json"
+
+otel:
+  enabled: true
+  endpoint: "jaeger:4317"
+  service_name: "recommendation-service"
+  insecure: true

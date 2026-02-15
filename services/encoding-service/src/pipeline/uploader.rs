@@ -31,6 +31,7 @@ impl Uploader {
 
     /// Upload all transcoded segments, playlists, and thumbnails to MinIO.
     /// Returns the list of EncodingOutput for the result message.
+    #[tracing::instrument(skip_all, fields(content_id = %content_id))]
     pub async fn upload_all(
         &self,
         content_id: &str,

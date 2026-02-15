@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +14,7 @@ namespace UserService.Infrastructure.Messaging;
 
 public class SubscriptionSyncConsumer : BackgroundService
 {
+    private static readonly ActivitySource ActivitySource = new("UserService");
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SubscriptionSyncConsumer> _logger;
     private readonly string _connectionString;
@@ -65,6 +67,23 @@ public class SubscriptionSyncConsumer : BackgroundService
 
         consumer.ReceivedAsync += async (_, ea) =>
         {
+            // Extract trace context from AMQP headers
+            ActivityContext parentContext = default;
+            if (ea.BasicProperties.Headers?.TryGetValue("traceparent", out var tp) == true)
+            {
+                var traceparent = tp is byte[] tpBytes
+                    ? Encoding.UTF8.GetString(tpBytes)
+                    : tp?.ToString();
+                if (traceparent is not null)
+                    ActivityContext.TryParse(traceparent, null, out parentContext);
+            }
+
+            using var activity = ActivitySource.StartActivity(
+                "subscription-sync.process",
+                ActivityKind.Consumer,
+                parentContext,
+                tags: new[] { new KeyValuePair<string, object?>("messaging.routing_key", ea.RoutingKey) });
+
             try
             {
                 var body = ea.Body.ToArray();
@@ -78,6 +97,7 @@ public class SubscriptionSyncConsumer : BackgroundService
             }
             catch (Exception ex)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 _logger.LogError(ex, "Error processing subscription sync message");
                 await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
             }

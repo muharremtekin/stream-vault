@@ -30,6 +30,7 @@ impl Validator {
         Self { ffprobe_path }
     }
 
+    #[tracing::instrument(skip_all, fields(source = %source_path.display()))]
     pub async fn validate(&self, source_path: &Path) -> Result<VideoMetadata> {
         // Get file size from filesystem (more reliable than ffprobe)
         let file_size = tokio::fs::metadata(source_path)

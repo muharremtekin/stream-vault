@@ -15,6 +15,15 @@ type Config struct {
 	Redis    RedisConfig    `mapstructure:"redis"`
 	RabbitMQ RabbitMQConfig `mapstructure:"rabbitmq"`
 	Logging  LoggingConfig  `mapstructure:"logging"`
+	OTel     OTelConfig     `mapstructure:"otel"`
+}
+
+// OTelConfig holds OpenTelemetry tracing settings.
+type OTelConfig struct {
+	Enabled     bool   `mapstructure:"enabled"`
+	Endpoint    string `mapstructure:"endpoint"`
+	ServiceName string `mapstructure:"service_name"`
+	Insecure    bool   `mapstructure:"insecure"`
 }
 
 type ServerConfig struct {
@@ -77,6 +86,10 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("rabbitmq.prefetch", 10)
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
+	v.SetDefault("otel.enabled", true)
+	v.SetDefault("otel.endpoint", "jaeger:4317")
+	v.SetDefault("otel.service_name", "recommendation-service")
+	v.SetDefault("otel.insecure", true)
 
 	if configPath != "" {
 		v.SetConfigFile(configPath)

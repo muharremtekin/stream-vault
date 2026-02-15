@@ -189,6 +189,7 @@ services:
       - GATEWAY_JWT_SECRET=${JWT_SECRET}
       - GATEWAY_CONSUL_ADDRESS=consul:8500
       - GATEWAY_RATELIMIT_REDIS_URL=redis://redis:6379/0
+      - GATEWAY_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       consul:
         condition: service_healthy
@@ -221,6 +222,7 @@ services:
       - ServiceRegistration__Port=8080
       - Service__Host=user-service
       - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+      - OpenTelemetry__Endpoint=http://jaeger:4317
     depends_on:
       postgres:
         condition: service_healthy
@@ -254,6 +256,7 @@ services:
       - Service__Port=5100
       - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - RabbitMQ__QueueName=encoding.results.catalog
+      - OpenTelemetry__Endpoint=http://jaeger:4317
     depends_on:
       mongo:
         condition: service_healthy
@@ -285,6 +288,7 @@ services:
       - STREAMING_MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
       - STREAMING_REDIS_URL=redis://redis:6379/0
       - STREAMING_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
+      - STREAMING_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       minio:
         condition: service_healthy
@@ -317,6 +321,7 @@ services:
       - ENCODING_MINIO__ACCESS_KEY=${MINIO_ACCESS_KEY}
       - ENCODING_MINIO__SECRET_KEY=${MINIO_SECRET_KEY}
       - ENCODING_RABBITMQ__URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/%2f
+      - ENCODING_TELEMETRY__ENDPOINT=http://jaeger:4318
     depends_on:
       minio:
         condition: service_healthy
@@ -348,6 +353,7 @@ services:
       - SEARCH_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - SEARCH_REDIS_URL=redis://redis:6379/3
       - SEARCH_CONSUL_ADDRESS=consul:8500
+      - SEARCH_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -381,6 +387,7 @@ services:
       - RECOMMENDATION_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - RECOMMENDATION_REDIS_URL=redis://redis:6379/4
       - RECOMMENDATION_CONSUL_ADDRESS=consul:8500
+      - RECOMMENDATION_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       postgres:
         condition: service_healthy
@@ -414,6 +421,7 @@ services:
       - ServiceRegistration__Name=subscription-service
       - ServiceRegistration__Port=5007
       - Service__Host=subscription-service
+      - OpenTelemetry__Endpoint=http://jaeger:4317
     depends_on:
       postgres:
         condition: service_healthy
@@ -441,6 +449,7 @@ services:
       - NOTIFICATION_MONGODB_DATABASE=streamvault_notifications
       - NOTIFICATION_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - NOTIFICATION_CONSUL_ADDRESS=consul:8500
+      - NOTIFICATION_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       mongo:
         condition: service_healthy

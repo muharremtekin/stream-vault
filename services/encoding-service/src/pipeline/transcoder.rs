@@ -23,6 +23,7 @@ impl Transcoder {
 
     /// Transcode source video into HLS segments for all target qualities.
     /// Runs profiles in parallel via tokio::spawn.
+    #[tracing::instrument(skip_all, fields(job_id = %job_id, qualities = metadata.target_qualities.len()))]
     pub async fn transcode_all(
         &self,
         source_path: &Path,

@@ -16,6 +16,15 @@ type Config struct {
 	Consul    ConsulConfig            `mapstructure:"consul"`
 	Services  map[string]ServiceEntry `mapstructure:"services"`
 	Logging   LoggingConfig           `mapstructure:"logging"`
+	OTel      OTelConfig              `mapstructure:"otel"`
+}
+
+// OTelConfig holds OpenTelemetry tracing settings.
+type OTelConfig struct {
+	Enabled     bool   `mapstructure:"enabled"`
+	Endpoint    string `mapstructure:"endpoint"`
+	ServiceName string `mapstructure:"service_name"`
+	Insecure    bool   `mapstructure:"insecure"`
 }
 
 // ServerConfig holds HTTP server settings.
@@ -76,6 +85,10 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("consul.health_check_interval", 10*time.Second)
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
+	v.SetDefault("otel.enabled", true)
+	v.SetDefault("otel.endpoint", "jaeger:4317")
+	v.SetDefault("otel.service_name", "gateway")
+	v.SetDefault("otel.insecure", true)
 
 	// Read from config file.
 	if configPath != "" {

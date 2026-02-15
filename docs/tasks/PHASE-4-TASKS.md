@@ -7,51 +7,51 @@
 ## 1. Observability Altyapısı
 
 ### 1.1 Jaeger
-- [ ] Docker Compose'a Jaeger servisi ekle (`jaegertracing/all-in-one:1.54`)
-- [ ] Port: 16686 (UI), 4317 (OTLP gRPC), 4318 (OTLP HTTP)
-- [ ] `COLLECTOR_OTLP_ENABLED=true` environment ayarı
-- [ ] `observability/jaeger/jaeger-config.yml` oluştur
+- [x] Docker Compose'a Jaeger servisi ekle (`jaegertracing/all-in-one:1.54`)
+- [x] Port: 16686 (UI), 4317 (OTLP gRPC), 4318 (OTLP HTTP)
+- [x] `COLLECTOR_OTLP_ENABLED=true` environment ayarı
+- [x] `observability/jaeger/jaeger-config.yml` oluştur
 - [ ] Jaeger UI'da (http://localhost:16686) erişim doğrulaması
 
 ### 1.2 Prometheus
-- [ ] Docker Compose'a Prometheus servisi ekle (`prom/prometheus:v2.50.0`)
-- [ ] Port: 9090
-- [ ] `observability/prometheus/prometheus.yml` oluştur — scrape konfigürasyonu
-- [ ] Tüm 9 servis için `scrape_configs` tanımla (gateway:8080, user-service:5001, catalog-service:5002, streaming-service:5003, encoding-service:5004, search-service:5005, recommendation-service:5006, subscription-service:5007, notification-service:5008)
-- [ ] `--storage.tsdb.retention.time=30d` ayarı
-- [ ] `prometheus_data` volume ekle
+- [x] Docker Compose'a Prometheus servisi ekle (`prom/prometheus:v2.50.0`)
+- [x] Port: 9090
+- [x] `observability/prometheus/prometheus.yml` oluştur — scrape konfigürasyonu
+- [x] Tüm 9 servis için `scrape_configs` tanımla (gateway:8080, user-service:5001, catalog-service:5002, streaming-service:5003, encoding-service:5004, search-service:5005, recommendation-service:5006, subscription-service:5007, notification-service:5008)
+- [x] `--storage.tsdb.retention.time=30d` ayarı
+- [x] `prometheus_data` volume ekle
 - [ ] Prometheus UI'da (http://localhost:9090/targets) target'ların "UP" göründüğünü doğrula
 
 ### 1.3 Grafana
-- [ ] Docker Compose'a Grafana servisi ekle (`grafana/grafana:10.3.0`)
-- [ ] Port: 3000, Admin: `admin` / `streamvault`
-- [ ] `observability/grafana/grafana.ini` oluştur
-- [ ] `observability/grafana/provisioning/datasources/datasources.yml` — Prometheus + Loki + Jaeger datasource tanımları
-- [ ] `observability/grafana/provisioning/dashboards/dashboards.yml` — Dashboard auto-provision ayarı
-- [ ] `grafana_data` volume ekle
+- [x] Docker Compose'a Grafana servisi ekle (`grafana/grafana:10.3.0`)
+- [x] Port: 3000, Admin: `admin` / `streamvault`
+- [x] `observability/grafana/grafana.ini` oluştur
+- [x] `observability/grafana/provisioning/datasources/datasources.yml` — Prometheus + Loki + Jaeger datasource tanımları
+- [x] `observability/grafana/provisioning/dashboards/dashboards.yml` — Dashboard auto-provision ayarı
+- [x] `grafana_data` volume ekle
 - [ ] Grafana UI'da (http://localhost:3000) datasource'ların çalıştığını doğrula
 
 ### 1.4 Loki
-- [ ] Docker Compose'a Loki servisi ekle (`grafana/loki:2.9.0`)
-- [ ] Port: 3100
-- [ ] `observability/loki/loki-config.yml` oluştur
-- [ ] `loki_data` volume ekle
+- [x] Docker Compose'a Loki servisi ekle (`grafana/loki:2.9.0`)
+- [x] Port: 3100
+- [x] `observability/loki/loki-config.yml` oluştur
+- [x] `loki_data` volume ekle
 - [ ] Loki API'nin çalıştığını doğrula (`http://localhost:3100/ready`)
 
 ### 1.5 Promtail
-- [ ] Docker Compose'a Promtail servisi ekle (`grafana/promtail:2.9.0`)
-- [ ] `observability/promtail/promtail-config.yml` oluştur
-- [ ] Container log toplama konfigürasyonu (`/var/lib/docker/containers` mount)
-- [ ] Docker socket mount (`/var/run/docker.sock:ro`)
-- [ ] Pipeline stages: JSON parse (level, service, traceId), label extraction, timestamp parse
-- [ ] Loki'ye push URL: `http://loki:3100/loki/api/v1/push`
+- [x] Docker Compose'a Promtail servisi ekle (`grafana/promtail:2.9.0`)
+- [x] `observability/promtail/promtail-config.yml` oluştur
+- [x] Container log toplama konfigürasyonu (`/var/lib/docker/containers` mount)
+- [x] Docker socket mount (`/var/run/docker.sock:ro`)
+- [x] Pipeline stages: JSON parse (level, service, traceId), label extraction, timestamp parse
+- [x] Loki'ye push URL: `http://loki:3100/loki/api/v1/push`
 - [ ] Promtail'in Loki'ye log gönderdiğini doğrula
 
 ### 1.6 Docker Compose Güncellemeleri
-- [ ] `docker-compose.yml` — 5 observability servisi ekle (jaeger, prometheus, grafana, loki, promtail)
-- [ ] `docker-compose.override.yml` — Geliştirme port mapping'leri
-- [ ] Tüm yeni volume tanımları (`prometheus_data`, `grafana_data`, `loki_data`)
-- [ ] Servis bağımlılıkları (grafana depends_on: prometheus, loki, jaeger; promtail depends_on: loki)
+- [x] `docker-compose.yml` — 5 observability servisi ekle (jaeger, prometheus, grafana, loki, promtail)
+- [x] `docker-compose.override.yml` — Geliştirme port mapping'leri
+- [x] Tüm yeni volume tanımları (`prometheus_data`, `grafana_data`, `loki_data`)
+- [x] Servis bağımlılıkları (grafana depends_on: prometheus, loki, jaeger; promtail depends_on: loki)
 - [ ] `docker compose up` ile 20 container'ın 2 dakika içinde ayağa kalktığını doğrula
 
 ---
@@ -59,169 +59,169 @@
 ## 2. Notification Service (Go)
 
 ### 2.1 Proje Kurulumu & Temel Yapı
-- [ ] Go projesi oluştur (`services/notification-service/`)
-- [ ] `go.mod` oluştur, dependency'leri ekle (gorilla/websocket, amqp091-go, mongo-driver, consul api, viper, zerolog)
-- [ ] `internal/config/config.go` — Viper ile config.yaml + env var yükleme (`NOTIFICATION_` prefix)
-- [ ] `cmd/notification/main.go` — HTTP + WebSocket server bootstrap
-- [ ] Dockerfile oluştur (multi-stage build)
-- [ ] Makefile oluştur (build, test, lint)
-- [ ] `config.yaml` — server (port: 5008), websocket, mongodb, rabbitmq, email, push, consul ayarları
-- [ ] GET /health endpoint (MongoDB, RabbitMQ bağlantı durumu, wsClients sayısı)
+- [x] Go projesi oluştur (`services/notification-service/`)
+- [x] `go.mod` oluştur, dependency'leri ekle (gorilla/websocket, amqp091-go, mongo-driver, consul api, viper, zerolog)
+- [x] `internal/config/config.go` — Viper ile config.yaml + env var yükleme (`NOTIFICATION_` prefix)
+- [x] `cmd/notification/main.go` — HTTP + WebSocket server bootstrap
+- [x] Dockerfile oluştur (multi-stage build)
+- [x] Makefile oluştur (build, test, lint)
+- [x] `config.yaml` — server (port: 5008), websocket, mongodb, rabbitmq, email, push, consul ayarları
+- [x] GET /health endpoint (MongoDB, RabbitMQ bağlantı durumu, wsClients sayısı)
 
 ### 2.2 Consul Entegrasyonu
-- [ ] `internal/discovery/consul.go` — Consul'a self-registration
-- [ ] Health check kaydı
-- [ ] Graceful shutdown'da deregistration
-- [ ] Consul UI'da "notification-service" healthy göründüğünü doğrula
+- [x] `internal/discovery/consul.go` — Consul'a self-registration
+- [x] Health check kaydı
+- [x] Graceful shutdown'da deregistration
+- [x] Consul UI'da "notification-service" healthy göründüğünü doğrula
 
 ### 2.3 MongoDB Store
-- [ ] `internal/store/mongo.go` — Bildirim geçmişi store
-- [ ] `notifications` collection — CRUD işlemleri (create, list by userId, mark as read, mark all as read)
-- [ ] Index: `{ userId: 1, createdAt: -1 }` (bildirim listeleme)
-- [ ] Index: `{ userId: 1, read: 1 }` (okunmamış sayacı)
-- [ ] TTL index: `{ expiresAt: 1 }` ile 90 gün sonra otomatik silme
-- [ ] `internal/store/preferences.go` — Kullanıcı bildirim tercihleri store
-- [ ] `notification_preferences` collection — CRUD işlemleri (get, upsert)
-- [ ] Index: `{ userId: 1 }` (unique)
-- [ ] Varsayılan tercihler (tüm kanallar açık)
+- [x] `internal/store/mongo.go` — Bildirim geçmişi store
+- [x] `notifications` collection — CRUD işlemleri (create, list by userId, mark as read, mark all as read)
+- [x] Index: `{ userId: 1, createdAt: -1 }` (bildirim listeleme)
+- [x] Index: `{ userId: 1, read: 1 }` (okunmamış sayacı)
+- [x] TTL index: `{ expiresAt: 1 }` ile 90 gün sonra otomatik silme
+- [x] `internal/store/preferences.go` — Kullanıcı bildirim tercihleri store
+- [x] `notification_preferences` collection — CRUD işlemleri (get, upsert)
+- [x] Index: `{ userId: 1 }` (unique)
+- [x] Varsayılan tercihler (tüm kanallar açık)
 
 ### 2.4 WebSocket Hub & Client
-- [ ] `internal/websocket/message.go` — WS mesaj yapısı (type, id, category, title, body, icon, action, read, createdAt)
-- [ ] `internal/websocket/client.go` — Tek client bağlantısı (conn, userId, send channel)
-- [ ] `internal/websocket/hub.go` — Connection hub (clients map, register/unregister channel, broadcast channel)
-- [ ] Hub.Run() — goroutine ile register/unregister/broadcast dinleme
-- [ ] Unicast: belirli userId'ye mesaj gönderme
-- [ ] Heartbeat: 30 saniyede ping, 10 saniye pong timeout
-- [ ] Bağlantı kopma durumunda Hub'dan otomatik çıkarma
+- [x] `internal/websocket/message.go` — WS mesaj yapısı (type, id, category, title, body, icon, action, read, createdAt)
+- [x] `internal/websocket/client.go` — Tek client bağlantısı (conn, userId, send channel)
+- [x] `internal/websocket/hub.go` — Connection hub (clients map, register/unregister channel, broadcast channel)
+- [x] Hub.Run() — goroutine ile register/unregister/broadcast dinleme
+- [x] Unicast: belirli userId'ye mesaj gönderme
+- [x] Heartbeat: 30 saniyede ping, 10 saniye pong timeout
+- [x] Bağlantı kopma durumunda Hub'dan otomatik çıkarma
 
 ### 2.5 WebSocket Auth Middleware
-- [ ] `internal/middleware/ws_auth.go` — WebSocket JWT doğrulama
-- [ ] Query parameter'dan token okuma (`?token=eyJ...`)
-- [ ] JWT doğrulama (User Service ile aynı secret/issuer)
-- [ ] userId extraction ve context'e ekleme
-- [ ] Geçersiz token durumunda 401 + bağlantı reddi
+- [x] `internal/middleware/ws_auth.go` — WebSocket JWT doğrulama
+- [x] Query parameter'dan token okuma (`?token=eyJ...`)
+- [x] JWT doğrulama (User Service ile aynı secret/issuer)
+- [x] userId extraction ve context'e ekleme
+- [x] Geçersiz token durumunda 401 + bağlantı reddi
 
 ### 2.6 WebSocket Handler
-- [ ] `internal/handler/websocket.go` — GET /ws/notifications WebSocket upgrade
-- [ ] gorilla/websocket Upgrader konfigürasyonu (buffer size: 1024)
-- [ ] Auth middleware sonrası Client oluşturma ve Hub'a register
-- [ ] ReadPump: client'tan gelen mesajları oku (ping/pong, ack)
-- [ ] WritePump: send channel'dan mesajları client'a gönder
-- [ ] Max connections per user: 5
+- [x] `internal/handler/websocket.go` — GET /ws/notifications WebSocket upgrade
+- [x] gorilla/websocket Upgrader konfigürasyonu (buffer size: 1024)
+- [x] Auth middleware sonrası Client oluşturma ve Hub'a register
+- [x] ReadPump: client'tan gelen mesajları oku (ping/pong, ack)
+- [x] WritePump: send channel'dan mesajları client'a gönder
+- [x] Max connections per user: 5
 
 ### 2.7 RabbitMQ Consumers
-- [ ] `internal/consumer/subscription_consumer.go` — `notification.subscription` queue consumer
-  - [ ] `subscription.created` event → "Hoş geldin" bildirimi (email + inapp)
-  - [ ] `subscription.cancelled` event → "İptal onay" bildirimi (email + inapp)
-  - [ ] `plan.changed` event → "Plan değişiklik" bildirimi (email + inapp)
-- [ ] `internal/consumer/encoding_consumer.go` — `notification.encoding` queue consumer
-  - [ ] `job.completed` event → "Video hazır" bildirimi (inapp, admin only)
-  - [ ] `job.failed` event → "Encoding hatası" bildirimi (email + inapp, admin only)
-- [ ] `internal/consumer/content_consumer.go` — `notification.content` queue consumer
-  - [ ] `content.created` event → "Yeni içerik" bildirimi (push + inapp)
+- [x] `internal/consumer/subscription_consumer.go` — `notification.subscription` queue consumer
+  - [x] `subscription.created` event → "Hoş geldin" bildirimi (email + inapp)
+  - [x] `subscription.cancelled` event → "İptal onay" bildirimi (email + inapp)
+  - [x] `plan.changed` event → "Plan değişiklik" bildirimi (email + inapp)
+- [x] `internal/consumer/encoding_consumer.go` — `notification.encoding` queue consumer
+  - [x] `job.completed` event → "Video hazır" bildirimi (inapp, admin only)
+  - [x] `job.failed` event → "Encoding hatası" bildirimi (email + inapp, admin only)
+- [x] `internal/consumer/content_consumer.go` — `notification.content` queue consumer
+  - [x] `content.created` event → "Yeni içerik" bildirimi (push + inapp)
 - [ ] `internal/consumer/recommendation_consumer.go` — Haftalık öneri digest (opsiyonel, cron bazlı)
-- [ ] Tüm consumer'larda ACK/NACK mekanizması
+- [x] Tüm consumer'larda ACK/NACK mekanizması
 
 ### 2.8 Dispatcher
-- [ ] `internal/dispatcher/dispatcher.go` — Event → kanal yönlendirme mantığı
-- [ ] Kullanıcı tercihlerine göre kanal filtreleme (email kapalı ise email göndermeme)
-- [ ] Event tipine göre varsayılan kanal haritası (plan'daki tablo)
-- [ ] `internal/dispatcher/email.go` — SMTP mock sender (MailHog: localhost:1025)
-- [ ] `internal/dispatcher/push.go` — FCM mock sender (log'a yaz)
-- [ ] `internal/dispatcher/inapp.go` — WebSocket Hub üzerinden in-app bildirim
-- [ ] Her kanal için gönderim durumu kaydı (channelStatus)
+- [x] `internal/dispatcher/dispatcher.go` — Event → kanal yönlendirme mantığı
+- [x] Kullanıcı tercihlerine göre kanal filtreleme (email kapalı ise email göndermeme)
+- [x] Event tipine göre varsayılan kanal haritası (plan'daki tablo)
+- [x] `internal/dispatcher/email.go` — SMTP mock sender (MailHog: localhost:1025)
+- [x] `internal/dispatcher/push.go` — FCM mock sender (log'a yaz)
+- [x] `internal/dispatcher/inapp.go` — WebSocket Hub üzerinden in-app bildirim
+- [x] Her kanal için gönderim durumu kaydı (channelStatus)
 
 ### 2.9 Template Engine
-- [ ] `internal/template/engine.go` — Go html/template engine wrapper
-- [ ] Template yükleme ve cache'leme
-- [ ] Dinamik veri binding (kullanıcı adı, plan ismi, tutar, içerik başlığı)
-- [ ] `internal/template/templates/welcome.html`
-- [ ] `internal/template/templates/subscription_confirmed.html`
-- [ ] `internal/template/templates/payment_failed.html`
-- [ ] `internal/template/templates/new_content.html`
-- [ ] `internal/template/templates/encoding_complete.html`
+- [x] `internal/template/engine.go` — Go html/template engine wrapper
+- [x] Template yükleme ve cache'leme
+- [x] Dinamik veri binding (kullanıcı adı, plan ismi, tutar, içerik başlığı)
+- [x] `internal/template/templates/welcome.html`
+- [x] `internal/template/templates/subscription_confirmed.html`
+- [x] `internal/template/templates/payment_failed.html`
+- [x] `internal/template/templates/new_content.html`
+- [x] `internal/template/templates/encoding_complete.html`
 
 ### 2.10 HTTP API
-- [ ] `internal/handler/history.go` — Bildirim geçmişi endpoint'leri
-  - [ ] GET /api/notifications?page=1&pageSize=20&unreadOnly=false — Bildirim listesi (X-User-Id header)
-  - [ ] POST /api/notifications/{id}/read — Tek bildirim okundu işaretle
-  - [ ] POST /api/notifications/read-all — Tüm bildirimleri okundu işaretle
-- [ ] `internal/handler/preferences.go` — Bildirim tercihleri endpoint'leri
-  - [ ] GET /api/notifications/preferences — Kullanıcının tercihlerini getir
-  - [ ] PUT /api/notifications/preferences — Tercihleri güncelle
-- [ ] Response format: items, unreadCount, totalCount, page, pageSize
+- [x] `internal/handler/history.go` — Bildirim geçmişi endpoint'leri
+  - [x] GET /api/notifications?page=1&pageSize=20&unreadOnly=false — Bildirim listesi (X-User-Id header)
+  - [x] POST /api/notifications/{id}/read — Tek bildirim okundu işaretle
+  - [x] POST /api/notifications/read-all — Tüm bildirimleri okundu işaretle
+- [x] `internal/handler/preferences.go` — Bildirim tercihleri endpoint'leri
+  - [x] GET /api/notifications/preferences — Kullanıcının tercihlerini getir
+  - [x] PUT /api/notifications/preferences — Tercihleri güncelle
+- [x] Response format: items, unreadCount, totalCount, page, pageSize
 
 ### 2.11 RabbitMQ Topology Güncellemesi
-- [ ] `infrastructure/rabbitmq/definitions.json` güncelle
-- [ ] `notification.subscription` queue ekle (binding: subscription.events exchange → `subscription.created`, `subscription.cancelled`, `plan.changed`)
-- [ ] `notification.encoding` queue ekle (binding: encoding exchange → `job.completed`, `job.failed`)
-- [ ] `notification.content` queue ekle (binding: catalog.events exchange → `content.created`)
+- [x] `infrastructure/rabbitmq/definitions.json` güncelle
+- [x] `notification.subscription` queue ekle (binding: subscription.events exchange → `subscription.created`, `subscription.cancelled`, `plan.changed`)
+- [x] `notification.encoding` queue ekle (binding: encoding exchange → `job.completed`, `job.failed`)
+- [x] `notification.content` queue ekle (binding: catalog.events exchange → `content.created`)
 - [ ] `notification.payment` queue ekle (binding: payment.events exchange → `payment.failed`)
-- [ ] RabbitMQ Management UI'da yeni queue'ların göründüğünü doğrula
+- [x] RabbitMQ Management UI'da yeni queue'ların göründüğünü doğrula
 
 ### 2.12 Docker Compose — Notification Service
-- [ ] `docker-compose.yml` — notification-service container tanımı
-- [ ] Port: 5008:5008
-- [ ] Environment: MONGODB_URI, MONGODB_DATABASE, RABBITMQ_URL, CONSUL_ADDRESS, OTEL_EXPORTER_OTLP_ENDPOINT
-- [ ] depends_on: mongo (service_healthy), rabbitmq (service_healthy)
-- [ ] Healthcheck konfigürasyonu
+- [x] `docker-compose.yml` — notification-service container tanımı
+- [x] Port: 5008:5008
+- [x] Environment: MONGODB_URI, MONGODB_DATABASE, RABBITMQ_URL, CONSUL_ADDRESS, OTEL_EXPORTER_OTLP_ENDPOINT
+- [x] depends_on: mongo (service_healthy), rabbitmq (service_healthy)
+- [x] Healthcheck konfigürasyonu
 
 ---
 
 ## 3. Distributed Tracing (OpenTelemetry + Jaeger)
 
 ### 3.1 Go Servisleri — OTel Entegrasyonu
-- [ ] Gateway (`gateway/`) — OpenTelemetry SDK entegrasyonu
-  - [ ] `go.opentelemetry.io/otel`, `otelhttp`, `otelgrpc` paketleri ekle
-  - [ ] HTTP handler'ları `otelhttp.NewHandler()` ile wrap
-  - [ ] HTTP client'ları `otelhttp.NewTransport()` ile wrap
-  - [ ] OTLP exporter: `http://jaeger:4318`
-  - [ ] Service name: `gateway`, version: `1.0.0`
+- [x] Gateway (`gateway/`) — OpenTelemetry SDK entegrasyonu
+  - [x] `go.opentelemetry.io/otel`, `otelhttp`, `otelgrpc` paketleri ekle
+  - [x] HTTP handler'ları `otelhttp.NewHandler()` ile wrap
+  - [x] HTTP client'ları `otelhttp.NewTransport()` ile wrap
+  - [x] OTLP exporter: `http://jaeger:4317`
+  - [x] Service name: `gateway`, version: `1.0.0`
   - [ ] Custom span'lar: `gateway.route`, `gateway.auth.validate_jwt`, `gateway.ratelimit.check`, `gateway.proxy.forward`
-- [ ] Streaming Service (`services/streaming-service/`) — OTel entegrasyonu
-  - [ ] HTTP handler ve gRPC server interceptor'ları ekle
-  - [ ] Custom span'lar: segment serve, progress save
-  - [ ] RabbitMQ mesaj header'larına trace context injection
-- [ ] Notification Service (`services/notification-service/`) — OTel entegrasyonu
-  - [ ] HTTP handler ve WebSocket işlemleri için span
-  - [ ] RabbitMQ consumer'larda trace context extraction
-- [ ] Search Service — OTel entegrasyonu
-  - [ ] Elasticsearch ve Redis işlemleri için custom span
+- [x] Streaming Service (`services/streaming-service/`) — OTel entegrasyonu
+  - [x] HTTP handler ve gRPC server interceptor'ları ekle
+  - [x] Custom span'lar: segment serve, progress save
+  - [x] RabbitMQ mesaj header'larına trace context injection
+- [x] Notification Service (`services/notification-service/`) — OTel entegrasyonu
+  - [x] HTTP handler ve WebSocket işlemleri için span
+  - [x] RabbitMQ consumer'larda trace context extraction
+- [x] Search Service — OTel entegrasyonu
+  - [x] Elasticsearch ve Redis işlemleri için custom span
 
 ### 3.2 Rust Servisleri — OTel Entegrasyonu
-- [ ] Encoding Service (`services/encoding-service/`) — OpenTelemetry entegrasyonu
-  - [ ] `opentelemetry`, `opentelemetry-otlp`, `tracing-opentelemetry` crate'leri ekle (`Cargo.toml`)
-  - [ ] `tracing` subscriber'a OpenTelemetry layer ekle
-  - [ ] Axum middleware ile otomatik HTTP span oluşturma
-  - [ ] `#[instrument]` attribute ile pipeline fonksiyonlarında span
-  - [ ] RabbitMQ mesajlarından trace context extraction (linked span)
-  - [ ] OTLP exporter: `http://jaeger:4318`, service name: `encoding-service`
-- [ ] Recommendation Service — aynı OTel entegrasyonu
+- [x] Encoding Service (`services/encoding-service/`) — OpenTelemetry entegrasyonu
+  - [x] `opentelemetry`, `opentelemetry-otlp`, `tracing-opentelemetry` crate'leri ekle (`Cargo.toml`)
+  - [x] `tracing` subscriber'a OpenTelemetry layer ekle
+  - [x] Axum middleware ile otomatik HTTP span oluşturma
+  - [x] `#[instrument]` attribute ile pipeline fonksiyonlarında span
+  - [x] RabbitMQ mesajlarından trace context extraction (linked span)
+  - [x] OTLP exporter: `http://jaeger:4318`, service name: `encoding-service`
+- [x] Recommendation Service — aynı OTel entegrasyonu
 
 ### 3.3 .NET Servisleri — OTel Entegrasyonu
-- [ ] User Service (`services/user-service/`) — OpenTelemetry entegrasyonu
-  - [ ] NuGet: `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Instrumentation.Http`, `OpenTelemetry.Instrumentation.EntityFrameworkCore`, `OpenTelemetry.Exporter.OtlpTrace`
-  - [ ] `Program.cs` — `AddOpenTelemetry().WithTracing(...)` konfigürasyonu
-  - [ ] AspNetCore, HttpClient, EF Core automatic instrumentation
-  - [ ] OTLP exporter: `http://jaeger:4318`, service name: `user-service`
-- [ ] Catalog Service (`services/catalog-service/`) — aynı OTel entegrasyonu + MongoDB custom span
-- [ ] Subscription Service — aynı OTel entegrasyonu + Saga adımları için custom span
+- [x] User Service (`services/user-service/`) — OpenTelemetry entegrasyonu
+  - [x] NuGet: `OpenTelemetry.Extensions.Hosting`, `OpenTelemetry.Instrumentation.AspNetCore`, `OpenTelemetry.Instrumentation.Http`, `OpenTelemetry.Instrumentation.EntityFrameworkCore`, `OpenTelemetry.Exporter.OtlpTrace`
+  - [x] `Program.cs` — `AddOpenTelemetry().WithTracing(...)` konfigürasyonu
+  - [x] AspNetCore, HttpClient, EF Core automatic instrumentation
+  - [x] OTLP exporter: `http://jaeger:4317`, service name: `user-service`
+- [x] Catalog Service (`services/catalog-service/`) — aynı OTel entegrasyonu + MongoDB custom span
+- [x] Subscription Service — aynı OTel entegrasyonu + EF Core instrumentation
 
 ### 3.4 Asenkron Event Trace Propagation
-- [ ] RabbitMQ mesaj header'larına `traceparent` ve `tracestate` ekleme (publisher tarafında)
-- [ ] Consumer tarafında header'dan trace context extraction
-- [ ] Linked span oluşturma (publish span → consume span bağlantısı)
-- [ ] Go: `propagation.TraceContext{}` ile inject/extract
-- [ ] Rust: `opentelemetry::global::get_text_map_propagator()` ile inject/extract
-- [ ] .NET: Activity propagation (otomatik)
+- [x] RabbitMQ mesaj header'larına `traceparent` ve `tracestate` ekleme (publisher tarafında)
+- [x] Consumer tarafında header'dan trace context extraction
+- [x] Linked span oluşturma (publish span → consume span bağlantısı)
+- [x] Go: `propagation.TraceContext{}` ile inject/extract
+- [x] Rust: `opentelemetry::global::get_text_map_propagator()` ile inject/extract
+- [x] .NET: Activity propagation (otomatik)
 
 ### 3.5 Trace Doğrulama
-- [ ] Jaeger UI'da tüm 8+ servis görünüyor (service list)
-- [ ] Senkron istek zinciri: Gateway → Catalog Service → MongoDB — tek trace altında
-- [ ] Asenkron event zinciri: Catalog publish → Search consume — linked span olarak
-- [ ] gRPC çağrıları trace'te görünüyor (Streaming ↔ Encoding)
-- [ ] Database sorguları span olarak trace'te yer alıyor (PostgreSQL, MongoDB, Redis, Elasticsearch)
-- [ ] Span attribute'ları doğru: `http.method`, `http.status_code`, `db.system`, `messaging.system`
+- [x] Jaeger UI'da tüm 8+ servis görünüyor (service list)
+- [x] Senkron istek zinciri: Gateway → Catalog Service → MongoDB — tek trace altında
+- [x] Asenkron event zinciri: Catalog publish → Search consume — linked span olarak
+- [x] gRPC çağrıları trace'te görünüyor (Streaming ↔ Encoding)
+- [x] Database sorguları span olarak trace'te yer alıyor (PostgreSQL, MongoDB, Redis, Elasticsearch)
+- [x] Span attribute'ları doğru: `http.method`, `http.status_code`, `db.system`, `messaging.system`
 
 ---
 
@@ -550,21 +550,21 @@
 ## 12. API Gateway Güncellemeleri
 
 ### 12.1 Notification Route'ları
-- [ ] GET `/ws/notifications` → notification-service (WebSocket upgrade, Auth: JWT query param)
-- [ ] GET `/api/notifications` → notification-service (Auth: ✓)
-- [ ] POST `/api/notifications/{id}/read` → notification-service (Auth: ✓)
-- [ ] POST `/api/notifications/read-all` → notification-service (Auth: ✓)
-- [ ] GET `/api/notifications/preferences` → notification-service (Auth: ✓)
-- [ ] PUT `/api/notifications/preferences` → notification-service (Auth: ✓)
+- [x] GET `/ws/notifications` → notification-service (WebSocket upgrade, Auth: JWT query param)
+- [x] GET `/api/notifications` → notification-service (Auth: ✓)
+- [x] POST `/api/notifications/{id}/read` → notification-service (Auth: ✓)
+- [x] POST `/api/notifications/read-all` → notification-service (Auth: ✓)
+- [x] GET `/api/notifications/preferences` → notification-service (Auth: ✓)
+- [x] PUT `/api/notifications/preferences` → notification-service (Auth: ✓)
 
 ### 12.2 WebSocket Proxy
-- [ ] Gateway'de WebSocket upgrade proxy implementasyonu
-- [ ] `/ws/notifications` route'unda HTTP → WS upgrade forwarding
-- [ ] JWT token'ı query parameter olarak downstream'e ilet
+- [x] Gateway'de WebSocket upgrade proxy implementasyonu
+- [x] `/ws/notifications` route'unda HTTP → WS upgrade forwarding
+- [x] JWT token'ı query parameter olarak downstream'e ilet
 
 ### 12.3 Config Güncellemesi
-- [ ] `gateway/config.yaml` — notification-service tanımı ekle
-- [ ] Consul'dan notification-service çözümle
+- [x] `gateway/config.yaml` — notification-service tanımı ekle
+- [x] Consul'dan notification-service çözümle
 - [ ] Circuit breaker, bulkhead, timeout ayarları notification-service için
 
 ---

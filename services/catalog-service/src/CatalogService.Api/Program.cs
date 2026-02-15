@@ -7,6 +7,8 @@ using Consul;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Compact;
 
@@ -20,6 +22,26 @@ builder.Host.UseSerilog((context, loggerConfig) =>
         .Enrich.FromLogContext()
         .WriteTo.Console(new RenderedCompactJsonFormatter());
 });
+
+// OpenTelemetry
+var otelEndpoint = builder.Configuration["OpenTelemetry:Endpoint"];
+if (!string.IsNullOrEmpty(otelEndpoint))
+{
+    builder.Services.AddOpenTelemetry()
+        .WithTracing(tracing =>
+        {
+            tracing
+                .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                    .AddService("catalog-service", serviceVersion: "1.0.0"))
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddSource("MongoDB.Driver")
+                .AddOtlpExporter(opts =>
+                {
+                    opts.Endpoint = new Uri(otelEndpoint);
+                });
+        });
+}
 
 // ---------------------------------------------------------------------------
 // Services

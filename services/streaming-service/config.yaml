@@ -42,3 +42,9 @@ upload:
 logging:
   level: "info"
   format: "json"
+
+otel:
+  enabled: true
+  endpoint: "jaeger:4317"
+  service_name: "streaming-service"
+  insecure: true

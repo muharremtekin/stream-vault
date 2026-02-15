@@ -12,9 +12,12 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -26,6 +29,7 @@ import (
 	"github.com/streamvault/search-service/internal/grpcserver"
 	"github.com/streamvault/search-service/internal/handler"
 	"github.com/streamvault/search-service/internal/middleware"
+	"github.com/streamvault/search-service/internal/telemetry"
 	"github.com/streamvault/search-service/internal/trending"
 	searchv1 "github.com/streamvault/search-service/proto/search/v1"
 )
@@ -41,6 +45,27 @@ func main() {
 	}
 
 	setupLogging(cfg.Logging)
+
+	// Initialize OpenTelemetry tracing
+	otelShutdown, err := telemetry.InitTracer(context.Background(), telemetry.OTelConfig{
+		Enabled:     cfg.OTel.Enabled,
+		Endpoint:    cfg.OTel.Endpoint,
+		ServiceName: cfg.OTel.ServiceName,
+		Insecure:    cfg.OTel.Insecure,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to initialize OpenTelemetry, tracing disabled")
+	} else {
+		defer func() {
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := otelShutdown(shutdownCtx); err != nil {
+				log.Error().Err(err).Msg("OpenTelemetry shutdown error")
+			}
+		}()
+		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
+	}
+
 	log.Info().
 		Int("http_port", cfg.Server.HTTPPort).
 		Int("grpc_port", cfg.Server.GRPCPort).
@@ -61,6 +86,11 @@ func main() {
 		log.Fatal().Err(err).Msg("redis connection failed")
 	}
 	log.Info().Msg("connected to redis")
+
+	// Instrument Redis with OpenTelemetry tracing
+	if err := redisotel.InstrumentTracing(redisClient); err != nil {
+		log.Warn().Err(err).Msg("failed to instrument redis with OpenTelemetry tracing")
+	}
 
 	// Connect to RabbitMQ
 	rabbitConn, err := amqp.Dial(cfg.RabbitMQ.URL)
@@ -138,7 +168,7 @@ func main() {
 	// Start HTTP server
 	httpSrv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-		Handler:      httpHandler,
+		Handler:      otelhttp.NewHandler(httpHandler, "search-service"),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
@@ -153,7 +183,7 @@ func main() {
 	}()
 
 	// Start gRPC server
-	grpcSrv := grpc.NewServer()
+	grpcSrv := grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))
 	searchGRPC := grpcserver.NewSearchServer(cachedSearcher, trendingSvc)
 	searchv1.RegisterSearchServiceServer(grpcSrv, searchGRPC)
 	reflection.Register(grpcSrv)

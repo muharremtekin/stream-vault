@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
 	"github.com/streamvault/gateway/internal/middleware"
 )
 
@@ -34,7 +36,7 @@ func NewUpstreamManager() *UpstreamManager {
 	}
 
 	retryTransport := &RetryTransport{
-		Base:       baseTransport,
+		Base:       otelhttp.NewTransport(baseTransport),
 		MaxRetries: 2,
 		BaseDelay:  500 * time.Millisecond,
 	}

@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type NotificationPreferences struct {
@@ -53,6 +55,15 @@ func (s *MongoPreferencesStore) EnsureIndexes(ctx context.Context) error {
 }
 
 func (s *MongoPreferencesStore) Get(ctx context.Context, userID string) (*NotificationPreferences, error) {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.GetPreferences",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "findOne"),
+		),
+	)
+	defer span.End()
+
 	filter := bson.D{{Key: "userId", Value: userID}}
 
 	var prefs NotificationPreferences
@@ -67,6 +78,15 @@ func (s *MongoPreferencesStore) Get(ctx context.Context, userID string) (*Notifi
 }
 
 func (s *MongoPreferencesStore) Upsert(ctx context.Context, prefs *NotificationPreferences) error {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.UpsertPreferences",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "updateOne"),
+		),
+	)
+	defer span.End()
+
 	prefs.UpdatedAt = time.Now().UTC()
 
 	filter := bson.D{{Key: "userId", Value: prefs.UserID}}

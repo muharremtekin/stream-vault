@@ -9,8 +9,12 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/streaming-service/internal/config"
+	"github.com/streamvault/streaming-service/internal/telemetry"
 )
 
 type EncodingResult struct {
@@ -167,13 +171,34 @@ func (c *Consumer) Stop() {
 	}
 }
 
+var consumeTracer = otel.Tracer("streaming-service/messaging")
+
 func (c *Consumer) handleResult(ctx context.Context, msg amqp.Delivery) {
+	// Extract trace context from AMQP headers.
+	ctx = telemetry.ExtractAMQP(ctx, msg.Headers)
+	ctx, span := consumeTracer.Start(ctx, "rabbitmq.consume",
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "rabbitmq"),
+			attribute.String("messaging.source.name", c.queueName),
+			attribute.String("messaging.operation", "receive"),
+		),
+	)
+	defer span.End()
+
 	var result EncodingResult
 	if err := json.Unmarshal(msg.Body, &result); err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal encoding result")
+		span.RecordError(err)
 		msg.Nack(false, false)
 		return
 	}
+
+	span.SetAttributes(
+		attribute.String("messaging.message.id", result.EventID),
+		attribute.String("job.id", result.JobID),
+		attribute.String("content.id", result.ContentID),
+	)
 
 	log.Info().
 		Str("event_id", result.EventID).
@@ -190,6 +215,7 @@ func (c *Consumer) handleResult(ctx context.Context, msg amqp.Delivery) {
 		data, _ := json.Marshal(result)
 		if err := c.redisClient.Set(ctx, key, data, 0).Err(); err != nil {
 			log.Error().Err(err).Str("content_id", result.ContentID).Msg("failed to cache stream info")
+			span.RecordError(err)
 			msg.Nack(false, true)
 			return
 		}

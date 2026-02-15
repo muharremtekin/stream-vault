@@ -8,6 +8,7 @@ pub struct Config {
     pub rabbitmq: RabbitMQConfig,
     pub encoding: EncodingConfig,
     pub logging: LoggingConfig,
+    pub telemetry: TelemetryConfig,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -61,6 +62,14 @@ pub struct LoggingConfig {
     pub format: String,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct TelemetryConfig {
+    pub enabled: bool,
+    pub endpoint: String,
+    pub service_name: String,
+    pub insecure: bool,
+}
+
 pub fn load() -> anyhow::Result<Config> {
     let cfg = config::Config::builder()
         // Defaults
@@ -91,6 +100,10 @@ pub fn load() -> anyhow::Result<Config> {
         .set_default("encoding.max_concurrent_jobs", 2)?
         .set_default("logging.level", "info")?
         .set_default("logging.format", "json")?
+        .set_default("telemetry.enabled", true)?
+        .set_default("telemetry.endpoint", "http://localhost:4318")?
+        .set_default("telemetry.service_name", "encoding-service")?
+        .set_default("telemetry.insecure", true)?
         // File source
         .add_source(config::File::with_name("config").required(false))
         // Environment variables: ENCODING_MINIO__ACCESS_KEY, ENCODING_RABBITMQ__URL, etc.

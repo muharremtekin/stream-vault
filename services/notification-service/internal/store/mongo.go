@@ -8,7 +8,12 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var mongoTracer = otel.Tracer("notification-service/store")
 
 type Notification struct {
 	ID        bson.ObjectID   `bson:"_id,omitempty" json:"id"`
@@ -76,6 +81,15 @@ func (s *MongoNotificationStore) EnsureIndexes(ctx context.Context) error {
 }
 
 func (s *MongoNotificationStore) Create(ctx context.Context, n *Notification) error {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.Create",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "insertOne"),
+		),
+	)
+	defer span.End()
+
 	now := time.Now().UTC()
 	n.CreatedAt = now
 	n.Read = false
@@ -91,6 +105,15 @@ func (s *MongoNotificationStore) Create(ctx context.Context, n *Notification) er
 }
 
 func (s *MongoNotificationStore) ListByUserID(ctx context.Context, userID string, page, pageSize int, unreadOnly bool) ([]Notification, int64, error) {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.ListByUserID",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "find"),
+		),
+	)
+	defer span.End()
+
 	filter := bson.D{{Key: "userId", Value: userID}}
 	if unreadOnly {
 		filter = append(filter, bson.E{Key: "read", Value: false})
@@ -126,6 +149,15 @@ func (s *MongoNotificationStore) ListByUserID(ctx context.Context, userID string
 }
 
 func (s *MongoNotificationStore) MarkAsRead(ctx context.Context, id string, userID string) error {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.MarkAsRead",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "updateOne"),
+		),
+	)
+	defer span.End()
+
 	objID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return fmt.Errorf("invalid notification id %q: %w", id, err)
@@ -148,6 +180,15 @@ func (s *MongoNotificationStore) MarkAsRead(ctx context.Context, id string, user
 }
 
 func (s *MongoNotificationStore) MarkAllAsRead(ctx context.Context, userID string) error {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.MarkAllAsRead",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "updateMany"),
+		),
+	)
+	defer span.End()
+
 	filter := bson.D{
 		{Key: "userId", Value: userID},
 		{Key: "read", Value: false},
@@ -162,6 +203,15 @@ func (s *MongoNotificationStore) MarkAllAsRead(ctx context.Context, userID strin
 }
 
 func (s *MongoNotificationStore) CountUnread(ctx context.Context, userID string) (int64, error) {
+	ctx, span := mongoTracer.Start(ctx, "mongodb.CountUnread",
+		trace.WithAttributes(
+			attribute.String("db.system", "mongodb"),
+			attribute.String("db.name", "streamvault_notifications"),
+			attribute.String("db.operation", "countDocuments"),
+		),
+	)
+	defer span.End()
+
 	filter := bson.D{
 		{Key: "userId", Value: userID},
 		{Key: "read", Value: false},

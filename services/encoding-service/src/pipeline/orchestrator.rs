@@ -59,6 +59,7 @@ impl PipelineOrchestrator {
         }
     }
 
+    #[tracing::instrument(skip_all, fields(job_id = %job.job_id))]
     async fn run_pipeline(
         &self,
         job: &EncodingJob,
@@ -115,6 +116,7 @@ impl PipelineOrchestrator {
 
 #[async_trait]
 impl JobProcessor for PipelineOrchestrator {
+    #[tracing::instrument(skip_all, fields(job_id = %job.job_id, content_id = %job.content_id))]
     async fn process(&self, job: EncodingJob) -> Result<()> {
         let start = Instant::now();
         let job_dir = self.temp_dir.join(&job.job_id);

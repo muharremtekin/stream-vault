@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Serilog.Context;
 
 namespace SubscriptionService.Api.Middleware;
@@ -19,7 +20,10 @@ public class CorrelationIdMiddleware
 
         context.Response.Headers[CorrelationIdHeader] = correlationId;
 
+        var traceId = Activity.Current?.TraceId.ToString() ?? "";
+
         using (LogContext.PushProperty("CorrelationId", correlationId))
+        using (LogContext.PushProperty("TraceId", traceId))
         {
             await _next(context);
         }

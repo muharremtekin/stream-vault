@@ -8,6 +8,7 @@ mod messaging;
 mod pipeline;
 mod storage;
 mod store;
+mod telemetry;
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -122,7 +123,17 @@ async fn readiness_check(State(state): State<AppState>) -> (StatusCode, Json<Hea
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cfg = config::load()?;
-    setup_logging(&cfg.logging);
+
+    let otel_provider = telemetry::init_tracer(&cfg.telemetry);
+    setup_tracing(&cfg.logging, otel_provider.as_ref());
+
+    if otel_provider.is_some() {
+        info!(
+            endpoint = %cfg.telemetry.endpoint,
+            service_name = %cfg.telemetry.service_name,
+            "opentelemetry tracing initialized"
+        );
+    }
 
     info!(
         http_port = cfg.server.http_port,
@@ -245,26 +256,39 @@ async fn main() -> anyhow::Result<()> {
         client.deregister().await;
     }
 
+    if let Some(provider) = otel_provider {
+        if let Err(e) = provider.shutdown() {
+            error!(error = %e, "error shutting down OTel tracer provider");
+        }
+    }
+
     info!("encoding service stopped");
     Ok(())
 }
 
-fn setup_logging(config: &config::LoggingConfig) {
+fn setup_tracing(
+    log_config: &config::LoggingConfig,
+    otel_provider: Option<&opentelemetry_sdk::trace::TracerProvider>,
+) {
     let env_filter = EnvFilter::try_from_default_env()
-        .or_else(|_| EnvFilter::try_new(&config.level))
+        .or_else(|_| EnvFilter::try_new(&log_config.level))
         .unwrap_or_else(|_| EnvFilter::new("info"));
 
-    match config.format.as_str() {
+    match log_config.format.as_str() {
         "pretty" => {
+            let otel_layer = otel_provider.map(|p| telemetry::create_otel_layer(p));
             tracing_subscriber::registry()
                 .with(env_filter)
                 .with(tracing_subscriber::fmt::layer().pretty())
+                .with(otel_layer)
                 .init();
         }
         _ => {
+            let otel_layer = otel_provider.map(|p| telemetry::create_otel_layer(p));
             tracing_subscriber::registry()
                 .with(env_filter)
                 .with(tracing_subscriber::fmt::layer().json())
+                .with(otel_layer)
                 .init();
         }
     }

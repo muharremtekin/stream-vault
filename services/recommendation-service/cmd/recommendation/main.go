@@ -13,9 +13,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -29,6 +32,7 @@ import (
 	"github.com/streamvault/recommendation-service/internal/handler"
 	"github.com/streamvault/recommendation-service/internal/middleware"
 	"github.com/streamvault/recommendation-service/internal/repository"
+	"github.com/streamvault/recommendation-service/internal/telemetry"
 	recv1 "github.com/streamvault/recommendation-service/proto/recommendation/v1"
 )
 
@@ -47,6 +51,24 @@ func main() {
 		Int("http_port", cfg.Server.HTTPPort).
 		Int("grpc_port", cfg.Server.GRPCPort).
 		Msg("starting recommendation service")
+
+	// OpenTelemetry
+	otelShutdown, err := telemetry.InitTracer(context.Background(), telemetry.OTelConfig{
+		Enabled:     cfg.OTel.Enabled,
+		Endpoint:    cfg.OTel.Endpoint,
+		ServiceName: cfg.OTel.ServiceName,
+		Insecure:    cfg.OTel.Insecure,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to initialize OpenTelemetry, tracing disabled")
+	} else {
+		defer func() {
+			if err := otelShutdown(context.Background()); err != nil {
+				log.Error().Err(err).Msg("error shutting down OTel tracer provider")
+			}
+		}()
+		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
+	}
 
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	defer ctxCancel()
@@ -87,6 +109,9 @@ func main() {
 
 	if err := redisClient.Ping(ctx).Err(); err != nil {
 		log.Fatal().Err(err).Msg("redis connection failed")
+	}
+	if err := redisotel.InstrumentTracing(redisClient); err != nil {
+		log.Warn().Err(err).Msg("failed to instrument redis with OTel tracing")
 	}
 	log.Info().Msg("connected to redis")
 
@@ -162,7 +187,7 @@ func main() {
 	// Start HTTP server
 	httpSrv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-		Handler:      httpHandler,
+		Handler:      otelhttp.NewHandler(httpHandler, "recommendation-service"),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
@@ -177,7 +202,9 @@ func main() {
 	}()
 
 	// Start gRPC server
-	grpcSrv := grpc.NewServer()
+	grpcSrv := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+	)
 	recGRPC := grpcserver.NewRecommendationServer(recEngine)
 	recv1.RegisterRecommendationServiceServer(grpcSrv, recGRPC)
 	reflection.Register(grpcSrv)

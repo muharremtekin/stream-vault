@@ -16,6 +16,15 @@ type Config struct {
 	RabbitMQ RabbitMQConfig `mapstructure:"rabbitmq"`
 	Upload   UploadConfig   `mapstructure:"upload"`
 	Logging  LoggingConfig  `mapstructure:"logging"`
+	OTel     OTelConfig     `mapstructure:"otel"`
+}
+
+// OTelConfig holds OpenTelemetry tracing settings.
+type OTelConfig struct {
+	Enabled     bool   `mapstructure:"enabled"`
+	Endpoint    string `mapstructure:"endpoint"`
+	ServiceName string `mapstructure:"service_name"`
+	Insecure    bool   `mapstructure:"insecure"`
 }
 
 type ServerConfig struct {
@@ -96,6 +105,10 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("upload.allowed_types", []string{"video/mp4", "video/quicktime", "video/x-msvideo", "video/x-matroska"})
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
+	v.SetDefault("otel.enabled", true)
+	v.SetDefault("otel.endpoint", "jaeger:4317")
+	v.SetDefault("otel.service_name", "streaming-service")
+	v.SetDefault("otel.insecure", true)
 
 	if configPath != "" {
 		v.SetConfigFile(configPath)

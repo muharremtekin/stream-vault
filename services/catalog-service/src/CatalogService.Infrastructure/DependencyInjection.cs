@@ -5,6 +5,7 @@ using CatalogService.Infrastructure.Persistence;
 using CatalogService.Infrastructure.Persistence.Repositories;
 using CatalogService.Infrastructure.Seed;
 using Microsoft.Extensions.Configuration;
+using CatalogService.Infrastructure.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 
@@ -23,7 +24,10 @@ public static class DependencyInjection
         var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName")
                            ?? Persistence.MongoCollectionSettings.DatabaseName;
 
-        services.AddSingleton<IMongoClient>(_ => new MongoClient(connectionString));
+        var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+        clientSettings.ClusterConfigurator = cb =>
+            cb.Subscribe(new MongoActivityEventSubscriber());
+        services.AddSingleton<IMongoClient>(_ => new MongoClient(clientSettings));
 
         services.AddSingleton(sp =>
         {

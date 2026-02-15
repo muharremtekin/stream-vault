@@ -9,6 +9,7 @@ use tracing::{error, info};
 use crate::config::RabbitMQConfig;
 use crate::error::{EncodingError, Result};
 use crate::messaging::models::EncodingResult;
+use crate::telemetry;
 
 #[async_trait]
 pub trait ResultPublisher: Send + Sync {
@@ -51,11 +52,24 @@ impl RabbitMQPublisher {
         })
     }
 
+    #[tracing::instrument(
+        skip_all,
+        fields(
+            messaging.system = "rabbitmq",
+            messaging.destination.name = %self.config.exchange,
+            messaging.rabbitmq.routing_key = %routing_key,
+            messaging.message.id = %result.event_id,
+            job.id = %result.job_id,
+        ),
+        name = "rabbitmq.publish"
+    )]
     async fn publish(&self, result: &EncodingResult, routing_key: &str) -> Result<()> {
         let payload = serde_json::to_vec(result)?;
+        let headers = telemetry::inject_context();
         let properties = BasicProperties::default()
             .with_content_type("application/json".into())
-            .with_delivery_mode(2); // persistent
+            .with_delivery_mode(2) // persistent
+            .with_headers(headers);
 
         let publish_result = {
             let channel = self.channel.lock().await;

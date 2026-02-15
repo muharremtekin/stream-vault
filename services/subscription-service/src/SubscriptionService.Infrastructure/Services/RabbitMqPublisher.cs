@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -41,8 +42,17 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IAsyncDisposable
         {
             DeliveryMode = DeliveryModes.Persistent,
             ContentType = "application/json",
-            Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds()),
+            Headers = new Dictionary<string, object?>()
         };
+
+        // Inject W3C trace context for distributed tracing
+        if (Activity.Current is not null)
+        {
+            properties.Headers["traceparent"] = Activity.Current.Id;
+            if (!string.IsNullOrEmpty(Activity.Current.TraceStateString))
+                properties.Headers["tracestate"] = Activity.Current.TraceStateString;
+        }
 
         var body = Encoding.UTF8.GetBytes(payload);
 

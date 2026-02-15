@@ -7,10 +7,12 @@ use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::watch;
 use tracing::{error, info, warn};
+use tracing_opentelemetry::OpenTelemetrySpanExt;
 
 use crate::config::RabbitMQConfig;
 use crate::error::Result;
 use crate::messaging::models::EncodingJob;
+use crate::telemetry;
 
 /// Trait for processing encoding jobs. Implement with actual pipeline in Part 2.
 #[async_trait]
@@ -112,6 +114,15 @@ impl JobConsumer {
     }
 
     async fn handle_delivery(&self, _channel: &Channel, delivery: lapin::message::Delivery) {
+        // Extract trace context from AMQP headers (links to upstream producer span)
+        let headers = delivery
+            .properties
+            .headers()
+            .as_ref()
+            .cloned()
+            .unwrap_or_default();
+        let parent_cx = telemetry::extract_context(&headers);
+
         let job = match serde_json::from_slice::<EncodingJob>(&delivery.data) {
             Ok(job) => job,
             Err(e) => {
@@ -125,6 +136,17 @@ impl JobConsumer {
                 return;
             }
         };
+
+        let consume_span = tracing::info_span!(
+            "rabbitmq.consume",
+            messaging.system = "rabbitmq",
+            messaging.source.name = %self.config.jobs_queue,
+            messaging.operation = "receive",
+            job.id = %job.job_id,
+            content.id = %job.content_id,
+        );
+        consume_span.set_parent(parent_cx);
+        let _guard = consume_span.enter();
 
         info!(
             job_id = %job.job_id,

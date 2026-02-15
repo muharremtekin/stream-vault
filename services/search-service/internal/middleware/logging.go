@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type responseRecorder struct {
@@ -37,6 +38,8 @@ func Logging() func(http.Handler) http.Handler {
 			next.ServeHTTP(rec, r)
 
 			latency := time.Since(start)
+			span := trace.SpanFromContext(r.Context())
+			traceID := span.SpanContext().TraceID().String()
 			logger := log.With().
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
@@ -44,6 +47,7 @@ func Logging() func(http.Handler) http.Handler {
 				Dur("latency", latency).
 				Int("bytes", rec.bytesWritten).
 				Str("correlation_id", r.Header.Get(CorrelationHeader)).
+				Str("trace_id", traceID).
 				Logger()
 
 			switch {

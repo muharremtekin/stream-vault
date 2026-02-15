@@ -3,6 +3,8 @@ using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Compact;
 using SubscriptionService.Api.BackgroundServices;
@@ -22,6 +24,26 @@ builder.Host.UseSerilog((context, loggerConfig) =>
         .Enrich.FromLogContext()
         .WriteTo.Console(new RenderedCompactJsonFormatter());
 });
+
+// OpenTelemetry
+var otelEndpoint = builder.Configuration["OpenTelemetry:Endpoint"];
+if (!string.IsNullOrEmpty(otelEndpoint))
+{
+    builder.Services.AddOpenTelemetry()
+        .WithTracing(tracing =>
+        {
+            tracing
+                .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                    .AddService("subscription-service", serviceVersion: "1.0.0"))
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddEntityFrameworkCoreInstrumentation()
+                .AddOtlpExporter(opts =>
+                {
+                    opts.Endpoint = new Uri(otelEndpoint);
+                });
+        });
+}
 
 // -------------------------------------------------------------------
 // Services

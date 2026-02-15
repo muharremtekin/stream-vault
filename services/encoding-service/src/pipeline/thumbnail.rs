@@ -17,6 +17,7 @@ impl ThumbnailGenerator {
 
     /// Generate poster and thumbnails from the source video.
     /// Extracts a frame at 50% of duration, then resizes to thumbnail dimensions.
+    #[tracing::instrument(skip_all)]
     pub async fn generate(
         &self,
         source_path: &Path,

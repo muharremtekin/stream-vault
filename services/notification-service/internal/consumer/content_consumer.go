@@ -7,11 +7,17 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/notification-service/internal/dispatcher"
 	"github.com/streamvault/notification-service/internal/model"
+	"github.com/streamvault/notification-service/internal/telemetry"
 	"github.com/streamvault/notification-service/internal/template"
 )
+
+var contentTracer = otel.Tracer("notification-service/consumer/content")
 
 // ContentConsumer consumes catalog content events and dispatches notifications.
 type ContentConsumer struct {
@@ -81,6 +87,16 @@ func (c *ContentConsumer) consumeLoop(ctx context.Context) error {
 }
 
 func (c *ContentConsumer) handleMessage(ctx context.Context, msg amqp.Delivery) {
+	ctx = telemetry.ExtractAMQP(ctx, msg.Headers)
+	ctx, span := contentTracer.Start(ctx, "rabbitmq.consume",
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "rabbitmq"),
+			attribute.String("messaging.source.name", c.base.queue),
+		),
+	)
+	defer span.End()
+
 	// Catalog events use the standard camelCase envelope with a data field.
 	var event model.Event
 	if err := json.Unmarshal(msg.Body, &event); err != nil {

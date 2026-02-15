@@ -33,3 +33,9 @@ jwt:
 logging:
   level: "info"
   format: "json"
+
+otel:
+  enabled: true
+  endpoint: "jaeger:4317"
+  service_name: "notification-service"
+  insecure: true

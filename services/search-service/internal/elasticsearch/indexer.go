@@ -9,9 +9,14 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/search-service/internal/model"
 )
+
+var esIndexTracer = otel.Tracer("search-service/elasticsearch")
 
 // Indexer handles document indexing operations against Elasticsearch.
 type Indexer struct {
@@ -25,6 +30,16 @@ func NewIndexer(client *Client) *Indexer {
 
 // IndexDocument indexes or updates a single document.
 func (ix *Indexer) IndexDocument(ctx context.Context, doc model.SearchDocument) error {
+	ctx, span := esIndexTracer.Start(ctx, "elasticsearch.index",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "index"),
+			attribute.String("db.elasticsearch.index", ix.client.indexName),
+			attribute.String("db.elasticsearch.doc_id", doc.ID),
+		),
+	)
+	defer span.End()
+
 	body, err := json.Marshal(doc)
 	if err != nil {
 		return fmt.Errorf("marshalling document: %w", err)
@@ -52,6 +67,16 @@ func (ix *Indexer) IndexDocument(ctx context.Context, doc model.SearchDocument) 
 
 // BulkIndex indexes multiple documents in a single bulk request.
 func (ix *Indexer) BulkIndex(ctx context.Context, docs []model.SearchDocument) error {
+	ctx, span := esIndexTracer.Start(ctx, "elasticsearch.bulk_index",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "bulk"),
+			attribute.String("db.elasticsearch.index", ix.client.indexName),
+			attribute.Int("db.elasticsearch.doc_count", len(docs)),
+		),
+	)
+	defer span.End()
+
 	if len(docs) == 0 {
 		return nil
 	}
@@ -128,6 +153,16 @@ func (ix *Indexer) BulkIndex(ctx context.Context, docs []model.SearchDocument) e
 
 // DeleteDocument removes a document from the index.
 func (ix *Indexer) DeleteDocument(ctx context.Context, id string) error {
+	ctx, span := esIndexTracer.Start(ctx, "elasticsearch.delete",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "delete"),
+			attribute.String("db.elasticsearch.index", ix.client.indexName),
+			attribute.String("db.elasticsearch.doc_id", id),
+		),
+	)
+	defer span.End()
+
 	res, err := ix.client.es.Delete(
 		ix.client.indexName,
 		id,
@@ -149,6 +184,16 @@ func (ix *Indexer) DeleteDocument(ctx context.Context, id string) error {
 
 // IncrementViewCount atomically increments the view_count field of a document.
 func (ix *Indexer) IncrementViewCount(ctx context.Context, id string) error {
+	ctx, span := esIndexTracer.Start(ctx, "elasticsearch.update",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "update"),
+			attribute.String("db.elasticsearch.index", ix.client.indexName),
+			attribute.String("db.elasticsearch.doc_id", id),
+		),
+	)
+	defer span.End()
+
 	script := `{"script":{"source":"ctx._source.view_count += 1","lang":"painless"},"upsert":{"view_count":1}}`
 
 	res, err := ix.client.es.Update(

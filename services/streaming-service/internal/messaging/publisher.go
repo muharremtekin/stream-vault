@@ -9,8 +9,12 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/streaming-service/internal/config"
+	"github.com/streamvault/streaming-service/internal/telemetry"
 )
 
 type EncodingJob struct {
@@ -85,15 +89,31 @@ func (p *amqpPublisher) recreateChannel() error {
 	return nil
 }
 
+var publishTracer = otel.Tracer("streaming-service/messaging")
+
 func (p *amqpPublisher) publish(ctx context.Context, exchange, routingKey string, messageID string, body []byte) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
+
+	ctx, span := publishTracer.Start(ctx, "rabbitmq.publish",
+		trace.WithSpanKind(trace.SpanKindProducer),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "rabbitmq"),
+			attribute.String("messaging.destination.name", exchange),
+			attribute.String("messaging.rabbitmq.routing_key", routingKey),
+			attribute.String("messaging.message.id", messageID),
+		),
+	)
+	defer span.End()
+
+	headers := telemetry.InjectAMQP(ctx, nil)
 
 	publishing := amqp.Publishing{
 		ContentType:  "application/json",
 		DeliveryMode: amqp.Persistent,
 		MessageId:    messageID,
 		Timestamp:    time.Now().UTC(),
+		Headers:      headers,
 		Body:         body,
 	}
 

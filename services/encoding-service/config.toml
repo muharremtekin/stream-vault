@@ -36,3 +36,9 @@ max_concurrent_jobs = 2
 [logging]
 level = "info"
 format = "json"
+
+[telemetry]
+enabled = true
+endpoint = "http://localhost:4318"
+service_name = "encoding-service"
+insecure = true

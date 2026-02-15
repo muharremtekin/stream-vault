@@ -9,9 +9,14 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/search-service/internal/model"
 )
+
+var esSearchTracer = otel.Tracer("search-service/elasticsearch")
 
 // Searcher builds and executes search queries against Elasticsearch.
 type Searcher struct {
@@ -25,6 +30,16 @@ func NewSearcher(client *Client) *Searcher {
 
 // Search performs a full-text search with filters, highlights, facets, and pagination.
 func (s *Searcher) Search(ctx context.Context, req model.SearchRequest) (*model.SearchResponse, error) {
+	ctx, span := esSearchTracer.Start(ctx, "elasticsearch.search",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "search"),
+			attribute.String("db.elasticsearch.index", s.client.indexName),
+			attribute.String("search.query", req.Query),
+		),
+	)
+	defer span.End()
+
 	query := s.buildSearchQuery(req)
 
 	var buf bytes.Buffer
@@ -264,6 +279,16 @@ func (s *Searcher) parseAggregations(aggs map[string]esAggregation) *model.Facet
 
 // Autocomplete returns title suggestions matching the given prefix.
 func (s *Searcher) Autocomplete(ctx context.Context, req model.AutocompleteRequest) (*model.AutocompleteResponse, error) {
+	ctx, span := esSearchTracer.Start(ctx, "elasticsearch.autocomplete",
+		trace.WithAttributes(
+			attribute.String("db.system", "elasticsearch"),
+			attribute.String("db.operation", "search"),
+			attribute.String("db.elasticsearch.index", s.client.indexName),
+			attribute.String("search.query", req.Query),
+		),
+	)
+	defer span.End()
+
 	query := map[string]interface{}{
 		"query": map[string]interface{}{
 			"multi_match": map[string]interface{}{

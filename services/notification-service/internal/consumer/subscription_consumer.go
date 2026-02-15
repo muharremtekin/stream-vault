@@ -7,11 +7,17 @@ import (
 
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/streamvault/notification-service/internal/dispatcher"
 	"github.com/streamvault/notification-service/internal/model"
+	"github.com/streamvault/notification-service/internal/telemetry"
 	"github.com/streamvault/notification-service/internal/template"
 )
+
+var subscriptionTracer = otel.Tracer("notification-service/consumer/subscription")
 
 // SubscriptionConsumer consumes subscription events and dispatches notifications.
 type SubscriptionConsumer struct {
@@ -81,6 +87,16 @@ func (c *SubscriptionConsumer) consumeLoop(ctx context.Context) error {
 }
 
 func (c *SubscriptionConsumer) handleMessage(ctx context.Context, msg amqp.Delivery) {
+	ctx = telemetry.ExtractAMQP(ctx, msg.Headers)
+	ctx, span := subscriptionTracer.Start(ctx, "rabbitmq.consume",
+		trace.WithSpanKind(trace.SpanKindConsumer),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "rabbitmq"),
+			attribute.String("messaging.source.name", c.base.queue),
+		),
+	)
+	defer span.End()
+
 	routingKey := msg.RoutingKey
 	log.Info().Str("routing_key", routingKey).Msg("received subscription event")
 

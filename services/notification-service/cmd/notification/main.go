@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
 	"github.com/streamvault/notification-service/internal/config"
 	"github.com/streamvault/notification-service/internal/consumer"
@@ -23,6 +24,7 @@ import (
 	"github.com/streamvault/notification-service/internal/handler"
 	"github.com/streamvault/notification-service/internal/middleware"
 	"github.com/streamvault/notification-service/internal/store"
+	"github.com/streamvault/notification-service/internal/telemetry"
 	"github.com/streamvault/notification-service/internal/template"
 	ws "github.com/streamvault/notification-service/internal/websocket"
 )
@@ -41,6 +43,24 @@ func main() {
 	log.Info().
 		Int("http_port", cfg.Server.HTTPPort).
 		Msg("starting notification service")
+
+	// OpenTelemetry
+	otelShutdown, err := telemetry.InitTracer(context.Background(), telemetry.OTelConfig{
+		Enabled:     cfg.OTel.Enabled,
+		Endpoint:    cfg.OTel.Endpoint,
+		ServiceName: cfg.OTel.ServiceName,
+		Insecure:    cfg.OTel.Insecure,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to initialize OpenTelemetry, tracing disabled")
+	} else {
+		defer func() {
+			if err := otelShutdown(context.Background()); err != nil {
+				log.Error().Err(err).Msg("error shutting down OTel tracer provider")
+			}
+		}()
+		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
+	}
 
 	ctx, ctxCancel := context.WithCancel(context.Background())
 	defer ctxCancel()
@@ -158,7 +178,7 @@ func main() {
 	// Start HTTP server
 	httpSrv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-		Handler:      httpHandler,
+		Handler:      otelhttp.NewHandler(httpHandler, "notification-service"),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}

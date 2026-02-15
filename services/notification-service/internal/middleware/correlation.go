@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const CorrelationHeader = "X-Correlation-Id"
@@ -17,7 +19,17 @@ func CorrelationID() func(http.Handler) http.Handler {
 				r.Header.Set(CorrelationHeader, correlationID)
 			}
 			w.Header().Set(CorrelationHeader, correlationID)
-			next.ServeHTTP(w, r)
+
+			// Enrich zerolog context with correlation_id and trace_id.
+			logCtx := log.With().Str("correlation_id", correlationID)
+			span := trace.SpanFromContext(r.Context())
+			if span.SpanContext().HasTraceID() {
+				logCtx = logCtx.Str("trace_id", span.SpanContext().TraceID().String())
+			}
+			logger := logCtx.Logger()
+			ctx := logger.WithContext(r.Context())
+
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

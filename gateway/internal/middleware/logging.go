@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // responseRecorder wraps http.ResponseWriter to capture the status code and
@@ -61,6 +62,13 @@ func Logging() func(http.Handler) http.Handler {
 				event = log.Warn()
 			}
 
+			// Extract trace_id from OTel span context.
+			traceID := ""
+			span := trace.SpanFromContext(r.Context())
+			if span.SpanContext().HasTraceID() {
+				traceID = span.SpanContext().TraceID().String()
+			}
+
 			event.
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
@@ -71,6 +79,7 @@ func Logging() func(http.Handler) http.Handler {
 				Str("client_ip", r.RemoteAddr).
 				Str("user_agent", r.UserAgent()).
 				Str("correlation_id", r.Header.Get("X-Correlation-Id")).
+				Str("trace_id", traceID).
 				Msg("request completed")
 		})
 	}

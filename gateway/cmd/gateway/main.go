@@ -13,11 +13,14 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+
 	"github.com/streamvault/gateway/internal/config"
 	"github.com/streamvault/gateway/internal/discovery"
 	"github.com/streamvault/gateway/internal/health"
 	"github.com/streamvault/gateway/internal/middleware"
 	"github.com/streamvault/gateway/internal/proxy"
+	"github.com/streamvault/gateway/internal/telemetry"
 )
 
 func main() {
@@ -34,6 +37,24 @@ func main() {
 	// ---- Configure Logging ----
 	setupLogging(cfg.Logging)
 	log.Info().Int("port", cfg.Server.Port).Msg("starting streamvault api gateway")
+
+	// ---- OpenTelemetry ----
+	otelShutdown, err := telemetry.InitTracer(context.Background(), telemetry.OTelConfig{
+		Enabled:     cfg.OTel.Enabled,
+		Endpoint:    cfg.OTel.Endpoint,
+		ServiceName: cfg.OTel.ServiceName,
+		Insecure:    cfg.OTel.Insecure,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to initialize OpenTelemetry, tracing disabled")
+	} else {
+		defer func() {
+			if err := otelShutdown(context.Background()); err != nil {
+				log.Error().Err(err).Msg("error shutting down OTel tracer provider")
+			}
+		}()
+		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
+	}
 
 	// ---- Service Discovery ----
 	consulClient, err := discovery.NewConsulClient(cfg.Consul.Address)
@@ -89,7 +110,7 @@ func main() {
 	// ---- HTTP Server ----
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler:      handler,
+		Handler:      otelhttp.NewHandler(handler, "gateway"),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}

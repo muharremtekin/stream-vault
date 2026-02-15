@@ -12,9 +12,12 @@ import (
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"google.golang.org/grpc"
 
 	"github.com/streamvault/streaming-service/internal/config"
@@ -24,6 +27,7 @@ import (
 	"github.com/streamvault/streaming-service/internal/middleware"
 	"github.com/streamvault/streaming-service/internal/progress"
 	"github.com/streamvault/streaming-service/internal/storage"
+	"github.com/streamvault/streaming-service/internal/telemetry"
 )
 
 func main() {
@@ -44,6 +48,24 @@ func main() {
 		Int("grpc_port", cfg.Server.GRPCPort).
 		Msg("starting streaming service")
 
+	// OpenTelemetry
+	otelShutdown, err := telemetry.InitTracer(context.Background(), telemetry.OTelConfig{
+		Enabled:     cfg.OTel.Enabled,
+		Endpoint:    cfg.OTel.Endpoint,
+		ServiceName: cfg.OTel.ServiceName,
+		Insecure:    cfg.OTel.Insecure,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to initialize OpenTelemetry, tracing disabled")
+	} else {
+		defer func() {
+			if err := otelShutdown(context.Background()); err != nil {
+				log.Error().Err(err).Msg("error shutting down OTel tracer provider")
+			}
+		}()
+		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
+	}
+
 	// Connect to Redis
 	redisOpts, err := redis.ParseURL(cfg.Redis.URL)
 	if err != nil {
@@ -52,6 +74,9 @@ func main() {
 	redisClient := redis.NewClient(redisOpts)
 	defer redisClient.Close()
 
+	if err := redisotel.InstrumentTracing(redisClient); err != nil {
+		log.Warn().Err(err).Msg("failed to instrument redis with OTel tracing")
+	}
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
 		log.Fatal().Err(err).Msg("redis connection failed")
 	}
@@ -122,7 +147,7 @@ func main() {
 	// Start HTTP server
 	httpSrv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.HTTPPort),
-		Handler:      httpHandler,
+		Handler:      otelhttp.NewHandler(httpHandler, "streaming-service"),
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
@@ -137,7 +162,9 @@ func main() {
 	}()
 
 	// Start gRPC server
-	grpcSrv := grpc.NewServer()
+	grpcSrv := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+	)
 	streamingSrv := newGRPCServer(minioStore, progressSvc, redisClient, cfg.MinIO)
 	registerGRPC(grpcSrv, streamingSrv)
 

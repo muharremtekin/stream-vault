@@ -15,6 +15,7 @@ type Config struct {
 	Redis         RedisConfig         `mapstructure:"redis"`
 	RabbitMQ      RabbitMQConfig      `mapstructure:"rabbitmq"`
 	Logging       LoggingConfig       `mapstructure:"logging"`
+	OTel          OTelConfig          `mapstructure:"otel"`
 }
 
 type ServerConfig struct {
@@ -50,6 +51,13 @@ type LoggingConfig struct {
 	Format string `mapstructure:"format"`
 }
 
+type OTelConfig struct {
+	Enabled     bool   `mapstructure:"enabled"`
+	Endpoint    string `mapstructure:"endpoint"`
+	ServiceName string `mapstructure:"service_name"`
+	Insecure    bool   `mapstructure:"insecure"`
+}
+
 // Load reads configuration from config.yaml and environment variables.
 // Environment variables are prefixed with SEARCH_ and use underscores as
 // separators (e.g., SEARCH_SERVER_HTTP_PORT=5005).
@@ -71,6 +79,10 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("rabbitmq.prefetch", 10)
 	v.SetDefault("logging.level", "info")
 	v.SetDefault("logging.format", "json")
+	v.SetDefault("otel.enabled", true)
+	v.SetDefault("otel.endpoint", "jaeger:4317")
+	v.SetDefault("otel.service_name", "search-service")
+	v.SetDefault("otel.insecure", true)
 
 	if configPath != "" {
 		v.SetConfigFile(configPath)
