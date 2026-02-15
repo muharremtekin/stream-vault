@@ -1,0 +1,85 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # --- Application Services ---
+
+  - job_name: 'gateway'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['gateway:8080']
+        labels:
+          service: 'gateway'
+          language: 'go'
+
+  - job_name: 'user-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['user-service:8080']
+        labels:
+          service: 'user-service'
+          language: 'dotnet'
+
+  - job_name: 'catalog-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['catalog-service:5100']
+        labels:
+          service: 'catalog-service'
+          language: 'dotnet'
+
+  - job_name: 'streaming-service'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['streaming-service:5003']
+        labels:
+          service: 'streaming-service'
+          language: 'go'
+
+  - job_name: 'encoding-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['encoding-service:5004']
+        labels:
+          service: 'encoding-service'
+          language: 'rust'
+
+  - job_name: 'search-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['search-service:5005']
+        labels:
+          service: 'search-service'
+          language: 'go'
+
+  - job_name: 'recommendation-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['recommendation-service:5006']
+        labels:
+          service: 'recommendation-service'
+          language: 'go'
+
+  - job_name: 'subscription-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['subscription-service:5007']
+        labels:
+          service: 'subscription-service'
+          language: 'dotnet'
+
+  - job_name: 'notification-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['notification-service:5008']
+        labels:
+          service: 'notification-service'
+          language: 'go'

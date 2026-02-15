@@ -1,0 +1,12 @@
+# Jaeger All-in-One Configuration for StreamVault
+#
+# The all-in-one image bundles collector, query, and agent in one process.
+# Most configuration is done via environment variables in docker-compose.yml:
+#   COLLECTOR_OTLP_ENABLED=true   — enables OTLP gRPC (4317) and HTTP (4318) endpoints
+#   SPAN_STORAGE_TYPE=badger      — embedded key-value store (default for all-in-one)
+#   BADGER_EPHEMERAL=true         — no persistent storage (dev mode)
+#
+# Production would use Elasticsearch or Cassandra as the storage backend.
+# See: https://www.jaegertracing.io/docs/1.54/deployment/
+
+log_level: info
