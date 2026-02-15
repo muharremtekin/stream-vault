@@ -438,68 +438,68 @@
 ## 8. Uçtan Uca Entegrasyon & Test
 
 ### 8.1 Search Akışı Testi
-- [ ] `scripts/test-search.sh` — Arama test senaryoları
-- [ ] Catalog'a içerik ekle → ES index'inde otomatik göründüğünü doğrula (CQRS)
-- [ ] Full-text arama sonuçları ilgili ve highlight edilmiş dönüyor
-- [ ] Autocomplete 2+ karakterde öneriler sunuyor
-- [ ] Faceted arama (genre, yıl, rating) filtreleme ve sayaçları doğru
-- [ ] Trend içerikler listesi izleme sayısına göre sıralı
-- [ ] Arama sonuç cache'leme çalışıyor (Redis)
+- [x] `scripts/test-search.sh` — Arama test senaryoları
+- [x] Catalog'a içerik ekle → ES index'inde otomatik göründüğünü doğrula (CQRS)
+- [x] Full-text arama sonuçları ilgili ve highlight edilmiş dönüyor
+- [x] Autocomplete 2+ karakterde öneriler sunuyor
+- [x] Faceted arama (genre, yıl, rating) filtreleme ve sayaçları doğru
+- [x] Trend içerikler listesi izleme sayısına göre sıralı
+- [x] Arama sonuç cache'leme çalışıyor (Redis)
 
 ### 8.2 Recommendation Akışı Testi
-- [ ] Fake etkileşim verisi üret (generate-interactions.sh)
-- [ ] Kişisel öneriler kullanıcının izleme geçmişine göre anlamlı sonuçlar veriyor
-- [ ] "Benzer içerikler" doğru genre/tag eşleşmeleri gösteriyor
-- [ ] Cold start durumunda (yeni kullanıcı) popülerlik bazlı öneriler dönüyor
-- [ ] Ana sayfa section'ları (personal, trending, genre, new) doğru dönüyor
-- [ ] WatchCompleted event → recommendation engine etkileşim kaydı
-- [ ] ContentRated event → recommendation engine etkileşim kaydı
+- [x] Fake etkileşim verisi üret (generate-interactions.sh)
+- [x] Kişisel öneriler kullanıcının izleme geçmişine göre anlamlı sonuçlar veriyor
+- [x] "Benzer içerikler" doğru genre/tag eşleşmeleri gösteriyor
+- [x] Cold start durumunda (yeni kullanıcı) popülerlik bazlı öneriler dönüyor
+- [x] Ana sayfa section'ları (personal, trending, genre, new) doğru dönüyor
+- [x] WatchCompleted event → recommendation engine etkileşim kaydı
+- [x] ContentRated event → recommendation engine etkileşim kaydı
 
 ### 8.3 Subscription Akışı Testi
-- [ ] `scripts/test-subscription.sh` — Abonelik akışı test script'i
-- [ ] 3 plan (Basic, Standard, Premium) listelenebiliyor
-- [ ] Abonelik oluşturma Saga ile çalışıyor (happy path: başarılı ödeme → aktif abonelik)
-- [ ] Mock ödeme başarısız olduğunda saga compensating action çalışıyor (subscription → Failed)
-- [ ] Plan değiştirme (upgrade/downgrade) fiyat farkı hesaplıyor
-- [ ] Abonelik iptal edildiğinde dönem sonuna kadar aktif kalıyor
-- [ ] Fatura geçmişi görüntülenebiliyor
-- [ ] SubscriptionCreated event → User Service tier güncelleniyor
+- [x] `scripts/test-subscription.sh` — Abonelik akışı test script'i
+- [x] 3 plan (Basic, Standard, Premium) listelenebiliyor
+- [x] Abonelik oluşturma Saga ile çalışıyor (happy path: başarılı ödeme → aktif abonelik)
+- [x] Mock ödeme başarısız olduğunda saga compensating action çalışıyor (subscription → Failed)
+- [x] Plan değiştirme (upgrade/downgrade) fiyat farkı hesaplıyor
+- [x] Abonelik iptal edildiğinde dönem sonuna kadar aktif kalıyor
+- [x] Fatura geçmişi görüntülenebiliyor
+- [x] SubscriptionCreated event → User Service tier güncelleniyor
 
 ### 8.4 Event Akışı Doğrulama
-- [ ] WatchCompleted event hem Search hem Recommendation'a ulaşıyor
-- [ ] ContentRated event Recommendation Engine'e ulaşıyor
-- [ ] Catalog outbox pattern düzgün çalışıyor (content.created/updated/deleted)
-- [ ] Subscription outbox pattern düzgün çalışıyor
-- [ ] RabbitMQ'da 4 exchange ve ilgili queue'lar doğru topology ile mevcut
+- [x] WatchCompleted event hem Search hem Recommendation'a ulaşıyor
+- [x] ContentRated event Recommendation Engine'e ulaşıyor
+- [x] Catalog outbox pattern düzgün çalışıyor (content.created/updated/deleted)
+- [x] Subscription outbox pattern düzgün çalışıyor
+- [x] RabbitMQ'da 4 exchange ve ilgili queue'lar doğru topology ile mevcut
 
 ### 8.5 Consul & Altyapı
-- [ ] Tüm yeni servisler Consul'da "healthy" görünüyor (search, recommendation, subscription)
-- [ ] Elasticsearch cluster health: green/yellow
-- [ ] Yeni PostgreSQL veritabanları erişilebilir
+- [x] Tüm yeni servisler Consul'da "healthy" görünüyor (search, recommendation, subscription)
+- [x] Elasticsearch cluster health: green/yellow
+- [x] Yeni PostgreSQL veritabanları erişilebilir
 
 ### 8.6 Unit & Integration Tests
-- [ ] Subscription Service: Saga unit testleri (happy path + compensation)
-- [ ] Subscription Service: CreateSubscriptionHandler testleri
-- [ ] Search Service: searcher, indexer, consumer testleri
-- [ ] Recommendation Engine: similarity, collaborative, hybrid score testleri
-- [ ] Gateway: yeni route testleri
+- [x] Subscription Service: Saga unit testleri (happy path + compensation)
+- [x] Subscription Service: CreateSubscriptionHandler testleri
+- [x] Search Service: searcher, indexer, consumer testleri
+- [x] Recommendation Engine: similarity, collaborative, hybrid score testleri
+- [x] Gateway: yeni route testleri
 
 ### 8.7 Tam Akış Testi
-- [ ] Register → Subscribe (Standard plan) → İçerik izle → Rate → Search → Recommendation
-- [ ] Tier güncelleme sonrası streaming kalite erişimi doğrula
-- [ ] Plan upgrade → fiyat farkı → yeni tier yansıması
+- [x] Register → Subscribe (Standard plan) → İçerik izle → Rate → Search → Recommendation
+- [x] Tier güncelleme sonrası streaming kalite erişimi doğrula
+- [x] Plan upgrade → fiyat farkı → yeni tier yansıması
 
 ---
 
 ## 9. Dokümantasyon
 
-- [ ] README.md güncelle: Faz 3 mimari diyagram, yeni servisler, port haritası
-- [ ] Search API kullanım örnekleri (curl komutları)
-- [ ] Recommendation API kullanım örnekleri
-- [ ] Subscription API kullanım örnekleri (Saga akışı dahil)
-- [ ] RabbitMQ topology güncellemesi açıklaması (4 exchange, queue'lar)
-- [ ] Elasticsearch index yapısı açıklaması
-- [ ] Outbox pattern açıklaması
+- [x] README.md güncelle: Faz 3 mimari diyagram, yeni servisler, port haritası
+- [x] Search API kullanım örnekleri (curl komutları)
+- [x] Recommendation API kullanım örnekleri
+- [x] Subscription API kullanım örnekleri (Saga akışı dahil)
+- [x] RabbitMQ topology güncellemesi açıklaması (4 exchange, queue'lar)
+- [x] Elasticsearch index yapısı açıklaması
+- [x] Outbox pattern açıklaması
 
 ---
 

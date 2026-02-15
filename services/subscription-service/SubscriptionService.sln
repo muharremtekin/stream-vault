@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubscriptionService.Infrast
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubscriptionService.Api", "src\SubscriptionService.Api\SubscriptionService.Api.csproj", "{FEE9B77F-E1F7-4705-83A9-241E249AC942}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B61C6C7E-AC42-46B6-A019-0BE4A795E31A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubscriptionService.UnitTests", "tests\SubscriptionService.UnitTests\SubscriptionService.UnitTests.csproj", "{332A5123-DAB8-4FD3-8DFC-7B476B080CD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,11 +42,16 @@ Global
 		{FEE9B77F-E1F7-4705-83A9-241E249AC942}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FEE9B77F-E1F7-4705-83A9-241E249AC942}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FEE9B77F-E1F7-4705-83A9-241E249AC942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{332A5123-DAB8-4FD3-8DFC-7B476B080CD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{332A5123-DAB8-4FD3-8DFC-7B476B080CD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{332A5123-DAB8-4FD3-8DFC-7B476B080CD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{332A5123-DAB8-4FD3-8DFC-7B476B080CD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9C8C7719-8431-4ADF-8728-A20DEC007C28} = {0B7EA97E-22D9-4425-AE32-F5E5E8C71BBC}
 		{A7D3DBFC-B12B-4A60-A433-F8CF08BEFD70} = {0B7EA97E-22D9-4425-AE32-F5E5E8C71BBC}
 		{7FC5F41D-C6F1-4076-B34B-0EB929AD47C9} = {0B7EA97E-22D9-4425-AE32-F5E5E8C71BBC}
 		{FEE9B77F-E1F7-4705-83A9-241E249AC942} = {0B7EA97E-22D9-4425-AE32-F5E5E8C71BBC}
+		{332A5123-DAB8-4FD3-8DFC-7B476B080CD6} = {B61C6C7E-AC42-46B6-A019-0BE4A795E31A}
 	EndGlobalSection
 EndGlobal
