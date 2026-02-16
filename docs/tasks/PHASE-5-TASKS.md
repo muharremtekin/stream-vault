@@ -23,6 +23,7 @@
 | Config | `next.config.ts` | TypeScript config (Next.js 16 standart) |
 | Bundler | Turbopack (varsayılan) | Next.js 16'da default, `--turbopack` flag'i gereksiz |
 | ESLint | ESLint Flat Config (`eslint.config.mjs`) | `next lint` kaldırıldı, ESLint CLI doğrudan kullanılır |
+| i18n | next-intl | Server/Client component desteği, ICU format, type-safe |
 | React | React 19.2 | View Transitions, useEffectEvent, Activity |
 
 ---
@@ -47,6 +48,7 @@
 - [ ] Lucide React ekle (`lucide-react`)
 - [ ] Sonner ekle (`sonner`)
 - [ ] clsx + tailwind-merge ekle (`clsx`, `tailwind-merge`)
+- [ ] next-intl ekle (`next-intl`)
 
 ### 1.3 ESLint & Kod Kalitesi
 - [ ] `eslint.config.mjs` oluştur (Flat Config formatı — `next lint` kaldırıldı)
@@ -69,6 +71,16 @@
 - [ ] `src/lib/utils/cn.ts` — Tailwind class merge (`clsx` + `tailwind-merge`)
 - [ ] `src/lib/utils/format.ts` — Süre formatı (120dk → "2s 0dk"), tarih formatı, para formatı
 - [ ] `src/lib/utils/constants.ts` — API URL, WS URL, renk kodları, tier limitleri
+
+### 1.6 i18n Kurulumu (next-intl)
+- [ ] `src/i18n/request.ts` oluştur — `getRequestConfig` ile locale ve mesaj dosyası yükleme
+- [ ] `messages/en.json` oluştur — İngilizce çeviriler (default locale)
+- [ ] `messages/tr.json` oluştur — Türkçe çeviriler
+- [ ] `src/app/layout.tsx`'e `NextIntlClientProvider` ekle (mesajları server'dan client'a aktar)
+- [ ] `next.config.ts`'e `createNextIntlPlugin` entegrasyonu
+- [ ] Başlangıç namespace'leri: `common` (genel butonlar, hatalar), `auth` (login/register), `browse` (ana sayfa)
+- [ ] Locale algılama: `Accept-Language` header veya kullanıcı tercihi (cookie/localStorage)
+- [ ] Tüm UI metinleri bu noktadan itibaren `useTranslations()` ile yazılır — hardcoded metin YASAKTIR
 
 ---
 

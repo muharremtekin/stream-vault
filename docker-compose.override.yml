@@ -58,3 +58,8 @@ services:
       - NOTIFICATION_LOGGING_LEVEL=debug
     ports:
       - "5008:5008"
+
+  # --- Frontend ---
+  web:
+    ports:
+      - "3001:3001"
