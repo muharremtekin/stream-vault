@@ -119,15 +119,15 @@
 
 ## 3. Temel UI Bileşenleri
 
-- [ ] `src/components/ui/button.tsx` — Primary, secondary, ghost, danger varyantları
-- [ ] `src/components/ui/input.tsx` — Text input, label, error mesajı desteği
-- [ ] `src/components/ui/modal.tsx` — Overlay modal (ESC ile kapanır)
-- [ ] `src/components/ui/dropdown.tsx` — Dropdown menü
-- [ ] `src/components/ui/skeleton.tsx` — Loading skeleton (card, text, image varyantları)
-- [ ] `src/components/ui/badge.tsx` — Renkli badge (tür, durum vb.)
-- [ ] `src/components/ui/tooltip.tsx` — Hover tooltip
-- [ ] `src/components/ui/progress-bar.tsx` — İlerleme çubuğu (izleme, upload, encoding)
-- [ ] `src/components/ui/toast.tsx` — Sonner toast wrapper (gerekirse)
+- [x] `src/components/ui/button.tsx` — Primary, secondary, ghost, danger varyantları
+- [x] `src/components/ui/input.tsx` — Text input, label, error mesajı desteği
+- [x] `src/components/ui/modal.tsx` — Overlay modal (ESC ile kapanır)
+- [x] `src/components/ui/dropdown.tsx` — Dropdown menü
+- [x] `src/components/ui/skeleton.tsx` — Loading skeleton (card, text, image varyantları)
+- [x] `src/components/ui/badge.tsx` — Renkli badge (tür, durum vb.)
+- [x] `src/components/ui/tooltip.tsx` — Hover tooltip
+- [x] `src/components/ui/progress-bar.tsx` — İlerleme çubuğu (izleme, upload, encoding)
+- [x] `src/components/ui/toast.tsx` — Sonner toast wrapper (gerekirse)
 
 ---
 

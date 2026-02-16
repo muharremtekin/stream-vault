@@ -105,6 +105,20 @@
       "noNotifications": "Yeni bildirim yok"
     }
   },
+  "ui": {
+    "button": {
+      "loading": "Yükleniyor..."
+    },
+    "modal": {
+      "close": "Pencereyi kapat"
+    },
+    "badge": {
+      "remove": "{label} kaldır"
+    },
+    "progressBar": {
+      "progress": "%{value} tamamlandı"
+    }
+  },
   "error": {
     "title": "Bir hata oluştu",
     "description": "Beklenmeyen bir hata meydana geldi. Lütfen tekrar deneyin.",

@@ -105,6 +105,20 @@
       "noNotifications": "No new notifications"
     }
   },
+  "ui": {
+    "button": {
+      "loading": "Loading..."
+    },
+    "modal": {
+      "close": "Close dialog"
+    },
+    "badge": {
+      "remove": "Remove {label}"
+    },
+    "progressBar": {
+      "progress": "{value}% complete"
+    }
+  },
   "error": {
     "title": "Something went wrong",
     "description": "An unexpected error occurred. Please try again.",
