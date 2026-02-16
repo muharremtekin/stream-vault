@@ -31,89 +31,89 @@
 ## 1. Proje Kurulumu & Altyapı
 
 ### 1.1 Next.js 16 Proje Oluşturma
-- [ ] `web/` dizini oluştur
-- [ ] `npx create-next-app@latest` ile Next.js 16 projesi oluştur (TypeScript, Tailwind CSS, App Router, src/ dizini)
-- [ ] Node.js 20.9+ gereksinimini doğrula
-- [ ] `next.config.ts` oluştur (TypeScript config)
-- [ ] Turbopack'in varsayılan olarak çalıştığını doğrula (`next dev` → Turbopack aktif)
-- [ ] `package.json` script'leri: `dev: "next dev"`, `build: "next build"`, `start: "next start"` (flag'siz)
-- [ ] `.env.local.example` oluştur (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`)
+- [x] `web/` dizini oluştur
+- [x] `npx create-next-app@latest` ile Next.js 16 projesi oluştur (TypeScript, Tailwind CSS, App Router, src/ dizini)
+- [x] Node.js 20.9+ gereksinimini doğrula
+- [x] `next.config.ts` oluştur (TypeScript config)
+- [x] Turbopack'in varsayılan olarak çalıştığını doğrula (`next dev` → Turbopack aktif)
+- [x] `package.json` script'leri: `dev: "next dev"`, `build: "next build"`, `start: "next start"` (flag'siz)
+- [x] `.env.local.example` oluştur (`NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_WS_URL`)
 
 ### 1.2 Bağımlılıklar
-- [ ] Zustand ekle (`zustand`)
-- [ ] TanStack Query v5 ekle (`@tanstack/react-query`, `@tanstack/react-query-devtools`)
-- [ ] Axios ekle (`axios`)
-- [ ] React Hook Form + Zod ekle (`react-hook-form`, `@hookform/resolvers`, `zod`)
-- [ ] hls.js ekle (`hls.js`)
-- [ ] Lucide React ekle (`lucide-react`)
-- [ ] Sonner ekle (`sonner`)
-- [ ] clsx + tailwind-merge ekle (`clsx`, `tailwind-merge`)
-- [ ] next-intl ekle (`next-intl`)
+- [x] Zustand ekle (`zustand`)
+- [x] TanStack Query v5 ekle (`@tanstack/react-query`, `@tanstack/react-query-devtools`)
+- [x] Axios ekle (`axios`)
+- [x] React Hook Form + Zod ekle (`react-hook-form`, `@hookform/resolvers`, `zod`)
+- [x] hls.js ekle (`hls.js`)
+- [x] Lucide React ekle (`lucide-react`)
+- [x] Sonner ekle (`sonner`)
+- [x] clsx + tailwind-merge ekle (`clsx`, `tailwind-merge`)
+- [x] next-intl ekle (`next-intl`)
 
 ### 1.3 ESLint & Kod Kalitesi
-- [ ] `eslint.config.mjs` oluştur (Flat Config formatı — `next lint` kaldırıldı)
-- [ ] `@next/eslint-plugin-next` ekle
-- [ ] TypeScript ESLint kuralları ekle
-- [ ] Prettier entegrasyonu (opsiyonel)
-- [ ] `.prettierrc` oluştur
+- [x] `eslint.config.mjs` oluştur (Flat Config formatı — `next lint` kaldırıldı)
+- [x] `@next/eslint-plugin-next` ekle
+- [x] TypeScript ESLint kuralları ekle
+- [x] Prettier entegrasyonu (opsiyonel)
+- [x] `.prettierrc` oluştur
 
 ### 1.4 Docker Entegrasyonu
-- [ ] `web/Dockerfile` oluştur (multi-stage: node:20-alpine builder + runner)
-- [ ] Build stage: `npm ci` → `npm run build`
-- [ ] Runner stage: `.next`, `public`, `package.json`, `node_modules` kopyala
-- [ ] `EXPOSE 3001`, `CMD ["npm", "start"]`
-- [ ] `docker-compose.yml`'a `web` servisi ekle (port: 3001:3001)
-- [ ] Environment: `NEXT_PUBLIC_API_URL=http://localhost:8081`, `NEXT_PUBLIC_WS_URL=ws://localhost:8081`
-- [ ] `depends_on: [gateway]`
+- [x] `web/Dockerfile` oluştur (multi-stage: node:20-alpine builder + runner)
+- [x] Build stage: `npm ci` → `npm run build`
+- [x] Runner stage: `.next`, `public`, `package.json`, `node_modules` kopyala
+- [x] `EXPOSE 3001`, `CMD ["npm", "start"]`
+- [x] `docker-compose.yml`'a `web` servisi ekle (port: 3001:3001)
+- [x] Environment: `NEXT_PUBLIC_API_URL=http://localhost:8081`, `NEXT_PUBLIC_WS_URL=ws://localhost:8081`
+- [x] `depends_on: [gateway]`
 - [ ] `docker compose up web` ile frontend'in ayağa kalktığını doğrula
 
 ### 1.5 Utility Fonksiyonlar
-- [ ] `src/lib/utils/cn.ts` — Tailwind class merge (`clsx` + `tailwind-merge`)
-- [ ] `src/lib/utils/format.ts` — Süre formatı (120dk → "2s 0dk"), tarih formatı, para formatı
-- [ ] `src/lib/utils/constants.ts` — API URL, WS URL, renk kodları, tier limitleri
+- [x] `src/lib/utils/cn.ts` — Tailwind class merge (`clsx` + `tailwind-merge`)
+- [x] `src/lib/utils/format.ts` — Süre formatı (120dk → "2s 0dk"), tarih formatı, para formatı
+- [x] `src/lib/utils/constants.ts` — API URL, WS URL, renk kodları, tier limitleri
 
 ### 1.6 i18n Kurulumu (next-intl)
-- [ ] `src/i18n/request.ts` oluştur — `getRequestConfig` ile locale ve mesaj dosyası yükleme
-- [ ] `messages/en.json` oluştur — İngilizce çeviriler (default locale)
-- [ ] `messages/tr.json` oluştur — Türkçe çeviriler
-- [ ] `src/app/layout.tsx`'e `NextIntlClientProvider` ekle (mesajları server'dan client'a aktar)
-- [ ] `next.config.ts`'e `createNextIntlPlugin` entegrasyonu
-- [ ] Başlangıç namespace'leri: `common` (genel butonlar, hatalar), `auth` (login/register), `browse` (ana sayfa)
-- [ ] Locale algılama: `Accept-Language` header veya kullanıcı tercihi (cookie/localStorage)
-- [ ] Tüm UI metinleri bu noktadan itibaren `useTranslations()` ile yazılır — hardcoded metin YASAKTIR
+- [x] `src/i18n/request.ts` oluştur — `getRequestConfig` ile locale ve mesaj dosyası yükleme
+- [x] `messages/en.json` oluştur — İngilizce çeviriler (default locale)
+- [x] `messages/tr.json` oluştur — Türkçe çeviriler
+- [x] `src/app/layout.tsx`'e `NextIntlClientProvider` ekle (mesajları server'dan client'a aktar)
+- [x] `next.config.ts`'e `createNextIntlPlugin` entegrasyonu
+- [x] Başlangıç namespace'leri: `common` (genel butonlar, hatalar), `auth` (login/register), `browse` (ana sayfa)
+- [x] Locale algılama: `Accept-Language` header veya kullanıcı tercihi (cookie/localStorage)
+- [x] Tüm UI metinleri bu noktadan itibaren `useTranslations()` ile yazılır — hardcoded metin YASAKTIR
 
 ---
 
 ## 2. Tema & Layout Sistemi
 
 ### 2.1 Dark Tema & Global Stiller
-- [ ] `src/app/globals.css` — Tailwind import'ları, dark tema renk paleti (Netflix-dark)
-- [ ] CSS custom properties: `--background`, `--foreground`, `--primary`, `--accent`, `--muted` vb.
-- [ ] Font ayarı (Inter veya benzeri sans-serif)
-- [ ] Scrollbar stili (dark tema uyumlu)
-- [ ] Tailwind config'de custom renkleri tanımla
+- [x] `src/app/globals.css` — Tailwind import'ları, dark tema renk paleti (Netflix-dark)
+- [x] CSS custom properties: `--background`, `--foreground`, `--primary`, `--accent`, `--muted` vb.
+- [x] Font ayarı (Inter veya benzeri sans-serif)
+- [x] Scrollbar stili (dark tema uyumlu)
+- [x] Tailwind config'de custom renkleri tanımla
 
 ### 2.2 Root Layout
-- [ ] `src/app/layout.tsx` — HTML lang, dark tema class, font, metadata
-- [ ] `<Toaster />` (Sonner) provider ekle
-- [ ] TanStack Query `QueryClientProvider` ekle
-- [ ] Global error boundary
+- [x] `src/app/layout.tsx` — HTML lang, dark tema class, font, metadata
+- [x] `<Toaster />` (Sonner) provider ekle
+- [x] TanStack Query `QueryClientProvider` ekle
+- [x] Global error boundary
 
 ### 2.3 Auth Layout Grubu
-- [ ] `src/app/(auth)/layout.tsx` — Navbar yok, arka plan bulanık poster collage
-- [ ] Logo üstte ortalanmış
-- [ ] Sadece login/register sayfaları bu layout'u kullanır
+- [x] `src/app/(auth)/layout.tsx` — Navbar yok, arka plan bulanık poster collage
+- [x] Logo üstte ortalanmış
+- [x] Sadece login/register sayfaları bu layout'u kullanır
 
 ### 2.4 Main Layout Grubu
-- [ ] `src/app/(main)/layout.tsx` — Navbar + NotificationProvider + Footer
-- [ ] Tüm korumalı sayfalar bu layout'u kullanır
+- [x] `src/app/(main)/layout.tsx` — Navbar + NotificationProvider + Footer
+- [x] Tüm korumalı sayfalar bu layout'u kullanır
 
 ### 2.5 Layout Bileşenleri
-- [ ] `src/components/layout/navbar.tsx` — Logo, navigasyon linkleri (Ana Sayfa, Diziler, Filmler, Listem), arama ikonu, bildirim bell, profil dropdown
-- [ ] `src/components/layout/footer.tsx` — Basit footer
-- [ ] `src/components/layout/sidebar.tsx` — Admin sidebar (Dashboard, İçerikler, Encoding)
-- [ ] `src/components/layout/profile-switcher.tsx` — Profil değiştirme dropdown (navbar içinde)
-- [ ] `src/components/layout/notification-bell.tsx` — Bildirim ikonu + unread count badge + dropdown
+- [x] `src/components/layout/navbar.tsx` — Logo, navigasyon linkleri (Ana Sayfa, Diziler, Filmler, Listem), arama ikonu, bildirim bell, profil dropdown
+- [x] `src/components/layout/footer.tsx` — Basit footer
+- [x] `src/components/layout/sidebar.tsx` — Admin sidebar (Dashboard, İçerikler, Encoding)
+- [x] `src/components/layout/profile-switcher.tsx` — Profil değiştirme dropdown (navbar içinde)
+- [x] `src/components/layout/notification-bell.tsx` — Bildirim ikonu + unread count badge + dropdown
 
 ---
 

@@ -66,5 +66,55 @@
     "similar": "More Like This",
     "nextEpisode": "Next Episode",
     "nextEpisodeIn": "Next episode in {seconds}s"
+  },
+  "layout": {
+    "navbar": {
+      "home": "Home",
+      "series": "Series",
+      "movies": "Movies",
+      "myList": "My List",
+      "search": "Search",
+      "notifications": "Notifications",
+      "profile": "Profile",
+      "account": "Account",
+      "signOut": "Sign Out",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "footer": {
+      "about": "About StreamVault",
+      "help": "Help Center",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "copyright": "© {year} StreamVault. All rights reserved."
+    },
+    "admin": {
+      "dashboard": "Dashboard",
+      "content": "Content Management",
+      "encoding": "Encoding Jobs",
+      "admin": "Admin Panel"
+    },
+    "profileSwitcher": {
+      "switchProfile": "Switch Profile",
+      "manageProfiles": "Manage Profiles"
+    },
+    "notificationBell": {
+      "notifications": "Notifications",
+      "markAllRead": "Mark all as read",
+      "viewAll": "View all notifications",
+      "noNotifications": "No new notifications"
+    }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Please try again.",
+    "tryAgain": "Try Again",
+    "goHome": "Go Home"
+  },
+  "landing": {
+    "heroTitle": "Unlimited movies, series, and more",
+    "heroDescription": "Watch anywhere. Cancel anytime.",
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
   }
 }

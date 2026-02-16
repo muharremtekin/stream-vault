@@ -66,5 +66,55 @@
     "similar": "Benzerleri",
     "nextEpisode": "Sonraki Bölüm",
     "nextEpisodeIn": "Sonraki bölüm {seconds}s içinde"
+  },
+  "layout": {
+    "navbar": {
+      "home": "Ana Sayfa",
+      "series": "Diziler",
+      "movies": "Filmler",
+      "myList": "Listem",
+      "search": "Ara",
+      "notifications": "Bildirimler",
+      "profile": "Profil",
+      "account": "Hesap",
+      "signOut": "Çıkış Yap",
+      "openMenu": "Menüyü aç",
+      "closeMenu": "Menüyü kapat"
+    },
+    "footer": {
+      "about": "StreamVault Hakkında",
+      "help": "Yardım Merkezi",
+      "terms": "Kullanım Koşulları",
+      "privacy": "Gizlilik Politikası",
+      "copyright": "© {year} StreamVault. Tüm hakları saklıdır."
+    },
+    "admin": {
+      "dashboard": "Kontrol Paneli",
+      "content": "İçerik Yönetimi",
+      "encoding": "Encoding İşleri",
+      "admin": "Admin Paneli"
+    },
+    "profileSwitcher": {
+      "switchProfile": "Profil Değiştir",
+      "manageProfiles": "Profilleri Yönet"
+    },
+    "notificationBell": {
+      "notifications": "Bildirimler",
+      "markAllRead": "Tümünü okundu işaretle",
+      "viewAll": "Tüm bildirimleri gör",
+      "noNotifications": "Yeni bildirim yok"
+    }
+  },
+  "error": {
+    "title": "Bir hata oluştu",
+    "description": "Beklenmeyen bir hata meydana geldi. Lütfen tekrar deneyin.",
+    "tryAgain": "Tekrar Dene",
+    "goHome": "Ana Sayfaya Dön"
+  },
+  "landing": {
+    "heroTitle": "Sınırsız film, dizi ve daha fazlası",
+    "heroDescription": "İstediğin yerde izle. İstediğin zaman iptal et.",
+    "signIn": "Giriş Yap",
+    "getStarted": "Başla"
   }
 }
