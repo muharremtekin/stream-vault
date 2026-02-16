@@ -130,5 +130,26 @@
     "heroDescription": "İstediğin yerde izle. İstediğin zaman iptal et.",
     "signIn": "Giriş Yap",
     "getStarted": "Başla"
+  },
+  "api": {
+    "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
+    "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.",
+    "unauthorized": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+    "forbidden": "Bu işlem için yetkiniz bulunmuyor.",
+    "notFound": "İstenen kaynak bulunamadı.",
+    "serverError": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+    "unknownError": "Beklenmeyen bir hata oluştu.",
+    "refreshFailed": "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+    "progressSaved": "İlerleme kaydedildi",
+    "addedToList": "Listenize eklendi",
+    "removedFromList": "Listenizden çıkarıldı",
+    "subscriptionCreated": "Abonelik aktifleştirildi!",
+    "subscriptionCancelled": "Abonelik iptal edildi",
+    "planChanged": "Plan başarıyla değiştirildi",
+    "profileCreated": "Profil oluşturuldu",
+    "notificationRead": "Bildirim okundu olarak işaretlendi",
+    "allNotificationsRead": "Tüm bildirimler okundu olarak işaretlendi",
+    "preferencesUpdated": "Tercihler güncellendi",
+    "feedbackSent": "Geri bildiriminiz için teşekkürler"
   }
 }

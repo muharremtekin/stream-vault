@@ -1,0 +1,69 @@
+import axios from 'axios';
+
+import { apiClient } from '@/lib/api/client';
+import { API_URL } from '@/lib/utils/constants';
+import type {
+  WatchProgress,
+  SaveProgressRequest,
+  ContinueWatchingResponse,
+} from '@/lib/types/streaming';
+
+export async function getProgress(contentId: string): Promise<WatchProgress> {
+  const response = await apiClient.get<WatchProgress>(
+    `/api/stream/${contentId}/progress`
+  );
+  return response.data;
+}
+
+export async function saveProgress(
+  contentId: string,
+  data: SaveProgressRequest
+): Promise<{ status: string }> {
+  const response = await apiClient.post<{ status: string }>(
+    `/api/stream/${contentId}/progress`,
+    data
+  );
+  return response.data;
+}
+
+export async function getContinueWatching(
+  limit?: number
+): Promise<ContinueWatchingResponse> {
+  const response = await apiClient.get<ContinueWatchingResponse>(
+    '/api/stream/continue-watching',
+    { params: limit ? { limit } : undefined }
+  );
+  return response.data;
+}
+
+/**
+ * Upload a video file for encoding (admin-only).
+ * Uses a separate axios instance with extended timeout for large files.
+ */
+export async function uploadVideo(
+  formData: FormData,
+  onUploadProgress?: (percentage: number) => void
+): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { useAuthStore } = require('@/lib/stores/auth-store') as {
+    useAuthStore: {
+      getState: () => { accessToken: string | null };
+    };
+  };
+
+  const { accessToken } = useAuthStore.getState();
+
+  await axios.post(`${API_URL}/api/stream/upload`, formData, {
+    timeout: 5 * 60_000, // 5 minutes for large uploads
+    headers: {
+      'Content-Type': 'multipart/form-data',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    onUploadProgress: (event) => {
+      if (onUploadProgress && event.total) {
+        const percentage = Math.round((event.loaded * 100) / event.total);
+        onUploadProgress(percentage);
+      }
+    },
+  });
+}

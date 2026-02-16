@@ -130,5 +130,26 @@
     "heroDescription": "Watch anywhere. Cancel anytime.",
     "signIn": "Sign In",
     "getStarted": "Get Started"
+  },
+  "api": {
+    "networkError": "Network error. Please check your connection.",
+    "timeout": "Request timed out. Please try again.",
+    "unauthorized": "Session expired. Please sign in again.",
+    "forbidden": "You don't have permission to perform this action.",
+    "notFound": "The requested resource was not found.",
+    "serverError": "Server error. Please try again later.",
+    "unknownError": "An unexpected error occurred.",
+    "refreshFailed": "Session expired. Please sign in again.",
+    "progressSaved": "Progress saved",
+    "addedToList": "Added to your list",
+    "removedFromList": "Removed from your list",
+    "subscriptionCreated": "Subscription activated!",
+    "subscriptionCancelled": "Subscription cancelled",
+    "planChanged": "Plan changed successfully",
+    "profileCreated": "Profile created",
+    "notificationRead": "Notification marked as read",
+    "allNotificationsRead": "All notifications marked as read",
+    "preferencesUpdated": "Preferences updated",
+    "feedbackSent": "Thanks for your feedback"
   }
 }
