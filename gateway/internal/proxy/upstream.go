@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	"github.com/streamvault/gateway/internal/config"
 	"github.com/streamvault/gateway/internal/middleware"
 )
 
@@ -25,20 +27,40 @@ type UpstreamManager struct {
 	Transport http.RoundTripper
 }
 
-// NewUpstreamManager creates an UpstreamManager with a sensible default
-// transport configuration. GET/HEAD requests are automatically retried on
-// 502/503 errors or network failures.
-func NewUpstreamManager() *UpstreamManager {
+// NewUpstreamManager creates an UpstreamManager with a configurable retry
+// transport. GET/HEAD requests are automatically retried on 502/503/504
+// errors or network failures with exponential backoff and jitter.
+func NewUpstreamManager(retryCfg config.RetryConfig) *UpstreamManager {
 	baseTransport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 20,
 		IdleConnTimeout:     90 * time.Second,
 	}
 
+	// Apply sensible defaults if config values are zero.
+	if retryCfg.MaxRetries <= 0 {
+		retryCfg.MaxRetries = 3
+	}
+	if retryCfg.InitialBackoff <= 0 {
+		retryCfg.InitialBackoff = 100 * time.Millisecond
+	}
+	if retryCfg.MaxBackoff <= 0 {
+		retryCfg.MaxBackoff = 2 * time.Second
+	}
+	if retryCfg.Multiplier <= 0 {
+		retryCfg.Multiplier = 2.0
+	}
+	if retryCfg.JitterFraction <= 0 {
+		retryCfg.JitterFraction = 0.2
+	}
+
 	retryTransport := &RetryTransport{
-		Base:       otelhttp.NewTransport(baseTransport),
-		MaxRetries: 2,
-		BaseDelay:  500 * time.Millisecond,
+		Base:           otelhttp.NewTransport(baseTransport),
+		MaxRetries:     retryCfg.MaxRetries,
+		InitialBackoff: retryCfg.InitialBackoff,
+		MaxBackoff:     retryCfg.MaxBackoff,
+		Multiplier:     retryCfg.Multiplier,
+		JitterFraction: retryCfg.JitterFraction,
 	}
 
 	return &UpstreamManager{
@@ -48,11 +70,35 @@ func NewUpstreamManager() *UpstreamManager {
 }
 
 // RetryTransport wraps an http.RoundTripper and retries idempotent requests
-// (GET, HEAD) on 502/503 errors or network failures with exponential backoff.
+// (GET, HEAD) on retryable status codes (502, 503, 504) or network failures
+// with exponential backoff and jitter.
 type RetryTransport struct {
-	Base       http.RoundTripper
-	MaxRetries int
-	BaseDelay  time.Duration
+	Base           http.RoundTripper
+	MaxRetries     int
+	InitialBackoff time.Duration
+	MaxBackoff     time.Duration
+	Multiplier     float64
+	JitterFraction float64 // 0.0–1.0, fraction of delay to randomise
+}
+
+// retryableStatus reports whether the HTTP status code warrants a retry.
+func retryableStatus(code int) bool {
+	return code == http.StatusBadGateway ||
+		code == http.StatusServiceUnavailable ||
+		code == http.StatusGatewayTimeout
+}
+
+// nonRetryableStatus reports whether the status code must never be retried.
+func nonRetryableStatus(code int) bool {
+	switch code {
+	case http.StatusBadRequest,
+		http.StatusUnauthorized,
+		http.StatusForbidden,
+		http.StatusNotFound,
+		http.StatusConflict:
+		return true
+	}
+	return false
 }
 
 // RoundTrip implements http.RoundTripper with retry logic for safe methods.
@@ -67,32 +113,65 @@ func (rt *RetryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	for attempt := 0; attempt <= rt.MaxRetries; attempt++ {
 		if attempt > 0 {
-			delay := rt.BaseDelay * time.Duration(1<<(attempt-1))
+			delay := rt.backoff(attempt)
 			log.Warn().
 				Int("attempt", attempt).
 				Str("path", req.URL.Path).
 				Dur("delay", delay).
 				Msg("retrying upstream request")
-			time.Sleep(delay)
+
+			select {
+			case <-time.After(delay):
+			case <-req.Context().Done():
+				return nil, req.Context().Err()
+			}
 		}
 
 		resp, err = rt.Base.RoundTrip(req)
 		if err != nil {
+			// Check if context was cancelled — no point retrying.
+			if req.Context().Err() != nil {
+				return nil, req.Context().Err()
+			}
 			continue // network error, retry
 		}
 
-		// Only retry on 502 Bad Gateway or 503 Service Unavailable.
-		if resp.StatusCode == http.StatusBadGateway || resp.StatusCode == http.StatusServiceUnavailable {
-			if attempt < rt.MaxRetries {
-				resp.Body.Close()
-				continue
-			}
+		// Non-retryable 4xx — return immediately.
+		if nonRetryableStatus(resp.StatusCode) {
+			return resp, nil
+		}
+
+		// Retryable 5xx — close body and retry.
+		if retryableStatus(resp.StatusCode) && attempt < rt.MaxRetries {
+			resp.Body.Close()
+			continue
 		}
 
 		return resp, nil
 	}
 
 	return resp, err
+}
+
+// backoff computes the delay for the given retry attempt using exponential
+// backoff with jitter. The delay is capped at MaxBackoff.
+func (rt *RetryTransport) backoff(attempt int) time.Duration {
+	delay := float64(rt.InitialBackoff)
+	for i := 1; i < attempt; i++ {
+		delay *= rt.Multiplier
+	}
+
+	if time.Duration(delay) > rt.MaxBackoff {
+		delay = float64(rt.MaxBackoff)
+	}
+
+	// Add jitter: delay ± (jitter_fraction * delay)
+	if rt.JitterFraction > 0 {
+		jitter := delay * rt.JitterFraction
+		delay = delay - jitter + rand.Float64()*2*jitter //nolint:gosec // jitter doesn't need crypto rand
+	}
+
+	return time.Duration(delay)
 }
 
 // GetProxy returns a reverse proxy for the given upstream address. If

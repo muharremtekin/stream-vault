@@ -22,6 +22,7 @@ import (
 	"github.com/streamvault/gateway/internal/metrics"
 	"github.com/streamvault/gateway/internal/middleware"
 	"github.com/streamvault/gateway/internal/proxy"
+	"github.com/streamvault/gateway/internal/resilience"
 	"github.com/streamvault/gateway/internal/telemetry"
 )
 
@@ -67,9 +68,14 @@ func main() {
 	resolver := discovery.NewResolver(consulClient, cfg.Services)
 
 	// ---- Upstream Proxy ----
-	upstreamManager := proxy.NewUpstreamManager()
+	upstreamManager := proxy.NewUpstreamManager(cfg.Resilience.Retry)
 	routes := proxy.DefaultRoutes()
-	router := proxy.NewRouter(routes, resolver, upstreamManager)
+
+	// ---- Resilience (Circuit Breaker + Bulkhead + Timeout) ----
+	serviceNames := collectServiceNames(routes)
+	res := resilience.New(cfg.Resilience, serviceNames)
+
+	router := proxy.NewRouter(routes, resolver, upstreamManager, res)
 
 	// ---- Health Handler ----
 	healthHandler := health.NewHandler(cfg.Services, resolver)
@@ -162,6 +168,19 @@ func applyMiddleware(handler http.Handler, middlewares ...func(http.Handler) htt
 		handler = middlewares[i](handler)
 	}
 	return handler
+}
+
+// collectServiceNames returns unique service names from the route table.
+func collectServiceNames(routes []proxy.Route) []string {
+	seen := make(map[string]struct{})
+	var names []string
+	for _, r := range routes {
+		if _, ok := seen[r.ServiceName]; !ok {
+			seen[r.ServiceName] = struct{}{}
+			names = append(names, r.ServiceName)
+		}
+	}
+	return names
 }
 
 // setupLogging configures zerolog based on the logging configuration.

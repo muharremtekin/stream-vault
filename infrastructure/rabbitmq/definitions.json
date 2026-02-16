@@ -24,6 +24,15 @@
       "arguments": {}
     },
     {
+      "name": "streamvault.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
       "name": "catalog.events",
       "vhost": "/",
       "type": "topic",
@@ -76,10 +85,20 @@
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "encoding.results.catalog"
+      }
     },
     {
       "name": "encoding.dead-letters",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "streamvault.dead-letters",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
@@ -90,70 +109,100 @@
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "encoding.results.streaming"
+      }
     },
     {
       "name": "search.catalog-sync",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "search.catalog-sync"
+      }
     },
     {
       "name": "recommendation.catalog",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "recommendation.catalog"
+      }
     },
     {
       "name": "search.watch-count",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "search.watch-count"
+      }
     },
     {
       "name": "recommendation.watch",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "recommendation.watch"
+      }
     },
     {
       "name": "recommendation.ratings",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "recommendation.ratings"
+      }
     },
     {
       "name": "user.subscription-sync",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "user.subscription-sync"
+      }
     },
     {
       "name": "notification.subscription",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "notification.subscription"
+      }
     },
     {
       "name": "notification.encoding",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "notification.encoding"
+      }
     },
     {
       "name": "notification.content",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
-      "arguments": {}
+      "arguments": {
+        "x-dead-letter-exchange": "streamvault.dlx",
+        "x-dead-letter-routing-key": "notification.content"
+      }
     }
   ],
   "bindings": [
@@ -187,6 +236,94 @@
       "destination": "encoding.dead-letters",
       "destination_type": "queue",
       "routing_key": "dead-letter",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "encoding.results.catalog",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "encoding.results.streaming",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "search.catalog-sync",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "recommendation.catalog",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "search.watch-count",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "recommendation.watch",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "recommendation.ratings",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "user.subscription-sync",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "notification.subscription",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "notification.encoding",
+      "arguments": {}
+    },
+    {
+      "source": "streamvault.dlx",
+      "vhost": "/",
+      "destination": "streamvault.dead-letters",
+      "destination_type": "queue",
+      "routing_key": "notification.content",
       "arguments": {}
     },
     {

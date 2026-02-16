@@ -10,13 +10,14 @@ import (
 
 // Config holds the complete gateway configuration.
 type Config struct {
-	Server    ServerConfig            `mapstructure:"server"`
-	JWT       JWTConfig               `mapstructure:"jwt"`
-	RateLimit RateLimitConfig         `mapstructure:"ratelimit"`
-	Consul    ConsulConfig            `mapstructure:"consul"`
-	Services  map[string]ServiceEntry `mapstructure:"services"`
-	Logging   LoggingConfig           `mapstructure:"logging"`
-	OTel      OTelConfig              `mapstructure:"otel"`
+	Server     ServerConfig            `mapstructure:"server"`
+	JWT        JWTConfig               `mapstructure:"jwt"`
+	RateLimit  RateLimitConfig         `mapstructure:"ratelimit"`
+	Consul     ConsulConfig            `mapstructure:"consul"`
+	Services   map[string]ServiceEntry `mapstructure:"services"`
+	Logging    LoggingConfig           `mapstructure:"logging"`
+	OTel       OTelConfig              `mapstructure:"otel"`
+	Resilience ResilienceConfig        `mapstructure:"resilience"`
 }
 
 // OTelConfig holds OpenTelemetry tracing settings.
@@ -66,6 +67,37 @@ type LoggingConfig struct {
 	Format string `mapstructure:"format"`
 }
 
+// ResilienceConfig holds circuit breaker, bulkhead, timeout, and retry settings.
+type ResilienceConfig struct {
+	CircuitBreaker       CBConfig                           `mapstructure:"circuit_breaker"`
+	Retry                RetryConfig                        `mapstructure:"retry"`
+	DefaultTimeout       time.Duration                      `mapstructure:"default_timeout"`
+	DefaultMaxConcurrent int                                `mapstructure:"default_max_concurrent"`
+	Services             map[string]ServiceResilienceConfig  `mapstructure:"services"`
+}
+
+// RetryConfig holds upstream HTTP retry policy settings.
+type RetryConfig struct {
+	MaxRetries     int           `mapstructure:"max_retries"`
+	InitialBackoff time.Duration `mapstructure:"initial_backoff"`
+	MaxBackoff     time.Duration `mapstructure:"max_backoff"`
+	Multiplier     float64       `mapstructure:"multiplier"`
+	JitterFraction float64       `mapstructure:"jitter_fraction"`
+}
+
+// CBConfig holds circuit breaker settings shared across all services.
+type CBConfig struct {
+	FailureThreshold uint32        `mapstructure:"failure_threshold"`
+	SuccessThreshold uint32        `mapstructure:"success_threshold"`
+	Timeout          time.Duration `mapstructure:"timeout"`
+}
+
+// ServiceResilienceConfig holds per-service resilience overrides.
+type ServiceResilienceConfig struct {
+	Timeout       time.Duration `mapstructure:"timeout"`
+	MaxConcurrent int           `mapstructure:"max_concurrent"`
+}
+
 // Load reads configuration from config.yaml and environment variables.
 // Environment variables are prefixed with GATEWAY_ and use underscores as
 // separators (e.g., GATEWAY_SERVER_PORT=8080).
@@ -89,6 +121,16 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("otel.endpoint", "jaeger:4317")
 	v.SetDefault("otel.service_name", "gateway")
 	v.SetDefault("otel.insecure", true)
+	v.SetDefault("resilience.circuit_breaker.failure_threshold", 5)
+	v.SetDefault("resilience.circuit_breaker.success_threshold", 3)
+	v.SetDefault("resilience.circuit_breaker.timeout", 30*time.Second)
+	v.SetDefault("resilience.retry.max_retries", 3)
+	v.SetDefault("resilience.retry.initial_backoff", 100*time.Millisecond)
+	v.SetDefault("resilience.retry.max_backoff", 2*time.Second)
+	v.SetDefault("resilience.retry.multiplier", 2.0)
+	v.SetDefault("resilience.retry.jitter_fraction", 0.2)
+	v.SetDefault("resilience.default_timeout", 5*time.Second)
+	v.SetDefault("resilience.default_max_concurrent", 30)
 
 	// Read from config file.
 	if configPath != "" {

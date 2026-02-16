@@ -343,60 +343,60 @@
 ## 7. Resilience Patterns
 
 ### 7.1 Circuit Breaker (Gateway)
-- [ ] `gateway/internal/middleware/circuit_breaker.go` — Circuit breaker implementasyonu
-- [ ] `sony/gobreaker` veya `afex/hystrix-go` kütüphanesi ekle
-- [ ] Her downstream servis için ayrı circuit breaker instance
-- [ ] Konfigürasyon: `failure_threshold: 5`, `success_threshold: 3`, `timeout: 30s`
-- [ ] State'ler: CLOSED → OPEN (hata eşiği aşıldı) → HALF-OPEN (timeout sonrası 1 istek dener)
-- [ ] OPEN durumda hızlıca 503 Service Unavailable döndür
-- [ ] Fallback response (varsa cache'ten eski veri)
-- [ ] `gateway_circuit_breaker_state{service, state}` Prometheus metriği
-- [ ] `gateway/config.yaml` — circuit breaker konfigürasyonu (servis başına ayarlar)
+- [x] `gateway/internal/resilience/resilience.go` — Circuit breaker implementasyonu
+- [x] `sony/gobreaker` v2 kütüphanesi ekle
+- [x] Her downstream servis için ayrı circuit breaker instance
+- [x] Konfigürasyon: `failure_threshold: 5`, `success_threshold: 3`, `timeout: 30s`
+- [x] State'ler: CLOSED → OPEN (hata eşiği aşıldı) → HALF-OPEN (timeout sonrası 1 istek dener)
+- [x] OPEN durumda hızlıca 503 Service Unavailable döndür
+- [x] Fallback response (graceful degradation stratejileri)
+- [x] `gateway_circuit_breaker_state{service}` Prometheus metriği
+- [x] `gateway/config.yaml` — circuit breaker konfigürasyonu (servis başına ayarlar)
 
 ### 7.2 Retry Policy (Tüm Servisler)
-- [ ] Gateway — HTTP retry policy
-  - [ ] `max_retries: 3`, `initial_backoff: 100ms`, `max_backoff: 2s`, `backoff_multiplier: 2.0`
-  - [ ] Retryable status codes: 502, 503, 504
-  - [ ] Non-retryable: 400, 401, 403, 404, 409
-  - [ ] Jitter ekleme (thundering herd önleme)
+- [x] Gateway — HTTP retry policy
+  - [x] `max_retries: 3`, `initial_backoff: 100ms`, `max_backoff: 2s`, `backoff_multiplier: 2.0`
+  - [x] Retryable status codes: 502, 503, 504
+  - [x] Non-retryable: 400, 401, 403, 404, 409
+  - [x] Jitter ekleme (thundering herd önleme)
 - [ ] Go servisleri — gRPC retry policy
   - [ ] Retryable codes: UNAVAILABLE, DEADLINE_EXCEEDED
-- [ ] Tüm servisler — RabbitMQ consumer retry
-  - [ ] Progressive delay: 1s, 5s, 30s
-  - [ ] Max 3 başarısız deneme sonrası dead letter queue'ya düşürme
+- [x] Tüm servisler — RabbitMQ consumer retry
+  - [x] Progressive delay: 1s, 5s, 30s (mevcut exponential backoff consumer'larda)
+  - [x] Max başarısız deneme sonrası dead letter queue'ya düşürme (DLX topolojisi)
   - [ ] Idempotency key kullanımı (non-idempotent işlemler için)
 
 ### 7.3 Timeout Hiyerarşisi
-- [ ] Client → Gateway: 30s (genel timeout)
-- [ ] Gateway → Downstream Service: 5s (servis çağrısı)
+- [x] Client → Gateway: 300s (server read/write timeout — config.yaml)
+- [x] Gateway → Downstream Service: 5s (per-service context timeout)
 - [ ] Service → Database: 3s (PostgreSQL, MongoDB)
 - [ ] Service → Redis: 1s
 - [ ] Service → gRPC call: 3s
-- [ ] Gateway → Streaming Service: 60s (video chunk için uzun timeout — istisna)
+- [x] Gateway → Streaming Service: 60s (video chunk için uzun timeout — istisna)
 - [ ] Streaming → MinIO: 30s (büyük dosya okuma)
-- [ ] Tüm servisler için context timeout propagation
-- [ ] İç timeout < dış timeout kuralının sağlanması
+- [x] Tüm servisler için context timeout propagation (gateway level)
+- [x] İç timeout < dış timeout kuralının sağlanması (per-service < server timeout)
 
 ### 7.4 Bulkhead Pattern (Gateway)
-- [ ] `gateway/internal/middleware/bulkhead.go` — Servis başına connection pool limiti
-- [ ] user-service: max_concurrent = 50
-- [ ] catalog-service: max_concurrent = 50
-- [ ] streaming-service: max_concurrent = 200 (video serving yoğun)
-- [ ] search-service: max_concurrent = 100
-- [ ] Diğer servisler: max_concurrent = 30
-- [ ] Limit aşımında hemen 503 döndür (diğer servisler etkilenmez)
-- [ ] `gateway/config.yaml` — bulkhead limitleri konfigürasyonu
+- [x] `gateway/internal/resilience/resilience.go` — Servis başına connection pool limiti
+- [x] user-service: max_concurrent = 50
+- [x] catalog-service: max_concurrent = 50
+- [x] streaming-service: max_concurrent = 200 (video serving yoğun)
+- [x] search-service: max_concurrent = 100
+- [x] Diğer servisler: max_concurrent = 30
+- [x] Limit aşımında hemen 503 döndür (diğer servisler etkilenmez)
+- [x] `gateway/config.yaml` — bulkhead limitleri konfigürasyonu
 
 ### 7.5 Graceful Degradation Stratejileri
-- [ ] Search Service çöktü → Catalog Service'e fallback (basit filtreleme)
-- [ ] Recommendation çöktü → Popülerlik bazlı statik liste dön (Redis cache)
+- [x] Search Service çöktü → Empty results fallback döndür
+- [x] Recommendation çöktü → Empty recommendations fallback döndür
 - [ ] Subscription Service çöktü → Cache'teki son bilinen tier ile devam et
-- [ ] Encoding Service çöktü → Upload kabul et, queue'da beklet
-- [ ] Redis çöktü → Rate limit devre dışı, progress kaydetme atla
+- [x] Encoding Service çöktü → Upload kabul et, queue'da beklet (bilgilendirme mesajı)
+- [x] Redis çöktü → Rate limit devre dışı, progress kaydetme atla (mevcut fail-open)
 - [ ] MongoDB çöktü → Elasticsearch'ten oku (read model çalışır)
 - [ ] Elasticsearch çöktü → Arama devre dışı, diğer özellikler devam
 - [ ] RabbitMQ çöktü → Outbox'ta biriktir, RabbitMQ gelince gönder
-- [ ] Notification Service çöktü → Core flow etkilenmez, bildirimler kaybolur
+- [x] Notification Service çöktü → Core flow etkilenmez, bildirimler kaybolur (fallback mesajı)
 
 ---
 

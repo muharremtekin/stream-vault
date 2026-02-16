@@ -42,6 +42,45 @@ services:
     url: "http://notification-service:5008"
     health_path: "/health/ready"
 
+resilience:
+  circuit_breaker:
+    failure_threshold: 5
+    success_threshold: 3
+    timeout: 30s
+  retry:
+    max_retries: 3
+    initial_backoff: 100ms
+    max_backoff: 2s
+    multiplier: 2.0
+    jitter_fraction: 0.2
+  default_timeout: 5s
+  default_max_concurrent: 30
+  services:
+    user-service:
+      timeout: 5s
+      max_concurrent: 50
+    catalog-service:
+      timeout: 5s
+      max_concurrent: 50
+    streaming-service:
+      timeout: 60s
+      max_concurrent: 200
+    search-service:
+      timeout: 5s
+      max_concurrent: 100
+    encoding-service:
+      timeout: 5s
+      max_concurrent: 30
+    recommendation-service:
+      timeout: 5s
+      max_concurrent: 30
+    subscription-service:
+      timeout: 5s
+      max_concurrent: 30
+    notification-service:
+      timeout: 5s
+      max_concurrent: 30
+
 logging:
   level: "info"
   format: "json"

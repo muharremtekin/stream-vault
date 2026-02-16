@@ -1,12 +1,16 @@
 package proxy
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"net/http/httputil"
 
 	"github.com/rs/zerolog/log"
 	"github.com/streamvault/gateway/internal/discovery"
+	"github.com/streamvault/gateway/internal/metrics"
 	"github.com/streamvault/gateway/internal/middleware"
+	"github.com/streamvault/gateway/internal/resilience"
 )
 
 // Route maps a URL path prefix to an upstream service.
@@ -105,18 +109,21 @@ func DefaultRoutes() []Route {
 // Router holds the route table and builds an http.ServeMux that forwards
 // requests to the appropriate upstream service.
 type Router struct {
-	routes   []Route
-	resolver *discovery.Resolver
-	manager  *UpstreamManager
+	routes     []Route
+	resolver   *discovery.Resolver
+	manager    *UpstreamManager
+	resilience *resilience.Resilience
 }
 
-// NewRouter creates a Router with the given routes, discovery resolver, and
-// upstream connection manager.
-func NewRouter(routes []Route, resolver *discovery.Resolver, manager *UpstreamManager) *Router {
+// NewRouter creates a Router with the given routes, discovery resolver,
+// upstream connection manager, and resilience patterns. If res is nil,
+// requests are proxied without circuit breaker, bulkhead, or timeout.
+func NewRouter(routes []Route, resolver *discovery.Resolver, manager *UpstreamManager, res *resilience.Resilience) *Router {
 	return &Router{
-		routes:   routes,
-		resolver: resolver,
-		manager:  manager,
+		routes:     routes,
+		resolver:   resolver,
+		manager:    manager,
+		resilience: res,
 	}
 }
 
@@ -129,28 +136,12 @@ func (rt *Router) Handler() http.Handler {
 	for _, route := range rt.routes {
 		r := route // capture loop variable
 
-		handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			addr, err := rt.resolver.Resolve(r.ServiceName)
-			if err != nil {
-				log.Error().Err(err).Str("service", r.ServiceName).Msg("service resolution failed")
-				middleware.WriteErrorResponse(w, http.StatusBadGateway, "service unavailable")
-				return
-			}
-
-			var proxy *httputil.ReverseProxy
-			if r.Streaming {
-				proxy, err = rt.manager.GetStreamingProxy(addr, r.StripPrefix, r.PathPrefix)
-			} else {
-				proxy, err = rt.manager.GetProxy(addr, r.StripPrefix, r.PathPrefix)
-			}
-			if err != nil {
-				log.Error().Err(err).Str("address", addr).Msg("failed to create reverse proxy")
-				middleware.WriteErrorResponse(w, http.StatusBadGateway, "bad gateway")
-				return
-			}
-
-			proxy.ServeHTTP(w, req)
-		})
+		var handler http.HandlerFunc
+		if rt.resilience != nil {
+			handler = rt.resilientHandler(r)
+		} else {
+			handler = rt.plainHandler(r)
+		}
 
 		// Register both with and without trailing slash to avoid 301 redirects.
 		mux.Handle(r.PathPrefix+"/", handler)
@@ -158,4 +149,93 @@ func (rt *Router) Handler() http.Handler {
 	}
 
 	return mux
+}
+
+// plainHandler proxies requests without resilience patterns (backward compat).
+func (rt *Router) plainHandler(r Route) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		addr, err := rt.resolver.Resolve(r.ServiceName)
+		if err != nil {
+			log.Error().Err(err).Str("service", r.ServiceName).Msg("service resolution failed")
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "service unavailable")
+			return
+		}
+
+		proxy, err := rt.getProxy(r, addr)
+		if err != nil {
+			log.Error().Err(err).Str("address", addr).Msg("failed to create reverse proxy")
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "bad gateway")
+			return
+		}
+
+		proxy.ServeHTTP(w, req)
+	}
+}
+
+// resilientHandler wraps the proxy call with bulkhead → timeout → circuit breaker.
+func (rt *Router) resilientHandler(r Route) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		svc := r.ServiceName
+
+		// 1. Bulkhead: fast-fail if service concurrency limit reached.
+		if !rt.resilience.AcquireBulkhead(svc, req.Context()) {
+			log.Warn().Str("service", svc).Msg("bulkhead full, rejecting request")
+			middleware.WriteErrorResponse(w, http.StatusServiceUnavailable, "service overloaded")
+			return
+		}
+		defer rt.resilience.ReleaseBulkhead(svc)
+
+		// 2. Timeout: set per-service context deadline.
+		timeout := rt.resilience.GetTimeout(svc)
+		ctx, cancel := context.WithTimeout(req.Context(), timeout)
+		defer cancel()
+		req = req.WithContext(ctx)
+
+		// 3. Circuit breaker: wraps the resolve + proxy call.
+		err := rt.resilience.Execute(svc, func() error {
+			addr, resolveErr := rt.resolver.Resolve(svc)
+			if resolveErr != nil {
+				return fmt.Errorf("resolve %s: %w", svc, resolveErr)
+			}
+
+			proxy, proxyErr := rt.getProxy(r, addr)
+			if proxyErr != nil {
+				return fmt.Errorf("proxy %s: %w", addr, proxyErr)
+			}
+
+			sc := &resilience.StatusCapture{ResponseWriter: w, Code: http.StatusOK}
+			proxy.ServeHTTP(sc, req)
+
+			if sc.Code >= 500 {
+				return fmt.Errorf("upstream %s returned %d", svc, sc.Code)
+			}
+			return nil
+		})
+
+		if err != nil {
+			if resilience.IsCircuitError(err) {
+				log.Warn().Str("service", svc).Msg("circuit breaker open, fast-failing")
+				// Try graceful degradation fallback before generic 503.
+				if !resilience.ServeFallback(w, req, svc) {
+					middleware.WriteErrorResponse(w, http.StatusServiceUnavailable, "service temporarily unavailable")
+				}
+				return
+			}
+			// Check if the error was a context timeout (deadline exceeded).
+			if req.Context().Err() != nil {
+				metrics.GatewayUpstreamTimeoutsTotal.WithLabelValues(svc).Inc()
+			}
+			// For non-circuit errors the proxy already wrote the response to the client,
+			// so we only log the failure.
+			log.Debug().Err(err).Str("service", svc).Msg("upstream request failed")
+		}
+	}
+}
+
+// getProxy returns the appropriate reverse proxy (streaming or regular).
+func (rt *Router) getProxy(r Route, addr string) (*httputil.ReverseProxy, error) {
+	if r.Streaming {
+		return rt.manager.GetStreamingProxy(addr, r.StripPrefix, r.PathPrefix)
+	}
+	return rt.manager.GetProxy(addr, r.StripPrefix, r.PathPrefix)
 }

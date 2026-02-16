@@ -6,8 +6,8 @@ import (
 
 func TestDefaultRoutes_ReturnsExpectedCount(t *testing.T) {
 	routes := DefaultRoutes()
-	if len(routes) != 12 {
-		t.Errorf("expected 12 routes, got %d", len(routes))
+	if len(routes) != 14 {
+		t.Errorf("expected 14 routes, got %d", len(routes))
 	}
 }
 

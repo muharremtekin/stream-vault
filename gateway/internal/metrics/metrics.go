@@ -54,7 +54,28 @@ var (
 			Name: "gateway_circuit_breaker_state",
 			Help: "Circuit breaker state per service (0=closed, 1=half-open, 2=open).",
 		},
-		[]string{"service", "state"},
+		[]string{"service"},
+	)
+	GatewayBulkheadRejectsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "gateway_bulkhead_rejects_total",
+			Help: "Total requests rejected by bulkhead per service.",
+		},
+		[]string{"service"},
+	)
+	GatewayCircuitBreakerTripsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "gateway_circuit_breaker_trips_total",
+			Help: "Total circuit breaker trips (CLOSED->OPEN) per service.",
+		},
+		[]string{"service"},
+	)
+	GatewayUpstreamTimeoutsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "gateway_upstream_timeouts_total",
+			Help: "Total upstream request timeouts per service.",
+		},
+		[]string{"service"},
 	)
 )
 
@@ -66,6 +87,9 @@ func init() {
 		GatewayActiveConnections,
 		GatewayRateLimitHitsTotal,
 		GatewayCircuitBreakerState,
+		GatewayBulkheadRejectsTotal,
+		GatewayCircuitBreakerTripsTotal,
+		GatewayUpstreamTimeoutsTotal,
 	)
 }
 
