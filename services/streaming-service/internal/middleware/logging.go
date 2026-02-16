@@ -39,9 +39,13 @@ func Logging() func(http.Handler) http.Handler {
 
 			latency := time.Since(start)
 			traceID := ""
+			spanID := ""
 			span := trace.SpanFromContext(r.Context())
 			if span.SpanContext().HasTraceID() {
 				traceID = span.SpanContext().TraceID().String()
+			}
+			if span.SpanContext().HasSpanID() {
+				spanID = span.SpanContext().SpanID().String()
 			}
 
 			logger := log.With().
@@ -52,6 +56,7 @@ func Logging() func(http.Handler) http.Handler {
 				Int("bytes", rec.bytesWritten).
 				Str("correlation_id", r.Header.Get(CorrelationHeader)).
 				Str("trace_id", traceID).
+				Str("span_id", spanID).
 				Logger()
 
 			switch {

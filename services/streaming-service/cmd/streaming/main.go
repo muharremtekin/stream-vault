@@ -44,7 +44,7 @@ func main() {
 	}
 
 	// Configure logging
-	setupLogging(cfg.Logging)
+	setupLogging(cfg.Logging, cfg.OTel.ServiceName)
 	log.Info().
 		Int("http_port", cfg.Server.HTTPPort).
 		Int("grpc_port", cfg.Server.GRPCPort).
@@ -283,7 +283,7 @@ func applyMiddleware(h http.Handler, middlewares ...func(http.Handler) http.Hand
 	return h
 }
 
-func setupLogging(logCfg config.LoggingConfig) {
+func setupLogging(logCfg config.LoggingConfig, serviceName string) {
 	switch logCfg.Level {
 	case "debug":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -295,9 +295,12 @@ func setupLogging(logCfg config.LoggingConfig) {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	if logCfg.Format == "console" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	if logCfg.Format == "console" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).
+			With().Str("service", serviceName).Logger()
+	} else {
+		log.Logger = log.With().Str("service", serviceName).Logger()
+	}
 }

@@ -20,11 +20,14 @@ func CorrelationID() func(http.Handler) http.Handler {
 			}
 			w.Header().Set(CorrelationHeader, correlationID)
 
-			// Enrich zerolog context with correlation_id and trace_id.
+			// Enrich zerolog context with correlation_id, trace_id and span_id.
 			logCtx := log.With().Str("correlation_id", correlationID)
 			span := trace.SpanFromContext(r.Context())
 			if span.SpanContext().HasTraceID() {
 				logCtx = logCtx.Str("trace_id", span.SpanContext().TraceID().String())
+			}
+			if span.SpanContext().HasSpanID() {
+				logCtx = logCtx.Str("span_id", span.SpanContext().SpanID().String())
 			}
 			logger := logCtx.Logger()
 			ctx := logger.WithContext(r.Context())

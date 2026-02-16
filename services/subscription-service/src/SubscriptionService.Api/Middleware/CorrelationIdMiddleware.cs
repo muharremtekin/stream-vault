@@ -21,9 +21,11 @@ public class CorrelationIdMiddleware
         context.Response.Headers[CorrelationIdHeader] = correlationId;
 
         var traceId = Activity.Current?.TraceId.ToString() ?? "";
+        var spanId = Activity.Current?.SpanId.ToString() ?? "";
 
         using (LogContext.PushProperty("CorrelationId", correlationId))
         using (LogContext.PushProperty("TraceId", traceId))
+        using (LogContext.PushProperty("SpanId", spanId))
         {
             await _next(context);
         }

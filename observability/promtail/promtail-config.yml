@@ -22,17 +22,38 @@ scrape_configs:
       - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
         target_label: 'project'
     pipeline_stages:
+      # Extract fields from Go/Rust JSON logs (snake_case fields)
       - json:
           expressions:
             level: level
             msg: msg
             message: message
             timestamp: time
-            trace_id: traceId
+            trace_id: trace_id
+            span_id: span_id
             service_name: service
+            # .NET Serilog RenderedCompactJsonFormatter fields (PascalCase)
+            dotnet_level: '@l'
+            dotnet_timestamp: '@t'
+            dotnet_trace_id: TraceId
+            dotnet_span_id: SpanId
+            dotnet_service: ServiceName
+      # Merge .NET PascalCase fields into standard extracted values
+      - template:
+          source: trace_id
+          template: '{{ or .Value .dotnet_trace_id }}'
+      - template:
+          source: span_id
+          template: '{{ or .Value .dotnet_span_id }}'
+      - template:
+          source: level
+          template: '{{ or .Value .dotnet_level }}'
+      - template:
+          source: service_name
+          template: '{{ or .Value .dotnet_service }}'
       - labels:
           level:
-          trace_id:
+      # Normalize .NET log levels (Information -> info, Warning -> warn, etc.)
       - match:
           selector: '{level=~"Information|Warning|Error|Critical|Debug|Trace"}'
           stages:
@@ -47,6 +68,7 @@ scrape_configs:
           fallback_formats:
             - '2006-01-02T15:04:05.000Z'
             - '2006-01-02T15:04:05Z07:00'
+      # Filter noisy healthcheck logs
       - match:
           selector: '{container=~".+"} |~ "health/live|health/ready|healthcheck"'
           action: drop

@@ -33,10 +33,13 @@ func CorrelationID() func(http.Handler) http.Handler {
 			// Add to zerolog context for structured logging.
 			logCtx := log.With().Str("correlation_id", cid)
 
-			// Enrich log context with trace_id from OpenTelemetry span.
+			// Enrich log context with trace_id and span_id from OpenTelemetry span.
 			span := trace.SpanFromContext(r.Context())
 			if span.SpanContext().HasTraceID() {
 				logCtx = logCtx.Str("trace_id", span.SpanContext().TraceID().String())
+			}
+			if span.SpanContext().HasSpanID() {
+				logCtx = logCtx.Str("span_id", span.SpanContext().SpanID().String())
 			}
 
 			logger := logCtx.Logger()

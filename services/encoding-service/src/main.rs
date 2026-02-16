@@ -4,6 +4,7 @@ mod consul;
 mod domain;
 mod error;
 mod grpc;
+mod log_format;
 mod messaging;
 mod metrics;
 mod pipeline;
@@ -126,7 +127,7 @@ async fn main() -> anyhow::Result<()> {
     let cfg = config::load()?;
 
     let otel_provider = telemetry::init_tracer(&cfg.telemetry);
-    setup_tracing(&cfg.logging, otel_provider.as_ref());
+    setup_tracing(&cfg.logging, otel_provider.as_ref(), &cfg.telemetry.service_name);
 
     if otel_provider.is_some() {
         info!(
@@ -272,6 +273,7 @@ async fn main() -> anyhow::Result<()> {
 fn setup_tracing(
     log_config: &config::LoggingConfig,
     otel_provider: Option<&opentelemetry_sdk::trace::TracerProvider>,
+    service_name: &str,
 ) {
     let env_filter = EnvFilter::try_from_default_env()
         .or_else(|_| EnvFilter::try_new(&log_config.level))
@@ -290,7 +292,10 @@ fn setup_tracing(
             let otel_layer = otel_provider.map(|p| telemetry::create_otel_layer(p));
             tracing_subscriber::registry()
                 .with(env_filter)
-                .with(tracing_subscriber::fmt::layer().json())
+                .with(
+                    tracing_subscriber::fmt::layer()
+                        .event_format(log_format::ServiceJsonFormat::new(service_name)),
+                )
                 .with(otel_layer)
                 .init();
         }

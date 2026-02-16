@@ -62,11 +62,15 @@ func Logging() func(http.Handler) http.Handler {
 				event = log.Warn()
 			}
 
-			// Extract trace_id from OTel span context.
+			// Extract trace_id and span_id from OTel span context.
 			traceID := ""
+			spanID := ""
 			span := trace.SpanFromContext(r.Context())
 			if span.SpanContext().HasTraceID() {
 				traceID = span.SpanContext().TraceID().String()
+			}
+			if span.SpanContext().HasSpanID() {
+				spanID = span.SpanContext().SpanID().String()
 			}
 
 			event.
@@ -80,6 +84,7 @@ func Logging() func(http.Handler) http.Handler {
 				Str("user_agent", r.UserAgent()).
 				Str("correlation_id", r.Header.Get("X-Correlation-Id")).
 				Str("trace_id", traceID).
+				Str("span_id", spanID).
 				Msg("request completed")
 		})
 	}

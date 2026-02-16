@@ -20,13 +20,16 @@ func CorrelationID() func(http.Handler) http.Handler {
 			}
 			w.Header().Set(CorrelationHeader, correlationID)
 
-			// Add trace_id from OTel span context into zerolog logger context
+			// Enrich zerolog context with correlation_id, trace_id and span_id.
+			logCtx := log.With().Str("correlation_id", correlationID)
 			span := trace.SpanFromContext(r.Context())
-			traceID := span.SpanContext().TraceID().String()
-			logger := log.With().
-				Str("correlation_id", correlationID).
-				Str("trace_id", traceID).
-				Logger()
+			if span.SpanContext().HasTraceID() {
+				logCtx = logCtx.Str("trace_id", span.SpanContext().TraceID().String())
+			}
+			if span.SpanContext().HasSpanID() {
+				logCtx = logCtx.Str("span_id", span.SpanContext().SpanID().String())
+			}
+			logger := logCtx.Logger()
 			r = r.WithContext(logger.WithContext(r.Context()))
 
 			next.ServeHTTP(w, r)

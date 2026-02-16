@@ -309,34 +309,34 @@
 ## 6. Centralized Logging (Structured JSON)
 
 ### 6.1 Go Servisleri — zerolog
-- [ ] Gateway — zerolog entegrasyonu
-  - [ ] Mevcut log çağrılarını zerolog JSON formatına geçir
-  - [ ] Her log entry'de: `timestamp`, `level`, `service`, `traceId`, `spanId`, `message`, `fields`
-  - [ ] HTTP request logging middleware (method, path, status, duration)
-- [ ] Streaming Service — zerolog entegrasyonu
-- [ ] Notification Service — zerolog entegrasyonu
-- [ ] Search Service — zerolog entegrasyonu
+- [x] Gateway — zerolog entegrasyonu
+  - [x] Mevcut log çağrılarını zerolog JSON formatına geçir
+  - [x] Her log entry'de: `timestamp`, `level`, `service`, `traceId`, `spanId`, `message`, `fields`
+  - [x] HTTP request logging middleware (method, path, status, duration)
+- [x] Streaming Service — zerolog entegrasyonu
+- [x] Notification Service — zerolog entegrasyonu
+- [x] Search Service — zerolog entegrasyonu
 
 ### 6.2 Rust Servisleri — tracing + JSON
-- [ ] Encoding Service — tracing-subscriber JSON formatter
-  - [ ] `tracing_subscriber::fmt::layer().json()` konfigürasyonu
-  - [ ] trace-id ve span-id log'lara otomatik ekleme (tracing-opentelemetry layer ile)
-- [ ] Recommendation Service — aynı JSON logging entegrasyonu
+- [x] Encoding Service — tracing-subscriber JSON formatter
+  - [x] `tracing_subscriber::fmt::layer().json()` konfigürasyonu
+  - [x] trace-id ve span-id log'lara otomatik ekleme (tracing-opentelemetry layer ile)
+- [x] Recommendation Service — aynı JSON logging entegrasyonu
 
 ### 6.3 .NET Servisleri — Serilog
-- [ ] User Service — Serilog entegrasyonu
-  - [ ] NuGet: `Serilog.AspNetCore`, `Serilog.Formatting.Compact`
-  - [ ] `Program.cs` — `UseSerilog()` konfigürasyonu, JSON formatter
-  - [ ] Enricher: trace-id, span-id, service name
-- [ ] Catalog Service — aynı Serilog entegrasyonu
-- [ ] Subscription Service — aynı Serilog entegrasyonu
+- [x] User Service — Serilog entegrasyonu
+  - [x] NuGet: `Serilog.AspNetCore`, `Serilog.Formatting.Compact`
+  - [x] `Program.cs` — `UseSerilog()` konfigürasyonu, JSON formatter
+  - [x] Enricher: trace-id, span-id, service name
+- [x] Catalog Service — aynı Serilog entegrasyonu
+- [x] Subscription Service — aynı Serilog entegrasyonu
 
 ### 6.4 Loki Doğrulama
-- [ ] Loki'de `{service="gateway"}` sorgusu çalışıyor
-- [ ] `{job="streamvault"} | json | level="error"` ile hata logları filtrelenebiliyor
-- [ ] Belirli bir trace-id ile tüm servislerin logları çekiliyor (`| json | traceId="abc123"`)
-- [ ] Grafana'da Explore sekmesinde Loki datasource ile log paneli çalışıyor
-- [ ] Log'dan Jaeger trace'ine link (traceId field üzerinden)
+- [x] Loki'de `{service="gateway"}` sorgusu çalışıyor
+- [x] `{job="streamvault"} | json | level="error"` ile hata logları filtrelenebiliyor
+- [x] Belirli bir trace-id ile tüm servislerin logları çekiliyor (`| json | traceId="abc123"`)
+- [x] Grafana'da Explore sekmesinde Loki datasource ile log paneli çalışıyor
+- [x] Log'dan Jaeger trace'ine link (traceId field üzerinden)
 
 ---
 

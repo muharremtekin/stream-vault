@@ -26,6 +26,7 @@ builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig
         .ReadFrom.Configuration(context.Configuration)
         .Enrich.FromLogContext()
+        .Enrich.WithProperty("ServiceName", "user-service")
         .WriteTo.Console(new RenderedCompactJsonFormatter());
 });
 

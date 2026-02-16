@@ -37,7 +37,7 @@ func main() {
 	}
 
 	// ---- Configure Logging ----
-	setupLogging(cfg.Logging)
+	setupLogging(cfg.Logging, cfg.OTel.ServiceName)
 	log.Info().Int("port", cfg.Server.Port).Msg("starting streamvault api gateway")
 
 	// ---- OpenTelemetry ----
@@ -165,7 +165,7 @@ func applyMiddleware(handler http.Handler, middlewares ...func(http.Handler) htt
 }
 
 // setupLogging configures zerolog based on the logging configuration.
-func setupLogging(logCfg config.LoggingConfig) {
+func setupLogging(logCfg config.LoggingConfig, serviceName string) {
 	switch logCfg.Level {
 	case "debug":
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
@@ -177,10 +177,12 @@ func setupLogging(logCfg config.LoggingConfig) {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 
-	if logCfg.Format == "console" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-	// Default format is JSON which is zerolog's default.
-
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+
+	if logCfg.Format == "console" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).
+			With().Str("service", serviceName).Logger()
+	} else {
+		log.Logger = log.With().Str("service", serviceName).Logger()
+	}
 }

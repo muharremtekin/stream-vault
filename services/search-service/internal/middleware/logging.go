@@ -38,8 +38,16 @@ func Logging() func(http.Handler) http.Handler {
 			next.ServeHTTP(rec, r)
 
 			latency := time.Since(start)
+			traceID := ""
+			spanID := ""
 			span := trace.SpanFromContext(r.Context())
-			traceID := span.SpanContext().TraceID().String()
+			if span.SpanContext().HasTraceID() {
+				traceID = span.SpanContext().TraceID().String()
+			}
+			if span.SpanContext().HasSpanID() {
+				spanID = span.SpanContext().SpanID().String()
+			}
+
 			logger := log.With().
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
@@ -48,6 +56,7 @@ func Logging() func(http.Handler) http.Handler {
 				Int("bytes", rec.bytesWritten).
 				Str("correlation_id", r.Header.Get(CorrelationHeader)).
 				Str("trace_id", traceID).
+				Str("span_id", spanID).
 				Logger()
 
 			switch {
