@@ -64,12 +64,12 @@ impl ConsulClient {
             tags: vec!["encoding".into(), "api".into(), "v1".into()],
             check: HealthCheck {
                 http: format!(
-                    "http://{}:{}/health/live",
+                    "http://{}:{}/health/ready",
                     config.service_name, http_port
                 ),
                 interval: format!("{}s", config.health_check_interval_secs),
                 timeout: "5s".into(),
-                deregister_critical_service_after: "30s".into(),
+                deregister_critical_service_after: "60s".into(),
             },
         };
 

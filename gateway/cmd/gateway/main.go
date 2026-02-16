@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -77,20 +78,35 @@ func main() {
 
 	router := proxy.NewRouter(routes, resolver, upstreamManager, res)
 
+	// ---- Startup Tracking ----
+	var startupReady atomic.Bool
+
+	// Pre-declare rateLimiter so the health check closure can capture it.
+	var rateLimiter *middleware.RateLimiter
+
 	// ---- Health Handler ----
-	healthHandler := health.NewHandler(cfg.Services, resolver)
+	redisCheckFn := func() bool {
+		if rateLimiter == nil {
+			return false
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		return rateLimiter.Ping(ctx) == nil
+	}
+	healthHandler := health.NewHandler(cfg.Services, resolver, &startupReady, redisCheckFn)
 
 	// ---- Build Top-Level Mux ----
 	topMux := http.NewServeMux()
 	topMux.Handle("/health", healthHandler)
 	topMux.HandleFunc("/health/live", healthHandler.ServeLive)
 	topMux.HandleFunc("/health/ready", healthHandler.ServeReady)
+	topMux.HandleFunc("/health/startup", healthHandler.ServeStartup)
 	topMux.Handle("/metrics", promhttp.Handler())
 	topMux.Handle("/", router.Handler())
 
 	// ---- Rate Limiter ----
 	var rateLimitMiddleware func(http.Handler) http.Handler
-	rateLimiter, err := middleware.NewRateLimiter(
+	rl, err := middleware.NewRateLimiter(
 		cfg.RateLimit.RedisURL,
 		cfg.RateLimit.RequestsPerSecond,
 		cfg.RateLimit.Burst,
@@ -99,6 +115,7 @@ func main() {
 		log.Warn().Err(err).Msg("redis unavailable, rate limiting disabled")
 		rateLimitMiddleware = middleware.NewNoOpRateLimiter()
 	} else {
+		rateLimiter = rl
 		defer rateLimiter.Close()
 		rateLimitMiddleware = rateLimiter.Middleware()
 	}
@@ -134,6 +151,9 @@ func main() {
 		}
 		close(errCh)
 	}()
+
+	startupReady.Store(true)
+	log.Info().Msg("startup complete, all systems ready")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

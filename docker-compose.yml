@@ -530,7 +530,7 @@ services:
       - observability
 
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:3.0.0
     restart: unless-stopped
     command: -config.file=/etc/loki/loki-config.yml
     ports:
@@ -553,7 +553,7 @@ services:
       - observability
 
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail:3.0.0
     restart: unless-stopped
     command: -config.file=/etc/promtail/promtail-config.yml
     volumes:
@@ -564,7 +564,7 @@ services:
       loki:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:9080/ready || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'echo -e \"GET /ready HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" > /dev/tcp/localhost/9080'"]
       interval: 10s
       timeout: 5s
       retries: 5

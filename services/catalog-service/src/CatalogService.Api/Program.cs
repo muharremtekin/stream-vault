@@ -134,6 +134,10 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready")
 });
+app.MapHealthChecks("/health/startup", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
 app.MapHealthChecks("/health", new HealthCheckOptions { Predicate = _ => false });
 app.MapMetrics();
 
@@ -165,10 +169,10 @@ var registration = new AgentServiceRegistration
     Tags = new[] { "catalog", "api", "v1" },
     Check = new AgentServiceCheck
     {
-        HTTP = $"http://{serviceHost}:{servicePort}/health/live",
+        HTTP = $"http://{serviceHost}:{servicePort}/health/ready",
         Interval = TimeSpan.FromSeconds(10),
         Timeout = TimeSpan.FromSeconds(5),
-        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
+        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(60)
     }
 };
 

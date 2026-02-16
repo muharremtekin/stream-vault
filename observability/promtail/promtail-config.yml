@@ -33,8 +33,9 @@ scrape_configs:
             span_id: span_id
             service_name: service
             # .NET Serilog RenderedCompactJsonFormatter fields (PascalCase)
-            dotnet_level: '@l'
-            dotnet_timestamp: '@t'
+            # @ is special in JMESPath — must use quoted identifier syntax
+            dotnet_level: '"@l"'
+            dotnet_timestamp: '"@t"'
             dotnet_trace_id: TraceId
             dotnet_span_id: SpanId
             dotnet_service: ServiceName

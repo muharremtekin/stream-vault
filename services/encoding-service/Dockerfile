@@ -55,6 +55,6 @@ USER encoding
 EXPOSE 5004 50052
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD ["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5004/health"]
+    CMD ["wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5004/health/live"]
 
 ENTRYPOINT ["./encoding-service"]

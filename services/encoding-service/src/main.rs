@@ -13,6 +13,7 @@ mod store;
 mod telemetry;
 
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use axum::extract::State;
@@ -45,6 +46,8 @@ pub struct AppState {
     storage: Arc<dyn StorageClient>,
     config: config::Config,
     store: store::JobStore,
+    rabbit_check: Arc<dyn Fn() -> bool + Send + Sync>,
+    startup_ready: Arc<AtomicBool>,
 }
 
 #[derive(Serialize)]
@@ -69,7 +72,7 @@ async fn liveness_check() -> (StatusCode, Json<HealthResponse>) {
     )
 }
 
-/// Readiness probe — checks MinIO and FFmpeg availability.
+/// Readiness probe — checks MinIO, FFmpeg, and RabbitMQ availability.
 async fn readiness_check(State(state): State<AppState>) -> (StatusCode, Json<HealthResponse>) {
     let mut components = HashMap::new();
     let mut all_healthy = true;
@@ -106,6 +109,15 @@ async fn readiness_check(State(state): State<AppState>) -> (StatusCode, Json<Hea
         }
     }
 
+    // RabbitMQ
+    if (state.rabbit_check)() {
+        components.insert("rabbitmq".into(), ComponentStatus { status: "healthy" });
+    } else {
+        warn!("rabbitmq health check failed");
+        components.insert("rabbitmq".into(), ComponentStatus { status: "unhealthy" });
+        all_healthy = false;
+    }
+
     let status_code = if all_healthy {
         StatusCode::OK
     } else {
@@ -119,6 +131,27 @@ async fn readiness_check(State(state): State<AppState>) -> (StatusCode, Json<Hea
             components,
         }),
     )
+}
+
+/// Startup probe — returns 200 once initialization is complete.
+async fn startup_check(State(state): State<AppState>) -> (StatusCode, Json<HealthResponse>) {
+    if state.startup_ready.load(Ordering::Relaxed) {
+        (
+            StatusCode::OK,
+            Json(HealthResponse {
+                status: "healthy",
+                components: HashMap::new(),
+            }),
+        )
+    } else {
+        (
+            StatusCode::SERVICE_UNAVAILABLE,
+            Json(HealthResponse {
+                status: "starting",
+                components: HashMap::new(),
+            }),
+        )
+    }
 }
 
 // ── Main ───────────────────────────────────────────────────────────
@@ -150,9 +183,13 @@ async fn main() -> anyhow::Result<()> {
     let storage: Arc<dyn StorageClient> = Arc::new(MinIOClient::new(&cfg.minio).await?);
 
     // RabbitMQ publisher
-    let publisher: Arc<dyn ResultPublisher> = Arc::new(
+    let rabbit_publisher = Arc::new(
         messaging::publisher::RabbitMQPublisher::new(cfg.rabbitmq.clone()).await?,
     );
+    let rabbit_pub_health = Arc::clone(&rabbit_publisher);
+    let rabbit_check: Arc<dyn Fn() -> bool + Send + Sync> =
+        Arc::new(move || rabbit_pub_health.connection().status().connected());
+    let publisher: Arc<dyn ResultPublisher> = rabbit_publisher;
     info!("rabbitmq publisher initialized");
 
     // Shutdown channel
@@ -195,16 +232,20 @@ async fn main() -> anyhow::Result<()> {
     let grpc_store = Arc::clone(&job_store);
 
     // HTTP server
+    let startup_ready = Arc::new(AtomicBool::new(false));
     let app_state = AppState {
         storage: Arc::clone(&storage),
         config: cfg.clone(),
         store: Arc::clone(&job_store),
+        rabbit_check,
+        startup_ready: Arc::clone(&startup_ready),
     };
 
     let app = Router::new()
         .route("/health", get(liveness_check))
         .route("/health/live", get(liveness_check))
         .route("/health/ready", get(readiness_check))
+        .route("/health/startup", get(startup_check))
         .route("/metrics", get(metrics::metrics_handler))
         .merge(api::routes::encoding_routes())
         .layer(axum::middleware::from_fn(metrics::metrics_middleware))
@@ -238,6 +279,10 @@ async fn main() -> anyhow::Result<()> {
             error!(error = %e, "grpc server error");
         }
     });
+
+    // Mark startup complete
+    startup_ready.store(true, Ordering::Relaxed);
+    info!("encoding service startup complete");
 
     // Wait for shutdown signal
     tokio::signal::ctrl_c().await?;

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -155,12 +156,15 @@ func main() {
 		}
 	}
 
+	// Startup tracking
+	var startupReady atomic.Bool
+
 	// Build HTTP handler
 	rabbitCheckFn := func() bool {
 		return rabbitConn != nil && !rabbitConn.IsClosed()
 	}
 
-	mux := buildHTTPRouter(esClient, redisClient, cachedSearcher, trendingSvc, searchCache, rabbitCheckFn)
+	mux := buildHTTPRouter(esClient, redisClient, cachedSearcher, trendingSvc, searchCache, rabbitCheckFn, &startupReady)
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
@@ -207,6 +211,9 @@ func main() {
 		}
 		close(grpcErrCh)
 	}()
+
+	startupReady.Store(true)
+	log.Info().Msg("startup complete, all systems ready")
 
 	// Wait for shutdown signal
 	quit := make(chan os.Signal, 1)
@@ -262,15 +269,17 @@ func main() {
 
 func buildHTTPRouter(esClient *elasticsearch.Client, redisClient *redis.Client,
 	cachedSearcher handler.Searcher, trendingSvc *trending.Service,
-	searchCache *cache.Cache, rabbitCheck func() bool) *http.ServeMux {
+	searchCache *cache.Cache, rabbitCheck func() bool,
+	startupReady *atomic.Bool) *http.ServeMux {
 
 	mux := http.NewServeMux()
 
 	// Health
-	healthH := handler.NewHealthHandler(esClient, redisClient, rabbitCheck)
-	mux.HandleFunc("GET /health", healthH.ServeLive)
+	healthH := handler.NewHealthHandler(esClient, redisClient, rabbitCheck, startupReady)
+	mux.HandleFunc("GET /health", healthH.ServeDetailed)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.HandleFunc("GET /health/startup", healthH.ServeStartup)
 	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Search

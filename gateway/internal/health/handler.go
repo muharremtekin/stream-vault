@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -26,32 +27,48 @@ type Status struct {
 type Response struct {
 	Status   string   `json:"status"` // "healthy", "degraded", or "unhealthy"
 	Gateway  string   `json:"gateway"`
-	Upstream []Status `json:"upstream"`
+	Upstream []Status `json:"upstream,omitempty"`
 }
 
-// Handler serves the /health endpoint. It probes every configured downstream
+// DetailedResponse is the full diagnostic health report returned by GET /health.
+type DetailedResponse struct {
+	Status           string   `json:"status"`
+	Service          string   `json:"service"`
+	Version          string   `json:"version"`
+	Uptime           string   `json:"uptime"`
+	StartupCompleted bool     `json:"startupCompleted"`
+	Gateway          string   `json:"gateway"`
+	Upstream         []Status `json:"upstream"`
+}
+
+// Handler serves the health endpoints. It probes every configured downstream
 // service and aggregates the results into a single response.
 type Handler struct {
-	services map[string]config.ServiceEntry
-	resolver *discovery.Resolver
-	client   *http.Client
+	services     map[string]config.ServiceEntry
+	resolver     *discovery.Resolver
+	client       *http.Client
+	startupReady *atomic.Bool
+	startTime    time.Time
+	version      string
+	redisCheck   func() bool
 }
 
 // NewHandler creates a health Handler that checks the provided services.
-func NewHandler(services map[string]config.ServiceEntry, resolver *discovery.Resolver) *Handler {
+func NewHandler(services map[string]config.ServiceEntry, resolver *discovery.Resolver, startupReady *atomic.Bool, redisCheck func() bool) *Handler {
 	return &Handler{
-		services: services,
-		resolver: resolver,
-		client: &http.Client{
-			Timeout: 5 * time.Second,
-		},
+		services:     services,
+		resolver:     resolver,
+		client:       &http.Client{Timeout: 5 * time.Second},
+		startupReady: startupReady,
+		startTime:    time.Now(),
+		version:      "1.0.0",
+		redisCheck:   redisCheck,
 	}
 }
 
-// ServeHTTP handles GET /health requests (backward compatibility).
-// Delegates to ServeLive.
+// ServeHTTP handles GET /health requests. Returns a detailed health report.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.ServeLive(w, r)
+	h.ServeDetailed(w, r)
 }
 
 // ServeLive handles GET /health/live requests (liveness probe).
@@ -68,6 +85,19 @@ func (h *Handler) ServeLive(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error().Err(err).Msg("failed to encode health response")
 	}
+}
+
+// ServeStartup handles GET /health/startup requests (startup probe).
+// Returns 200 once all initialization is complete, 503 while starting.
+func (h *Handler) ServeStartup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if h.startupReady != nil && h.startupReady.Load() {
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(Response{Status: "healthy", Gateway: "healthy"})
+		return
+	}
+	w.WriteHeader(http.StatusServiceUnavailable)
+	json.NewEncoder(w).Encode(Response{Status: "starting", Gateway: "starting"})
 }
 
 // ServeReady handles GET /health/ready requests (readiness probe).
@@ -109,6 +139,64 @@ func (h *Handler) ServeReady(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Error().Err(err).Msg("failed to encode health response")
+	}
+}
+
+// ServeDetailed handles GET /health requests with a full diagnostic report.
+// Includes version, uptime, startup status, and all upstream + infrastructure checks.
+func (h *Handler) ServeDetailed(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	statuses := h.checkUpstreams(ctx)
+
+	// Check Redis (rate limiter)
+	if h.redisCheck != nil {
+		redisStatus := Status{Service: "redis"}
+		if h.redisCheck() {
+			redisStatus.Status = "healthy"
+		} else {
+			redisStatus.Status = "unhealthy"
+		}
+		statuses = append(statuses, redisStatus)
+	}
+
+	unhealthyCount := 0
+	for _, s := range statuses {
+		if s.Status != "healthy" {
+			unhealthyCount++
+		}
+	}
+
+	status := "healthy"
+	switch {
+	case unhealthyCount == 0:
+		// healthy
+	case unhealthyCount < len(statuses):
+		status = "degraded"
+	default:
+		status = "unhealthy"
+	}
+
+	resp := DetailedResponse{
+		Status:           status,
+		Service:          "gateway",
+		Version:          h.version,
+		Uptime:           time.Since(h.startTime).Round(time.Second).String(),
+		StartupCompleted: h.startupReady != nil && h.startupReady.Load(),
+		Gateway:          "healthy",
+		Upstream:         statuses,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if status == "unhealthy" {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Error().Err(err).Msg("failed to encode detailed health response")
 	}
 }
 

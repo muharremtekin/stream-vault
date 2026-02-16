@@ -14,7 +14,7 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-            datasourceUid: ""
+            datasourceUid: prometheus
             model:
               expr: sum(rate(http_request_errors_total[5m]))
               instant: false
@@ -25,7 +25,7 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-            datasourceUid: ""
+            datasourceUid: prometheus
             model:
               expr: sum(rate(http_requests_total[5m]))
               instant: false
@@ -74,9 +74,9 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-            datasourceUid: ""
+            datasourceUid: prometheus
             model:
-              expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])))
+              expr: histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))
               instant: false
               intervalMs: 15000
               maxDataPoints: 43200
@@ -87,6 +87,8 @@ groups:
               to: 0
             datasourceUid: "-100"
             model:
+              type: classic_conditions
+              refId: B
               conditions:
                 - evaluator:
                     params:
@@ -96,16 +98,10 @@ groups:
                     type: and
                   query:
                     params:
-                      - B
+                      - A
                   reducer:
-                    params: []
                     type: last
-              datasource:
-                type: __expr__
-                uid: "-100"
-              expression: $A
-              type: threshold
-              refId: B
+                    params: []
         for: 5m
         noDataState: OK
         execErrState: Error
@@ -123,10 +119,10 @@ groups:
             relativeTimeRange:
               from: 300
               to: 0
-            datasourceUid: ""
+            datasourceUid: prometheus
             model:
-              expr: "up{job=~\"gateway|user-service|catalog-service|streaming-service|encoding-service|search-service|recommendation-service|subscription-service|notification-service\"}"
-              instant: true
+              expr: "min_over_time(up{job=~\"gateway|user-service|catalog-service|streaming-service|encoding-service|search-service|recommendation-service|subscription-service|notification-service\"}[5m])"
+              instant: false
               intervalMs: 15000
               maxDataPoints: 43200
               refId: A
@@ -136,6 +132,8 @@ groups:
               to: 0
             datasourceUid: "-100"
             model:
+              type: classic_conditions
+              refId: B
               conditions:
                 - evaluator:
                     params:
@@ -145,16 +143,10 @@ groups:
                     type: and
                   query:
                     params:
-                      - B
+                      - A
                   reducer:
-                    params: []
                     type: last
-              datasource:
-                type: __expr__
-                uid: "-100"
-              expression: $A
-              type: threshold
-              refId: B
+                    params: []
         for: 1m
         noDataState: Alerting
         execErrState: Error

@@ -403,40 +403,40 @@
 ## 8. Health Check Ekosistemi
 
 ### 8.1 Go Servisleri — Health Endpoints
-- [ ] Gateway — 3 seviye health check
-  - [ ] GET /health/live — Process çalışıyor mu (hızlı, dış bağımlılık yok)
-  - [ ] GET /health/ready — Trafik almaya hazır mı (Consul, Redis, downstream servisler)
-  - [ ] GET /health/startup — Başlatma tamamlandı mı
-  - [ ] GET /health — Detaylı rapor (tüm bağımlılıklar, versiyon, uptime)
-- [ ] Streaming Service — 3 seviye health check (MinIO, Redis, RabbitMQ kontrolleri)
-- [ ] Notification Service — 3 seviye health check (MongoDB, RabbitMQ, WebSocket hub durumu)
-- [ ] Search Service — 3 seviye health check (Elasticsearch, Redis kontrolleri)
+- [x] Gateway — 3 seviye health check
+  - [x] GET /health/live — Process çalışıyor mu (hızlı, dış bağımlılık yok)
+  - [x] GET /health/ready — Trafik almaya hazır mı (Consul, Redis, downstream servisler)
+  - [x] GET /health/startup — Başlatma tamamlandı mı
+  - [x] GET /health — Detaylı rapor (tüm bağımlılıklar, versiyon, uptime)
+- [x] Streaming Service — 3 seviye health check (MinIO, Redis, RabbitMQ kontrolleri)
+- [x] Notification Service — 3 seviye health check (MongoDB, RabbitMQ, WebSocket hub durumu)
+- [x] Search Service — 3 seviye health check (Elasticsearch, Redis kontrolleri)
 
 ### 8.2 Rust Servisleri — Health Endpoints
-- [ ] Encoding Service — 3 seviye health check
-  - [ ] `/health/live`, `/health/ready`, `/health/startup`
-  - [ ] Mevcut `/health` endpoint'ini genişlet: RabbitMQ, MinIO, FFmpeg kontrolleri
-- [ ] Recommendation Service — 3 seviye health check (PostgreSQL, Redis kontrolleri)
+- [x] Encoding Service — 3 seviye health check
+  - [x] `/health/live`, `/health/ready`, `/health/startup`
+  - [x] Mevcut `/health` endpoint'ini genişlet: RabbitMQ, MinIO, FFmpeg kontrolleri
+- [x] Recommendation Service — 3 seviye health check (PostgreSQL, Redis kontrolleri)
 
 ### 8.3 .NET Servisleri — Health Endpoints
-- [ ] User Service — 3 seviye health check
-  - [ ] `Microsoft.Extensions.Diagnostics.HealthChecks` + `AspNetCore.HealthChecks.NpgSql` + `AspNetCore.HealthChecks.Redis`
-  - [ ] `/health/live`, `/health/ready`, `/health/startup`
-  - [ ] PostgreSQL, Redis bağımlılık kontrolü
-- [ ] Catalog Service — 3 seviye health check (MongoDB kontrolü)
-- [ ] Subscription Service — 3 seviye health check (PostgreSQL, RabbitMQ kontrolü)
+- [x] User Service — 3 seviye health check
+  - [x] `Microsoft.Extensions.Diagnostics.HealthChecks` + `AspNetCore.HealthChecks.NpgSql` + `AspNetCore.HealthChecks.Rabbitmq`
+  - [x] `/health/live`, `/health/ready`, `/health/startup`
+  - [x] PostgreSQL, RabbitMQ bağımlılık kontrolü
+- [x] Catalog Service — 3 seviye health check (MongoDB kontrolü)
+- [x] Subscription Service — 3 seviye health check (PostgreSQL, RabbitMQ kontrolü)
 
 ### 8.4 Gateway Health Aggregation
-- [ ] GET /health (Gateway) — Tüm downstream servislerin `/health/ready` endpoint'ini çağır
-- [ ] Sonuçları topla: `healthy` (tüm OK), `degraded` (en az 1 unhealthy), `unhealthy` (kritik down)
-- [ ] Timeout: her servis için 2s (yavaş servis tüm raporu engellemesin)
-- [ ] Paralel health check (goroutine ile)
+- [x] GET /health (Gateway) — Tüm downstream servislerin `/health/ready` endpoint'ini çağır
+- [x] Sonuçları topla: `healthy` (tüm OK), `degraded` (en az 1 unhealthy), `unhealthy` (kritik down)
+- [x] Timeout: her servis için 2s (yavaş servis tüm raporu engellemesin)
+- [x] Paralel health check (goroutine ile)
 
 ### 8.5 Consul Health Check Entegrasyonu
-- [ ] Tüm servislerin Consul health check'i `/health/ready` endpoint'ini kullansın
-- [ ] Health check interval: 10s
-- [ ] Deregister critical service after: 60s
-- [ ] Docker Compose healthcheck'leri `/health/live` kullansın
+- [x] Tüm servislerin Consul health check'i `/health/ready` endpoint'ini kullansın
+- [x] Health check interval: 10s
+- [x] Deregister critical service after: 60s
+- [x] Docker Compose healthcheck'leri `/health/live` kullansın
 
 ---
 

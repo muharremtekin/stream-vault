@@ -82,6 +82,11 @@ func (rl *RateLimiter) Close() error {
 	return rl.client.Close()
 }
 
+// Ping checks if the underlying Redis connection is alive.
+func (rl *RateLimiter) Ping(ctx context.Context) error {
+	return rl.client.Ping(ctx).Err()
+}
+
 // Middleware returns an http middleware that enforces the token bucket rate
 // limit per client IP. When the limit is exceeded it responds with 429.
 func (rl *RateLimiter) Middleware() func(http.Handler) http.Handler {

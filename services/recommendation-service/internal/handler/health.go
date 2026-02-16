@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,17 +13,19 @@ import (
 
 // HealthHandler handles health check endpoints.
 type HealthHandler struct {
-	pool        *pgxpool.Pool
-	redisClient *redis.Client
-	rabbitCheck func() bool
+	pool         *pgxpool.Pool
+	redisClient  *redis.Client
+	rabbitCheck  func() bool
+	startupReady *atomic.Bool
 }
 
 // NewHealthHandler creates a new HealthHandler.
-func NewHealthHandler(pool *pgxpool.Pool, redisClient *redis.Client, rabbitCheck func() bool) *HealthHandler {
+func NewHealthHandler(pool *pgxpool.Pool, redisClient *redis.Client, rabbitCheck func() bool, startupReady *atomic.Bool) *HealthHandler {
 	return &HealthHandler{
-		pool:        pool,
-		redisClient: redisClient,
-		rabbitCheck: rabbitCheck,
+		pool:         pool,
+		redisClient:  redisClient,
+		rabbitCheck:  rabbitCheck,
+		startupReady: startupReady,
 	}
 }
 
@@ -88,4 +91,13 @@ func (h *HealthHandler) ServeReady(w http.ResponseWriter, r *http.Request) {
 		Status:     status,
 		Components: components,
 	})
+}
+
+// ServeStartup handles GET /health/startup (startup probe).
+func (h *HealthHandler) ServeStartup(w http.ResponseWriter, r *http.Request) {
+	if h.startupReady != nil && h.startupReady.Load() {
+		WriteJSON(w, http.StatusOK, healthResponse{Status: "healthy"})
+	} else {
+		WriteJSON(w, http.StatusServiceUnavailable, healthResponse{Status: "starting"})
+	}
 }

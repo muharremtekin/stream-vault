@@ -42,10 +42,10 @@ func (c *ConsulClient) Register(serviceName string, port int, interval time.Dura
 		Port:    port,
 		Tags:    []string{"search", "api", "v1"},
 		Check: &consul.AgentServiceCheck{
-			HTTP:                           fmt.Sprintf("http://%s:%d/health/live", serviceName, port),
+			HTTP:                           fmt.Sprintf("http://%s:%d/health/ready", serviceName, port),
 			Interval:                       interval.String(),
 			Timeout:                        "5s",
-			DeregisterCriticalServiceAfter: "30s",
+			DeregisterCriticalServiceAfter: "60s",
 		},
 	}
 

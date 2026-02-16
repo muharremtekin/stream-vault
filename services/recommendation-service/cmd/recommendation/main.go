@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -179,7 +180,8 @@ func main() {
 		return rabbitConn != nil && !rabbitConn.IsClosed()
 	}
 
-	mux := buildHTTPRouter(pool, redisClient, rabbitCheckFn, recEngine)
+	startupReady := &atomic.Bool{}
+	mux := buildHTTPRouter(pool, redisClient, rabbitCheckFn, startupReady, recEngine)
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
@@ -194,6 +196,9 @@ func main() {
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 	}
+
+	startupReady.Store(true)
+	log.Info().Msg("recommendation service startup complete")
 
 	httpErrCh := make(chan error, 1)
 	go func() {
@@ -284,14 +289,15 @@ func main() {
 }
 
 func buildHTTPRouter(pool *pgxpool.Pool, redisClient *redis.Client,
-	rabbitCheck func() bool, recommender engine.Recommender) *http.ServeMux {
+	rabbitCheck func() bool, startupReady *atomic.Bool, recommender engine.Recommender) *http.ServeMux {
 
 	mux := http.NewServeMux()
 
-	healthH := handler.NewHealthHandler(pool, redisClient, rabbitCheck)
+	healthH := handler.NewHealthHandler(pool, redisClient, rabbitCheck, startupReady)
 	mux.HandleFunc("GET /health", healthH.ServeLive)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.HandleFunc("GET /health/startup", healthH.ServeStartup)
 	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Register recommendation routes

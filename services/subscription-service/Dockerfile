@@ -45,6 +45,6 @@ USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --spider --quiet http://localhost:5007/health || exit 1
+    CMD wget --spider --quiet http://localhost:5007/health/live || exit 1
 
 ENTRYPOINT ["dotnet", "SubscriptionService.Api.dll"]

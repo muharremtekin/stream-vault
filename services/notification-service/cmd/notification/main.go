@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -163,6 +164,9 @@ func main() {
 		}
 	}
 
+	// Startup tracking
+	var startupReady atomic.Bool
+
 	// Build HTTP handler
 	rabbitCheckFn := func() bool {
 		return rabbitConn != nil && !rabbitConn.IsClosed()
@@ -170,7 +174,7 @@ func main() {
 
 	wsHandler := handler.NewWebSocketHandler(hub, cfg.JWT, cfg.WebSocket)
 
-	mux := buildHTTPRouter(mongoClient, rabbitCheckFn, hub, wsHandler, notifStore, prefStore)
+	mux := buildHTTPRouter(mongoClient, rabbitCheckFn, hub, wsHandler, notifStore, prefStore, &startupReady)
 	httpHandler := applyMiddleware(mux,
 		middleware.Recovery(),
 		middleware.CorrelationID(),
@@ -194,6 +198,9 @@ func main() {
 		}
 		close(httpErrCh)
 	}()
+
+	startupReady.Store(true)
+	log.Info().Msg("startup complete, all systems ready")
 
 	// Wait for shutdown signal
 	quit := make(chan os.Signal, 1)
@@ -243,13 +250,15 @@ func buildHTTPRouter(
 	wsHandler *handler.WebSocketHandler,
 	notifStore store.NotificationStore,
 	prefStore store.PreferencesStore,
+	startupReady *atomic.Bool,
 ) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	healthH := handler.NewHealthHandler(mongoClient, rabbitCheck)
-	mux.HandleFunc("GET /health", healthH.ServeLive)
+	healthH := handler.NewHealthHandler(mongoClient, rabbitCheck, hub.ClientCount, startupReady)
+	mux.HandleFunc("GET /health", healthH.ServeDetailed)
 	mux.HandleFunc("GET /health/live", healthH.ServeLive)
 	mux.HandleFunc("GET /health/ready", healthH.ServeReady)
+	mux.HandleFunc("GET /health/startup", healthH.ServeStartup)
 
 	mux.Handle("GET /metrics", promhttp.Handler())
 
