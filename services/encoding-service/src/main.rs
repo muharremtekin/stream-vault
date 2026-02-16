@@ -22,7 +22,7 @@ use axum::routing::get;
 use axum::{Json, Router};
 use serde::Serialize;
 use tokio::net::TcpListener;
-use tokio::sync::watch;
+use tokio::sync::{oneshot, watch};
 use tower_http::trace::TraceLayer;
 use tracing::{error, info, warn};
 use tracing_subscriber::layer::SubscriberExt;
@@ -189,6 +189,7 @@ async fn main() -> anyhow::Result<()> {
     let rabbit_pub_health = Arc::clone(&rabbit_publisher);
     let rabbit_check: Arc<dyn Fn() -> bool + Send + Sync> =
         Arc::new(move || rabbit_pub_health.connection().status().connected());
+    let rabbit_pub_shutdown = Arc::clone(&rabbit_publisher);
     let publisher: Arc<dyn ResultPublisher> = rabbit_publisher;
     info!("rabbitmq publisher initialized");
 
@@ -256,8 +257,12 @@ async fn main() -> anyhow::Result<()> {
     let http_listener = TcpListener::bind(&http_addr).await?;
     info!(addr = %http_addr, "http server listening");
 
+    let (http_shutdown_tx, http_shutdown_rx) = oneshot::channel::<()>();
     let http_handle = tokio::spawn(async move {
-        if let Err(e) = axum::serve(http_listener, app).await {
+        if let Err(e) = axum::serve(http_listener, app)
+            .with_graceful_shutdown(async { let _ = http_shutdown_rx.await; })
+            .await
+        {
             error!(error = %e, "http server error");
         }
     });
@@ -267,13 +272,14 @@ async fn main() -> anyhow::Result<()> {
     let grpc_addr_parsed: std::net::SocketAddr = grpc_addr.parse()?;
     info!(addr = %grpc_addr, "grpc server listening");
 
+    let (grpc_shutdown_tx, grpc_shutdown_rx) = oneshot::channel::<()>();
     let grpc_handle = tokio::spawn(async move {
         let service = grpc::EncodingGrpcService::new(grpc_store);
         if let Err(e) = tonic::transport::Server::builder()
             .add_service(
                 encoding_proto::encoding_service_server::EncodingServiceServer::new(service),
             )
-            .serve(grpc_addr_parsed)
+            .serve_with_shutdown(grpc_addr_parsed, async { let _ = grpc_shutdown_rx.await; })
             .await
         {
             error!(error = %e, "grpc server error");
@@ -284,27 +290,50 @@ async fn main() -> anyhow::Result<()> {
     startup_ready.store(true, Ordering::Relaxed);
     info!("encoding service startup complete");
 
-    // Wait for shutdown signal
-    tokio::signal::ctrl_c().await?;
-    info!("shutdown signal received");
+    // Wait for shutdown signal (Ctrl+C or SIGTERM)
+    shutdown_signal().await;
+    info!("shutdown signal received, starting graceful shutdown");
 
-    // Graceful shutdown
-    let _ = shutdown_tx.send(true);
-
-    tokio::select! {
-        _ = consumer_handle => info!("consumer stopped"),
-        _ = tokio::time::sleep(std::time::Duration::from_secs(30)) => {
-            warn!("consumer shutdown timed out");
-        }
-    }
-
-    http_handle.abort();
-    grpc_handle.abort();
-
+    // 1. Deregister from Consul first — stop receiving new routed requests
     if let Some(client) = &consul_client {
         client.deregister().await;
     }
 
+    // 2. Signal consumer to stop accepting new jobs
+    let _ = shutdown_tx.send(true);
+
+    // 3. Signal HTTP and gRPC servers to stop accepting new connections
+    let _ = http_shutdown_tx.send(());
+    let _ = grpc_shutdown_tx.send(());
+
+    // 4. Wait for consumer to finish current job (60s timeout for encoding)
+    tokio::select! {
+        _ = consumer_handle => info!("consumer stopped"),
+        _ = tokio::time::sleep(std::time::Duration::from_secs(60)) => {
+            warn!("consumer shutdown timed out after 60s, unacked messages will be requeued");
+        }
+    }
+
+    // 5. Wait for HTTP server to finish draining
+    tokio::select! {
+        _ = http_handle => info!("http server stopped"),
+        _ = tokio::time::sleep(std::time::Duration::from_secs(5)) => {
+            warn!("http server shutdown timed out");
+        }
+    }
+
+    // 6. Wait for gRPC server to finish draining
+    tokio::select! {
+        _ = grpc_handle => info!("grpc server stopped"),
+        _ = tokio::time::sleep(std::time::Duration::from_secs(5)) => {
+            warn!("grpc server shutdown timed out");
+        }
+    }
+
+    // 7. Close RabbitMQ publisher connection
+    rabbit_pub_shutdown.close().await;
+
+    // 8. Shutdown OpenTelemetry
     if let Some(provider) = otel_provider {
         if let Err(e) = provider.shutdown() {
             error!(error = %e, "error shutting down OTel tracer provider");
@@ -313,6 +342,28 @@ async fn main() -> anyhow::Result<()> {
 
     info!("encoding service stopped");
     Ok(())
+}
+
+/// Waits for either Ctrl+C or SIGTERM signal.
+async fn shutdown_signal() {
+    let ctrl_c = tokio::signal::ctrl_c();
+
+    #[cfg(unix)]
+    {
+        let mut sigterm = tokio::signal::unix::signal(
+            tokio::signal::unix::SignalKind::terminate(),
+        )
+        .expect("failed to install SIGTERM handler");
+        tokio::select! {
+            _ = ctrl_c => {}
+            _ = sigterm.recv() => {}
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        ctrl_c.await.ok();
+    }
 }
 
 fn setup_tracing(

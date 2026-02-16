@@ -15,6 +15,12 @@ using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Graceful shutdown timeout
+builder.Services.Configure<HostOptions>(opts =>
+{
+    opts.ShutdownTimeout = TimeSpan.FromSeconds(30);
+});
+
 // Serilog
 builder.Host.UseSerilog((context, loggerConfig) =>
 {
@@ -151,53 +157,67 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ---------------------------------------------------------------------------
-// Consul registration
+// Consul registration (optional, non-blocking)
 // ---------------------------------------------------------------------------
-var lifetime = app.Lifetime;
-var consulClient = app.Services.GetRequiredService<IConsulClient>();
-var serviceName = "catalog-service";
-var serviceId = $"{serviceName}-{Guid.NewGuid():N}";
-var servicePort = builder.Configuration.GetValue<int>("Service:Port", 5100);
-var serviceHost = builder.Configuration.GetValue<string>("Service:Host") ?? "localhost";
-
-var registration = new AgentServiceRegistration
+if (builder.Configuration.GetSection("Consul").Exists())
 {
-    ID = serviceId,
-    Name = serviceName,
-    Address = serviceHost,
-    Port = servicePort,
-    Tags = new[] { "catalog", "api", "v1" },
-    Check = new AgentServiceCheck
-    {
-        HTTP = $"http://{serviceHost}:{servicePort}/health/ready",
-        Interval = TimeSpan.FromSeconds(10),
-        Timeout = TimeSpan.FromSeconds(5),
-        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(60)
-    }
-};
+    var lifetime = app.Lifetime;
+    var consulClient = app.Services.GetRequiredService<IConsulClient>();
+    var serviceName = "catalog-service";
+    var serviceId = $"{serviceName}-{Guid.NewGuid():N}";
+    var servicePort = builder.Configuration.GetValue<int>("Service:Port", 5100);
+    var serviceHost = builder.Configuration.GetValue<string>("Service:Host") ?? "localhost";
 
-lifetime.ApplicationStarted.Register(async () =>
-{
-    try
+    var registration = new AgentServiceRegistration
     {
-        await consulClient.Agent.ServiceRegister(registration);
-    }
-    catch (Exception ex)
-    {
-        app.Logger.LogWarning(ex, "Failed to register with Consul. Service discovery may not work.");
-    }
-});
+        ID = serviceId,
+        Name = serviceName,
+        Address = serviceHost,
+        Port = servicePort,
+        Tags = new[] { "catalog", "api", "v1" },
+        Check = new AgentServiceCheck
+        {
+            HTTP = $"http://{serviceHost}:{servicePort}/health/ready",
+            Interval = TimeSpan.FromSeconds(10),
+            Timeout = TimeSpan.FromSeconds(5),
+            DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(60)
+        }
+    };
 
-lifetime.ApplicationStopping.Register(async () =>
-{
-    try
+    lifetime.ApplicationStarted.Register(async () =>
     {
-        await consulClient.Agent.ServiceDeregister(serviceId);
-    }
-    catch (Exception ex)
+        try
+        {
+            await consulClient.Agent.ServiceRegister(registration);
+            app.Logger.LogInformation(
+                "Registered service '{ServiceName}' (ID: {ServiceId}) with Consul at {Address}:{Port}.",
+                serviceName, serviceId, serviceHost, servicePort);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to register with Consul. Service discovery may not work.");
+        }
+    });
+
+    lifetime.ApplicationStopping.Register(async () =>
     {
-        app.Logger.LogWarning(ex, "Failed to deregister from Consul.");
-    }
-});
+        app.Logger.LogInformation("Graceful shutdown initiated — deregistering from Consul...");
+        try
+        {
+            await consulClient.Agent.ServiceDeregister(serviceId);
+            app.Logger.LogInformation("Consul deregistration complete for '{ServiceId}'.", serviceId);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Failed to deregister from Consul.");
+        }
+        app.Logger.LogInformation("Waiting for background services to stop...");
+    });
+
+    lifetime.ApplicationStopped.Register(() =>
+    {
+        app.Logger.LogInformation("Shutdown complete. All resources released.");
+    });
+}
 
 await app.RunAsync();

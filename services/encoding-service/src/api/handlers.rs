@@ -262,6 +262,8 @@ mod tests {
             storage: Arc::new(crate::storage::minio::StubStorageClient),
             config,
             store: job_store,
+            rabbit_check: Arc::new(|| true),
+            startup_ready: Arc::new(std::sync::atomic::AtomicBool::new(true)),
         };
 
         encoding_routes().with_state(app_state)

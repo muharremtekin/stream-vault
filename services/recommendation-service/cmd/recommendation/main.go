@@ -249,8 +249,17 @@ func main() {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
 
+	// 1. Deregister from Consul first — stop receiving new routed requests
+	if consulClient != nil {
+		if err := consulClient.Deregister(); err != nil {
+			log.Error().Err(err).Msg("consul deregistration failed")
+		}
+	}
+
+	// 2. Cancel context — signals consumers and background goroutines
 	ctxCancel()
 
+	// 3. Stop gRPC server gracefully
 	grpcDone := make(chan struct{})
 	go func() {
 		grpcSrv.GracefulStop()
@@ -264,11 +273,12 @@ func main() {
 		grpcSrv.Stop()
 	}
 
+	// 4. Stop HTTP server gracefully
 	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("forced http shutdown")
 	}
 
-	// Stop consumers
+	// 5. Stop RabbitMQ consumers
 	if watchCons != nil {
 		watchCons.Stop()
 	}
@@ -277,12 +287,6 @@ func main() {
 	}
 	if catalogCons != nil {
 		catalogCons.Stop()
-	}
-
-	if consulClient != nil {
-		if err := consulClient.Deregister(); err != nil {
-			log.Error().Err(err).Msg("consul deregistration failed")
-		}
 	}
 
 	log.Info().Msg("recommendation service stopped")

@@ -34,6 +34,8 @@ public class SubscriptionSyncConsumer : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Subscription sync consumer started.");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -50,6 +52,8 @@ public class SubscriptionSyncConsumer : BackgroundService
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
+
+        _logger.LogInformation("Subscription sync consumer shut down gracefully.");
     }
 
     private async Task ConnectAndConsumeAsync(CancellationToken stoppingToken)

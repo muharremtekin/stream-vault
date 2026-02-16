@@ -443,29 +443,29 @@
 ## 9. Graceful Shutdown
 
 ### 9.1 Go Servisleri
-- [ ] Gateway — SIGTERM handling
-  - [ ] `signal.NotifyContext` ile shutdown signal yakalama
-  - [ ] HTTP server graceful shutdown (`server.Shutdown(ctx)`)
-  - [ ] Mevcut isteklerin tamamlanmasını bekle (timeout: 30s)
-  - [ ] Consul'dan deregistration
-  - [ ] Redis, RabbitMQ bağlantılarını düzgünce kapat
-- [ ] Streaming Service — aynı graceful shutdown pattern
-- [ ] Notification Service — WebSocket hub'daki client'lara close mesajı gönder + graceful shutdown
-- [ ] Search Service — aynı graceful shutdown pattern
+- [x] Gateway — SIGTERM handling
+  - [x] `signal.NotifyContext` ile shutdown signal yakalama
+  - [x] HTTP server graceful shutdown (`server.Shutdown(ctx)`)
+  - [x] Mevcut isteklerin tamamlanmasını bekle (timeout: 30s)
+  - [x] Consul'dan deregistration
+  - [x] Redis, RabbitMQ bağlantılarını düzgünce kapat
+- [x] Streaming Service — aynı graceful shutdown pattern
+- [x] Notification Service — WebSocket hub'daki client'lara close mesajı gönder + graceful shutdown
+- [x] Search Service — aynı graceful shutdown pattern
 
 ### 9.2 Rust Servisleri
-- [ ] Encoding Service — `tokio::signal::ctrl_c()` + SIGTERM handling
-  - [ ] Aktif encoding job'ların tamamlanmasını bekle (veya cancel et ve requeue)
-  - [ ] Consul deregistration, RabbitMQ/MinIO bağlantılarını kapat
-- [ ] Recommendation Service — aynı graceful shutdown pattern
+- [x] Encoding Service — `tokio::signal::ctrl_c()` + SIGTERM handling
+  - [x] Aktif encoding job'ların tamamlanmasını bekle (veya cancel et ve requeue)
+  - [x] Consul deregistration, RabbitMQ/MinIO bağlantılarını kapat
+- [x] Recommendation Service — aynı graceful shutdown pattern
 
 ### 9.3 .NET Servisleri
-- [ ] User Service — `IHostApplicationLifetime.ApplicationStopping` event
-  - [ ] Consul deregistration
-  - [ ] EF Core DbContext dispose
-  - [ ] Background service'lerin düzgün durdurulması
-- [ ] Catalog Service — aynı graceful shutdown
-- [ ] Subscription Service — Outbox processor'ın mevcut batch'i tamamlaması
+- [x] User Service — `IHostApplicationLifetime.ApplicationStopping` event
+  - [x] Consul deregistration
+  - [x] EF Core DbContext dispose
+  - [x] Background service'lerin düzgün durdurulması
+- [x] Catalog Service — aynı graceful shutdown
+- [x] Subscription Service — Outbox processor'ın mevcut batch'i tamamlaması
 
 ---
 

@@ -118,8 +118,8 @@ func main() {
 		log.Warn().Err(err).Msg("failed to create rabbitmq consumer, encoding results won't be consumed")
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	defer ctxCancel()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	if consumer != nil {
 		go consumer.Start(ctx)
@@ -194,23 +194,20 @@ func main() {
 	log.Info().Msg("startup complete, all systems ready")
 
 	// Wait for shutdown signal
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
-	case sig := <-quit:
-		log.Info().Str("signal", sig.String()).Msg("shutting down gracefully")
+	case <-ctx.Done():
+		log.Info().Msg("shutdown signal received, shutting down gracefully")
 	case err := <-httpErrCh:
+		stop()
 		log.Error().Err(err).Msg("http server error")
 	case err := <-grpcErrCh:
+		stop()
 		log.Error().Err(err).Msg("grpc server error")
 	}
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
-
-	ctxCancel() // Stop consumer
 
 	if consumer != nil {
 		consumer.Stop()

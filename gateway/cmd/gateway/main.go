@@ -143,6 +143,9 @@ func main() {
 	}
 
 	// ---- Graceful Shutdown ----
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
 	errCh := make(chan error, 1)
 	go func() {
 		log.Info().Str("addr", srv.Addr).Msg("listening")
@@ -155,24 +158,21 @@ func main() {
 	startupReady.Store(true)
 	log.Info().Msg("startup complete, all systems ready")
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
-	case sig := <-quit:
-		log.Info().Str("signal", sig.String()).Msg("shutting down gracefully")
+	case <-ctx.Done():
+		log.Info().Msg("shutdown signal received, shutting down gracefully")
 	case err := <-errCh:
 		log.Error().Err(err).Msg("server error")
 	}
+	stop()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer shutdownCancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("forced shutdown")
 	}
 
-	// Deregister from Consul if it was connected.
 	if consulClient != nil {
 		_ = consulClient.DeregisterService("gateway")
 	}

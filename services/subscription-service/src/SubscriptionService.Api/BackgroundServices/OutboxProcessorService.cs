@@ -40,7 +40,27 @@ public class OutboxProcessorService : BackgroundService
                 _logger.LogError(ex, "Error processing outbox messages.");
             }
 
-            await Task.Delay(_interval, stoppingToken);
+            try
+            {
+                await Task.Delay(_interval, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+
+        // Graceful shutdown: drain remaining outbox messages before exit
+        _logger.LogInformation("Shutdown requested. Processing remaining outbox messages...");
+        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        try
+        {
+            await ProcessOutboxMessagesAsync(shutdownCts.Token);
+            _logger.LogInformation("Remaining outbox messages processed successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to process remaining outbox messages during shutdown.");
         }
 
         _logger.LogInformation("Outbox processor stopped.");

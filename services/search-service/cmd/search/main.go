@@ -74,8 +74,8 @@ func main() {
 		Int("grpc_port", cfg.Server.GRPCPort).
 		Msg("starting search service")
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	defer ctxCancel()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	// Connect to Redis
 	redisOpts, err := redis.ParseURL(cfg.Redis.URL)
@@ -216,23 +216,20 @@ func main() {
 	log.Info().Msg("startup complete, all systems ready")
 
 	// Wait for shutdown signal
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
-	case sig := <-quit:
-		log.Info().Str("signal", sig.String()).Msg("shutting down gracefully")
+	case <-ctx.Done():
+		log.Info().Msg("shutdown signal received, shutting down gracefully")
 	case err := <-httpErrCh:
+		stop()
 		log.Error().Err(err).Msg("http server error")
 	case err := <-grpcErrCh:
+		stop()
 		log.Error().Err(err).Msg("grpc server error")
 	}
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
-
-	ctxCancel()
 
 	if catalogConsumer != nil {
 		catalogConsumer.Stop()

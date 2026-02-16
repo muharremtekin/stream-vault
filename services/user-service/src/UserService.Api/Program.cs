@@ -20,6 +20,12 @@ using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Graceful shutdown timeout
+builder.Services.Configure<HostOptions>(opts =>
+{
+    opts.ShutdownTimeout = TimeSpan.FromSeconds(30);
+});
+
 // Serilog
 builder.Host.UseSerilog((context, loggerConfig) =>
 {
@@ -278,15 +284,22 @@ if (builder.Configuration.GetSection("Consul").Exists())
 
     lifetime.ApplicationStopping.Register(async () =>
     {
+        app.Logger.LogInformation("Graceful shutdown initiated — deregistering from Consul...");
         try
         {
             await consulClient.Agent.ServiceDeregister(serviceId);
-            app.Logger.LogInformation("Deregistered service '{ServiceId}' from Consul.", serviceId);
+            app.Logger.LogInformation("Consul deregistration complete for '{ServiceId}'.", serviceId);
         }
         catch (Exception ex)
         {
             app.Logger.LogWarning(ex, "Failed to deregister from Consul.");
         }
+        app.Logger.LogInformation("Waiting for background services to stop...");
+    });
+
+    lifetime.ApplicationStopped.Register(() =>
+    {
+        app.Logger.LogInformation("Shutdown complete. All resources released.");
     });
 }
 

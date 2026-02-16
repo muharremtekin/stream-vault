@@ -34,7 +34,7 @@ func NewClient(hub *Hub, conn *websocket.Conn, userID string) *Client {
 // It sets the pong handler and unregisters from the hub on disconnect.
 func (c *Client) ReadPump(pingInterval, pongTimeout time.Duration) {
 	defer func() {
-		c.hub.unregister <- c
+		c.hub.Unregister(c)
 		c.conn.Close()
 	}()
 

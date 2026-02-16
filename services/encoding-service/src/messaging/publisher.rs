@@ -4,7 +4,7 @@ use lapin::types::FieldTable;
 use lapin::{BasicProperties, Channel, Connection, ConnectionProperties};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 use crate::config::RabbitMQConfig;
 use crate::error::{EncodingError, Result};
@@ -136,6 +136,17 @@ impl RabbitMQPublisher {
 
     pub fn connection(&self) -> &Connection {
         &self.connection
+    }
+
+    pub async fn close(&self) {
+        let channel = self.channel.lock().await;
+        if let Err(e) = channel.close(200, "shutdown").await {
+            warn!(error = %e, "error closing publisher channel");
+        }
+        if let Err(e) = self.connection.close(200, "shutdown").await {
+            warn!(error = %e, "error closing publisher connection");
+        }
+        info!("rabbitmq publisher connection closed");
     }
 }
 

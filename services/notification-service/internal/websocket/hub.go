@@ -3,7 +3,9 @@ package websocket
 import (
 	"encoding/json"
 	"sync"
+	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog/log"
 
 	"github.com/streamvault/notification-service/internal/metrics"
@@ -14,6 +16,7 @@ type Hub struct {
 	clients    map[string]map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
+	done       chan struct{}
 	mu         sync.RWMutex
 	maxPerUser int
 }
@@ -24,6 +27,7 @@ func NewHub(maxConnectionsPerUser int) *Hub {
 		clients:    make(map[string]map[*Client]bool),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
+		done:       make(chan struct{}),
 		maxPerUser: maxConnectionsPerUser,
 	}
 }
@@ -37,6 +41,10 @@ func (h *Hub) Register() chan<- *Client {
 func (h *Hub) Run() {
 	for {
 		select {
+		case <-h.done:
+			h.closeAllClients()
+			log.Info().Msg("websocket hub stopped")
+			return
 		case client := <-h.register:
 			h.mu.Lock()
 			if h.clients[client.UserID] == nil {
@@ -149,4 +157,34 @@ func (h *Hub) UserClientCount(userID string) int {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	return len(h.clients[userID])
+}
+
+// Close signals the hub to shut down. It sends WebSocket close frames
+// (1001 Going Away) to all connected clients and stops the Run loop.
+func (h *Hub) Close() {
+	close(h.done)
+}
+
+// Unregister sends the client to the unregister channel, or returns
+// immediately if the hub is already shutting down.
+func (h *Hub) Unregister(client *Client) {
+	select {
+	case h.unregister <- client:
+	case <-h.done:
+	}
+}
+
+func (h *Hub) closeAllClients() {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	closeMsg := websocket.FormatCloseMessage(websocket.CloseGoingAway, "server shutting down")
+	for userID, conns := range h.clients {
+		for client := range conns {
+			client.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			client.conn.WriteMessage(websocket.CloseMessage, closeMsg)
+			close(client.send)
+		}
+		delete(h.clients, userID)
+	}
 }

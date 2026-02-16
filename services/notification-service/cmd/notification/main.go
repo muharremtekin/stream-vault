@@ -65,8 +65,8 @@ func main() {
 		log.Info().Str("endpoint", cfg.OTel.Endpoint).Msg("OpenTelemetry tracing initialized")
 	}
 
-	ctx, ctxCancel := context.WithCancel(context.Background())
-	defer ctxCancel()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	// Connect to MongoDB
 	mongoClient, err := mongo.Connect(options.Client().ApplyURI(cfg.MongoDB.URI))
@@ -203,21 +203,17 @@ func main() {
 	log.Info().Msg("startup complete, all systems ready")
 
 	// Wait for shutdown signal
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-
 	select {
-	case sig := <-quit:
-		log.Info().Str("signal", sig.String()).Msg("shutting down gracefully")
+	case <-ctx.Done():
+		log.Info().Msg("shutdown signal received, shutting down gracefully")
 	case err := <-httpErrCh:
+		stop()
 		log.Error().Err(err).Msg("http server error")
 	}
 
 	// Graceful shutdown
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer shutdownCancel()
-
-	ctxCancel()
 
 	// Stop consumers
 	if subConsumer != nil {
@@ -229,6 +225,9 @@ func main() {
 	if contentConsumer != nil {
 		contentConsumer.Stop()
 	}
+
+	// Close WebSocket hub — sends 1001 Going Away to all clients
+	hub.Close()
 
 	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 		log.Error().Err(err).Msg("forced http shutdown")

@@ -35,6 +35,8 @@ public class EncodingResultConsumer : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Encoding result consumer started.");
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -51,6 +53,8 @@ public class EncodingResultConsumer : BackgroundService
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
         }
+
+        _logger.LogInformation("Encoding result consumer shut down gracefully.");
     }
 
     private async Task ConnectAndConsumeAsync(CancellationToken stoppingToken)
