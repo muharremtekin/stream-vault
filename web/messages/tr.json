@@ -206,7 +206,15 @@
     "notReady": "Video henüz hazır değil",
     "unsupported": "Tarayıcınız video oynatmayı desteklemiyor",
     "videoLabel": "Video oynatıcı",
-    "retry": "Tekrar Dene"
+    "retry": "Tekrar Dene",
+    "play": "Oynat",
+    "pause": "Duraklat",
+    "mute": "Sesi Kapat",
+    "unmute": "Sesi Aç",
+    "fullscreen": "Tam Ekrana Geç",
+    "exitFullscreen": "Tam Ekrandan Çık",
+    "seekBar": "İleri/Geri Al",
+    "volume": "Ses"
   },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",

@@ -206,7 +206,15 @@
     "notReady": "Video is not available yet",
     "unsupported": "Your browser does not support video playback",
     "videoLabel": "Video player",
-    "retry": "Try Again"
+    "retry": "Try Again",
+    "play": "Play",
+    "pause": "Pause",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "fullscreen": "Enter full screen",
+    "exitFullscreen": "Exit full screen",
+    "seekBar": "Seek",
+    "volume": "Volume"
   },
   "api": {
     "networkError": "Network error. Please check your connection.",

@@ -10,6 +10,7 @@ import { getStreamingInfo } from '@/lib/api/streaming';
 import { useHlsPlayer } from '@/lib/hooks/use-hls-player';
 import { usePlayerStore } from '@/lib/stores/player-store';
 import { cn } from '@/lib/utils/cn';
+import { PlayerControls } from '@/components/player/player-controls';
 
 import type { StreamingInfo } from '@/lib/types/streaming';
 
@@ -28,6 +29,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const t = useTranslations('player');
   const internalRef = useRef<HTMLVideoElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   const setContent = usePlayerStore((s) => s.setContent);
   const reset = usePlayerStore((s) => s.reset);
@@ -137,7 +139,7 @@ export function VideoPlayer({
   }
 
   return (
-    <div className={cn('relative bg-black', className)}>
+    <div ref={containerRef} className={cn('relative bg-black', className)}>
       <video
         ref={mergedRef}
         className="h-full w-full"
@@ -159,6 +161,9 @@ export function VideoPlayer({
           <span className="sr-only">{t('loading')}</span>
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
         </div>
+      )}
+      {isReady && (
+        <PlayerControls videoRef={internalRef} containerRef={containerRef} />
       )}
     </div>
   );

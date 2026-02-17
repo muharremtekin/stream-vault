@@ -304,13 +304,13 @@
 - [x] Native fallback: Safari'de HLS natively desteklendiğinde `<video>` src doğrudan kullan
 
 ### 7.2 Player Kontrolleri
-- [ ] `src/components/player/player-controls.tsx`
-- [ ] Play/Pause butonu
-- [ ] Seek bar (progress slider)
-- [ ] Geçerli zaman / toplam süre gösterimi
-- [ ] Volume slider + mute toggle
-- [ ] Fullscreen toggle butonu
-- [ ] Kontroller 3 saniye hareketsizlikte gizlenir (mouse move ile gösterilir)
+- [x] `src/components/player/player-controls.tsx`
+- [x] Play/Pause butonu
+- [x] Seek bar (progress slider)
+- [x] Geçerli zaman / toplam süre gösterimi
+- [x] Volume slider + mute toggle
+- [x] Fullscreen toggle butonu
+- [x] Kontroller 3 saniye hareketsizlikte gizlenir (mouse move ile gösterilir)
 
 ### 7.3 Kalite Seçici
 - [ ] `src/components/player/quality-selector.tsx`
