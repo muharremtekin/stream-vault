@@ -11,6 +11,7 @@ import { useHlsPlayer } from '@/lib/hooks/use-hls-player';
 import { usePlayerStore } from '@/lib/stores/player-store';
 import { cn } from '@/lib/utils/cn';
 import { PlayerControls } from '@/components/player/player-controls';
+import { ProgressTracker } from '@/components/player/progress-tracker';
 
 import type { StreamingInfo } from '@/lib/types/streaming';
 
@@ -163,7 +164,10 @@ export function VideoPlayer({
         </div>
       )}
       {isReady && (
-        <PlayerControls videoRef={internalRef} containerRef={containerRef} hlsRef={hlsRef} />
+        <>
+          <ProgressTracker videoRef={internalRef} contentId={contentId} />
+          <PlayerControls videoRef={internalRef} containerRef={containerRef} hlsRef={hlsRef} />
+        </>
       )}
     </div>
   );

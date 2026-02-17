@@ -321,11 +321,11 @@
 - [x] `hls.currentLevel = index` ile manuel seçim
 
 ### 7.4 İzleme Pozisyonu Takibi
-- [ ] `src/components/player/progress-tracker.tsx`
-- [ ] Sayfa açılırken: `GET /api/stream/{id}/progress` → kaldığı yere seek
-- [ ] Oynatma sırasında: her 15 saniyede `POST /api/stream/{id}/progress`
-- [ ] `beforeunload` event'inde son pozisyonu kaydet
-- [ ] `visibilitychange` event'inde pozisyon kaydet (tab değişimi)
+- [x] `src/components/player/progress-tracker.tsx`
+- [x] Sayfa açılırken: `GET /api/stream/{id}/progress` → kaldığı yere seek
+- [x] Oynatma sırasında: her 15 saniyede `POST /api/stream/{id}/progress`
+- [x] `beforeunload` event'inde son pozisyonu kaydet
+- [x] `visibilitychange` event'inde pozisyon kaydet (tab değişimi)
 
 ### 7.5 Player Overlay & UX
 - [ ] `src/components/player/player-overlay.tsx` — Başlık, geri butonu
