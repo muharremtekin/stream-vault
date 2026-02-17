@@ -37,7 +37,11 @@ const STRENGTH_COLORS = [
 
 const STRENGTH_LABELS = ['', 'weak', 'weak', 'fair', 'good', 'strong'] as const;
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  defaultEmail?: string;
+}
+
+export function RegisterForm({ defaultEmail = '' }: RegisterFormProps) {
   const t = useTranslations('auth');
   const router = useRouter();
   const { register: registerUser, isRegistering } = useAuth();
@@ -49,7 +53,7 @@ export function RegisterForm() {
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { email: defaultEmail, password: '', confirmPassword: '' },
   });
 
   const passwordValue = watch('password');

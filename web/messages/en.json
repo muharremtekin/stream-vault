@@ -57,7 +57,8 @@
     "kidsProfile": "Kids Profile",
     "selectAvatar": "Select an avatar",
     "createProfileTitle": "Create Profile",
-    "selectProfileToContinue": "Select a profile to continue"
+    "selectProfileToContinue": "Select a profile to continue",
+    "profileCreated": "Profile created successfully!"
   },
   "browse": {
     "home": "Home",
@@ -169,7 +170,8 @@
     "faq4q": "How do I cancel?",
     "faq4a": "StreamVault is flexible. There are no contracts and no cancellation fees. You can easily cancel your account online in two clicks.",
     "readyToWatch": "Ready to watch?",
-    "readyToWatchDesc": "Enter your email to create or sign in to your account."
+    "readyToWatchDesc": "Enter your email to create or sign in to your account.",
+    "emailPlaceholder": "Email address"
   },
   "api": {
     "networkError": "Network error. Please check your connection.",

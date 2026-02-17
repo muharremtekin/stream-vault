@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import { Plus } from 'lucide-react';
@@ -84,6 +85,12 @@ export function ProfileGrid() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
+      <Link
+        href="/account/profiles"
+        className="mt-8 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        {t('manageProfiles')}
+      </Link>
     </>
   );
 }

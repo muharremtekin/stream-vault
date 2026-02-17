@@ -56,7 +56,7 @@ export function CreateProfileModal({ isOpen, onClose }: CreateProfileModalProps)
   const onSubmit = async (data: CreateProfileFormData) => {
     try {
       await createProfile(data);
-      toast.success(t('profileCreated') ?? '');
+      toast.success(t('profileCreated'));
       reset();
       onClose();
     } catch (error: unknown) {

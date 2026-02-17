@@ -31,13 +31,9 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const response = await login(data);
+      await login(data);
       toast.success(t('loginSuccess'));
-      if (response.user.profileCount > 0) {
-        router.push('/browse');
-      } else {
-        router.push('/profile-select');
-      }
+      router.push('/profile-select');
     } catch (error: unknown) {
       toast.error(extractErrorMessage(error));
     }

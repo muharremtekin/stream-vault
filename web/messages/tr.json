@@ -57,7 +57,8 @@
     "kidsProfile": "Çocuk Profili",
     "selectAvatar": "Avatar seç",
     "createProfileTitle": "Profil Oluştur",
-    "selectProfileToContinue": "Devam etmek için bir profil seç"
+    "selectProfileToContinue": "Devam etmek için bir profil seç",
+    "profileCreated": "Profil başarıyla oluşturuldu!"
   },
   "browse": {
     "home": "Ana Sayfa",
@@ -169,7 +170,8 @@
     "faq4q": "Nasıl iptal ederim?",
     "faq4a": "StreamVault esnektir. Sözleşme veya iptal ücreti yoktur. Hesabınızı iki tıkla çevrimiçi olarak kolayca iptal edebilirsiniz.",
     "readyToWatch": "İzlemeye hazır mısın?",
-    "readyToWatchDesc": "Hesap oluşturmak veya giriş yapmak için e-postanızı girin."
+    "readyToWatchDesc": "Hesap oluşturmak veya giriş yapmak için e-postanızı girin.",
+    "emailPlaceholder": "E-posta adresi"
   },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
