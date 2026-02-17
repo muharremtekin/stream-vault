@@ -23,6 +23,11 @@ export interface FieldError {
   message: string;
 }
 
+/** Generic single-item API response wrapper */
+export interface ApiResponse<T> {
+  data: T;
+}
+
 /** Content type (Movie or Series) */
 export const CONTENT_TYPES = {
   Movie: 'Movie',

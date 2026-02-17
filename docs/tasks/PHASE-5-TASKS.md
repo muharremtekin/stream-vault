@@ -134,28 +134,28 @@
 ## 4. API Client & State Management
 
 ### 4.1 TypeScript Tipleri
-- [ ] `src/lib/types/common.ts` — `PaginatedResponse<T>`, `ApiError`, `ApiResponse<T>`
-- [ ] `src/lib/types/auth.ts` — `User`, `Profile`, `LoginRequest`, `LoginResponse`, `RegisterRequest`
-- [ ] `src/lib/types/catalog.ts` — `Movie`, `Series`, `Episode`, `Season`, `Genre`, `VideoStatus`
-- [ ] `src/lib/types/streaming.ts` — `StreamingInfo`, `WatchProgress`, `ContinueWatchingItem`
-- [ ] `src/lib/types/search.ts` — `SearchHit`, `SearchResponse`, `Facets`, `FacetBucket`, `AutocompleteItem`
-- [ ] `src/lib/types/recommendation.ts` — `RecommendedItem`, `SimilarItem`, `HomeSection`
-- [ ] `src/lib/types/subscription.ts` — `Plan`, `Subscription`, `Invoice`, `PaymentRequest`
-- [ ] `src/lib/types/notification.ts` — `Notification`, `NotificationPreferences`
+- [x] `src/lib/types/common.ts` — `PaginatedResponse<T>`, `ApiError`, `ApiResponse<T>`
+- [x] `src/lib/types/auth.ts` — `User`, `Profile`, `LoginRequest`, `LoginResponse`, `RegisterRequest`
+- [x] `src/lib/types/catalog.ts` — `Movie`, `Series`, `Episode`, `Season`, `Genre`, `VideoStatus`
+- [x] `src/lib/types/streaming.ts` — `StreamingInfo`, `WatchProgress`, `ContinueWatchingItem`
+- [x] `src/lib/types/search.ts` — `SearchHit`, `SearchResponse`, `Facets`, `FacetBucket`, `AutocompleteItem`
+- [x] `src/lib/types/recommendation.ts` — `RecommendedItem`, `SimilarItem`, `HomeSection`
+- [x] `src/lib/types/subscription.ts` — `Plan`, `Subscription`, `Invoice`, `PaymentRequest`
+- [x] `src/lib/types/notification.ts` — `Notification`, `NotificationPreferences`
 
 ### 4.2 API Client
-- [ ] `src/lib/api/client.ts` — Axios instance oluştur (`baseURL: NEXT_PUBLIC_API_URL`, timeout: 10s)
-- [ ] Request interceptor: `Authorization: Bearer {token}` header ekle (Zustand store'dan)
-- [ ] Request interceptor: `X-Profile-Id` header ekle (aktif profil)
-- [ ] Response interceptor: 401 → refresh token dene → başarısızsa logout + `/login`'e redirect
-- [ ] `src/lib/api/auth.ts` — `login()`, `register()`, `refreshToken()`, `getProfiles()`, `createProfile()`
-- [ ] `src/lib/api/catalog.ts` — `getMovies()`, `getMovie(id)`, `getSeries()`, `getSeriesById(id)`, `getGenres()`, `getGenreContent(slug)`
-- [ ] `src/lib/api/streaming.ts` — `getStreamingInfo(id)`, `getProgress(id)`, `saveProgress(id, position)`, `getContinueWatching()`, `uploadVideo(formData, onProgress)`
-- [ ] `src/lib/api/search.ts` — `search(query, filters)`, `autocomplete(query)`, `getTrending(window)`
-- [ ] `src/lib/api/recommendation.ts` — `getHomeSections()`, `getSimilar(id)`, `getRecommendations()`
-- [ ] `src/lib/api/subscription.ts` — `getPlans()`, `getMySubscription()`, `subscribe(planId, payment)`, `changePlan(planId)`, `cancel()`, `getInvoices()`
-- [ ] `src/lib/api/notification.ts` — `getNotifications(params)`, `markAsRead(id)`, `markAllAsRead()`, `getPreferences()`, `updatePreferences(prefs)`
-- [ ] `src/lib/api/encoding.ts` — `getJobs(params)`, `getJob(id)` (admin)
+- [x] `src/lib/api/client.ts` — Axios instance oluştur (`baseURL: NEXT_PUBLIC_API_URL`, timeout: 10s)
+- [x] Request interceptor: `Authorization: Bearer {token}` header ekle (Zustand store'dan)
+- [x] Request interceptor: `X-Profile-Id` header ekle (aktif profil)
+- [x] Response interceptor: 401 → refresh token dene → başarısızsa logout + `/login`'e redirect
+- [x] `src/lib/api/auth.ts` — `login()`, `register()`, `refreshToken()`, `getProfiles()`, `createProfile()`
+- [x] `src/lib/api/catalog.ts` — `getMovies()`, `getMovie(id)`, `getSeries()`, `getSeriesById(id)`, `getGenres()`, `getGenreContent(slug)`
+- [x] `src/lib/api/streaming.ts` — `getStreamingInfo(id)`, `getProgress(id)`, `saveProgress(id, position)`, `getContinueWatching()`, `uploadVideo(formData, onProgress)`
+- [x] `src/lib/api/search.ts` — `search(query, filters)`, `autocomplete(query)`, `getTrending(window)`
+- [x] `src/lib/api/recommendation.ts` — `getHomeSections()`, `getSimilar(id)`, `getRecommendations()`
+- [x] `src/lib/api/subscription.ts` — `getPlans()`, `getMySubscription()`, `subscribe(planId, payment)`, `changePlan(planId)`, `cancel()`, `getInvoices()`
+- [x] `src/lib/api/notification.ts` — `getNotifications(params)`, `markAsRead(id)`, `markAllAsRead()`, `getPreferences()`, `updatePreferences(prefs)`
+- [x] `src/lib/api/encoding.ts` — `getJobs(params)`, `getJob(id)` (admin)
 
 ### 4.3 Zustand Store'lar
 - [ ] `src/lib/stores/auth-store.ts` — `user`, `accessToken`, `refreshToken`, `activeProfile`, `profiles`, `subscriptionTier`

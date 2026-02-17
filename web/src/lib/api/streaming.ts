@@ -3,10 +3,20 @@ import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
 import { API_URL } from '@/lib/utils/constants';
 import type {
+  StreamingInfo,
   WatchProgress,
   SaveProgressRequest,
   ContinueWatchingResponse,
 } from '@/lib/types/streaming';
+
+export async function getStreamingInfo(
+  contentId: string
+): Promise<StreamingInfo> {
+  const response = await apiClient.get<StreamingInfo>(
+    `/api/stream/${contentId}/info`
+  );
+  return response.data;
+}
 
 export async function getProgress(contentId: string): Promise<WatchProgress> {
   const response = await apiClient.get<WatchProgress>(

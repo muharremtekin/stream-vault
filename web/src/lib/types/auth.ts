@@ -19,6 +19,9 @@ export interface AuthResponse {
   user: User;
 }
 
+/** LoginResponse is an alias for AuthResponse (same shape) */
+export type LoginResponse = AuthResponse;
+
 export interface LoginRequest {
   email: string;
   password: string;
