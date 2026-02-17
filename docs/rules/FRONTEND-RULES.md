@@ -128,7 +128,7 @@ return <Content data={data} />;
 ## 4. Bileşen Kuralları
 
 ```
-- Bir bileşen MAX 150 satır. Daha uzunsa parçala. İstisna yok.
+- Bir bileşen MAX 180 satır. Daha uzunsa parçala. İstisna yok.
 - Tek sorumluluk. VideoPlayer hem video oynatıp hem yorum göstermez.
 - Props interface: {BileşenAdı}Props formatı zorunlu.
 - Prop drilling YASAKTIR (3+ seviye). Zustand veya Context kullan.
