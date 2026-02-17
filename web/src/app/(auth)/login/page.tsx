@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+
+import { LoginForm } from '@/components/auth/login-form';
 
 export default async function LoginPage() {
   const t = await getTranslations('auth');
@@ -8,8 +11,15 @@ export default async function LoginPage() {
       <h1 className="mb-6 text-2xl font-bold text-foreground">
         {t('loginTitle')}
       </h1>
-      <p className="text-muted-foreground">
-        {t('loginTitle')}
+      <LoginForm />
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        {t('noAccount')}{' '}
+        <Link
+          href="/register"
+          className="font-medium text-primary hover:underline"
+        >
+          {t('register')}
+        </Link>
       </p>
     </div>
   );

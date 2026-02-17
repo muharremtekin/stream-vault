@@ -17,9 +17,10 @@ export async function login(data: LoginRequest): Promise<AuthResponse> {
 }
 
 export async function register(data: RegisterRequest): Promise<AuthResponse> {
+  const { confirmPassword: _unused, ...payload } = data;
   const response = await apiClient.post<AuthResponse>(
     '/api/auth/register',
-    data
+    payload
   );
   return response.data;
 }
