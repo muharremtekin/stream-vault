@@ -180,48 +180,48 @@
 ## 5. Auth & Profil Sayfaları
 
 ### 5.1 Landing Page (`/`)
-- [ ] `src/app/page.tsx` — Statik landing page
-- [ ] Logo + "Giriş Yap" butonu üstte
-- [ ] Hero section: başlık, açıklama, email input + "Başla" butonu
-- [ ] Özellik kartları (3 kart: TV, mobil, profil)
-- [ ] SSS accordion bölümü
-- [ ] Giriş yapmışsa → `/browse`'a redirect (server-side kontrol)
+- [x] `src/app/page.tsx` — Statik landing page
+- [x] Logo + "Giriş Yap" butonu üstte
+- [x] Hero section: başlık, açıklama, email input + "Başla" butonu
+- [x] Özellik kartları (3 kart: TV, mobil, profil)
+- [x] SSS accordion bölümü
+- [x] Giriş yapmışsa → `/browse`'a redirect (server-side kontrol)
 
 ### 5.2 Login Sayfası (`/login`)
-- [ ] `src/app/(auth)/login/page.tsx`
-- [ ] `src/components/auth/login-form.tsx` — React Hook Form + Zod validasyon
-- [ ] Email + şifre input'ları
-- [ ] "Giriş Yap" submit butonu
-- [ ] "Hesabın yok mu? Kayıt ol" linki
-- [ ] Loading state (submit sırasında)
-- [ ] Hata gösterimi (yanlış şifre, kullanıcı bulunamadı)
-- [ ] Başarılı login → profil seçimine veya `/browse`'a yönlendir
-- [ ] API: `POST /api/auth/login`
+- [x] `src/app/(auth)/login/page.tsx`
+- [x] `src/components/auth/login-form.tsx` — React Hook Form + Zod validasyon
+- [x] Email + şifre input'ları
+- [x] "Giriş Yap" submit butonu
+- [x] "Hesabın yok mu? Kayıt ol" linki
+- [x] Loading state (submit sırasında)
+- [x] Hata gösterimi (yanlış şifre, kullanıcı bulunamadı)
+- [x] Başarılı login → profil seçimine veya `/browse`'a yönlendir
+- [x] API: `POST /api/auth/login`
 
 ### 5.3 Register Sayfası (`/register`)
-- [ ] `src/app/(auth)/register/page.tsx`
-- [ ] `src/components/auth/register-form.tsx` — React Hook Form + Zod validasyon
-- [ ] Email, şifre, şifre tekrarı input'ları
-- [ ] Şifre gücü göstergesi (opsiyonel)
-- [ ] Başarılı kayıt → login sayfasına yönlendir veya otomatik giriş
-- [ ] API: `POST /api/auth/register`
+- [x] `src/app/(auth)/register/page.tsx`
+- [x] `src/components/auth/register-form.tsx` — React Hook Form + Zod validasyon
+- [x] Email, şifre, şifre tekrarı input'ları
+- [x] Şifre gücü göstergesi (opsiyonel)
+- [x] Başarılı kayıt → login sayfasına yönlendir veya otomatik giriş
+- [x] API: `POST /api/auth/register`
 
 ### 5.4 Profil Seçimi
-- [ ] `src/components/auth/profile-select.tsx` — "Kim izliyor?" ekranı
-- [ ] Profil kartları grid'i (avatar + isim)
-- [ ] "Profil Ekle" kartı (+ ikonu)
-- [ ] Yeni profil oluşturma modal'ı (isim + avatar seçimi)
-- [ ] Max 5 profil sınırı UI'da gösterilmeli
-- [ ] Profil seçildiğinde → `setActiveProfile()` + `/browse`'a yönlendir
-- [ ] "Profilleri Yönet" butonu
-- [ ] API: `GET /api/users/me/profiles`, `POST /api/users/me/profiles`
+- [x] `src/components/auth/profile-select.tsx` — "Kim izliyor?" ekranı
+- [x] Profil kartları grid'i (avatar + isim)
+- [x] "Profil Ekle" kartı (+ ikonu)
+- [x] Yeni profil oluşturma modal'ı (isim + avatar seçimi)
+- [x] Max 5 profil sınırı UI'da gösterilmeli
+- [x] Profil seçildiğinde → `setActiveProfile()` + `/browse`'a yönlendir
+- [x] "Profilleri Yönet" butonu
+- [x] API: `GET /api/users/me/profiles`, `POST /api/users/me/profiles`
 
 ### 5.5 Auth Proxy (Korumalı Route'lar)
-- [ ] `src/proxy.ts` oluştur (Next.js 16 — `middleware.ts` yerine `proxy.ts`)
-- [ ] Named export: `export function proxy(request: Request)`
-- [ ] Token yoksa korumalı route'ları `/login`'e redirect et
-- [ ] Public route'lar: `/`, `/login`, `/register`
-- [ ] Matcher config: `/((?!_next/static|_next/image|favicon.ico).*)` patterni
+- [x] `src/proxy.ts` oluştur (Next.js 16 — `middleware.ts` yerine `proxy.ts`)
+- [x] Named export: `export function proxy(request: Request)`
+- [x] Token yoksa korumalı route'ları `/login`'e redirect et
+- [x] Public route'lar: `/`, `/login`, `/register`
+- [x] Matcher config: `/((?!_next/static|_next/image|favicon.ico).*)` patterni
 
 ---
 
