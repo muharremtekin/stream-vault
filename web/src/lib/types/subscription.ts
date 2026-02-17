@@ -1,7 +1,9 @@
+import type { SubscriptionTier } from '@/lib/types/common';
+
 export interface Plan {
   id: string;
   name: string;
-  tier: string;
+  tier: SubscriptionTier;
   priceMonthly: number;
   maxScreens: number;
   maxQuality: string;

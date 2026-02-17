@@ -158,22 +158,22 @@
 - [x] `src/lib/api/encoding.ts` — `getJobs(params)`, `getJob(id)` (admin)
 
 ### 4.3 Zustand Store'lar
-- [ ] `src/lib/stores/auth-store.ts` — `user`, `accessToken`, `refreshToken`, `activeProfile`, `profiles`, `subscriptionTier`
-- [ ] Auth store actions: `login()`, `register()`, `logout()`, `refreshAuth()`, `setActiveProfile()`, `fetchProfiles()`
-- [ ] `persist` middleware ile token'ları localStorage'a kaydet
-- [ ] `src/lib/stores/player-store.ts` — `contentId`, `isPlaying`, `currentTime`, `duration`, `currentQuality`, `availableQualities`, `volume`, `isFullscreen`, `isBuffering`
-- [ ] Player store actions: `setQuality()`, `togglePlay()`, `seek()`, `setVolume()`
-- [ ] `src/lib/stores/notification-store.ts` — `notifications`, `unreadCount`, `wsConnected`
-- [ ] Notification store actions: `connect()`, `disconnect()`, `markAsRead()`, `markAllAsRead()`, `fetchHistory()`
+- [x] `src/lib/stores/auth-store.ts` — `user`, `accessToken`, `refreshToken`, `activeProfile`, `profiles`, `subscriptionTier`
+- [x] Auth store actions: `login()`, `register()`, `logout()`, `refreshAuth()`, `setActiveProfile()`, `fetchProfiles()`
+- [x] `persist` middleware ile token'ları localStorage'a kaydet
+- [x] `src/lib/stores/player-store.ts` — `contentId`, `isPlaying`, `currentTime`, `duration`, `currentQuality`, `availableQualities`, `volume`, `isFullscreen`, `isBuffering`
+- [x] Player store actions: `setQuality()`, `togglePlay()`, `seek()`, `setVolume()`
+- [x] `src/lib/stores/notification-store.ts` — `notifications`, `unreadCount`, `wsConnected`
+- [x] Notification store actions: `connect()`, `disconnect()`, `markAsRead()`, `markAllAsRead()`, `fetchHistory()`
 
 ### 4.4 Custom Hooks (TanStack Query)
-- [ ] `src/lib/hooks/use-auth.ts` — Auth state ve işlemleri (store wrapper)
-- [ ] `src/lib/hooks/use-profile.ts` — Aktif profil yönetimi
-- [ ] `src/lib/hooks/use-search.ts` — Debounced arama (300ms) + autocomplete query
-- [ ] `src/lib/hooks/use-player.ts` — Player state + progress save (15s interval)
-- [ ] `src/lib/hooks/use-watchlist.ts` — Watchlist CRUD (TanStack Query mutations)
-- [ ] `src/lib/hooks/use-notifications.ts` — WebSocket bağlantı + bildirim state
-- [ ] `src/lib/hooks/use-subscription.ts` — Abonelik durumu query
+- [x] `src/lib/hooks/use-auth.ts` — Auth state ve işlemleri (store wrapper)
+- [x] `src/lib/hooks/use-profile.ts` — Aktif profil yönetimi
+- [x] `src/lib/hooks/use-search.ts` — Debounced arama (300ms) + autocomplete query
+- [x] `src/lib/hooks/use-player.ts` — Player state + progress save (15s interval)
+- [x] `src/lib/hooks/use-watchlist.ts` — Watchlist CRUD (TanStack Query mutations)
+- [x] `src/lib/hooks/use-notifications.ts` — WebSocket bağlantı + bildirim state
+- [x] `src/lib/hooks/use-subscription.ts` — Abonelik durumu query
 
 ---
 

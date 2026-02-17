@@ -13,7 +13,6 @@ import {
   getInvoices,
 } from '@/lib/api/subscription';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import type { SubscriptionTier } from '@/lib/types/common';
 import type {
   CreateSubscriptionRequest,
   ChangePlanRequest,
@@ -40,9 +39,7 @@ export function useSubscription() {
   // Sync subscription tier to auth store
   useEffect(() => {
     if (subscriptionQuery.data?.plan?.tier) {
-      setSubscriptionTier(
-        subscriptionQuery.data.plan.tier as SubscriptionTier
-      );
+      setSubscriptionTier(subscriptionQuery.data.plan.tier);
     }
   }, [subscriptionQuery.data, setSubscriptionTier]);
 

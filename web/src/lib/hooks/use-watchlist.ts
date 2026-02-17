@@ -2,41 +2,14 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { apiClient } from '@/lib/api/client';
+import {
+  fetchWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+} from '@/lib/api/watchlist';
 import { useAuthStore } from '@/lib/stores/auth-store';
 import type { ContentType } from '@/lib/types/common';
-
-interface WatchlistItem {
-  id: string;
-  contentId: string;
-  contentType: string;
-  addedAt: string;
-  note: string | null;
-}
-
-async function fetchWatchlist(profileId: string): Promise<WatchlistItem[]> {
-  const response = await apiClient.get<WatchlistItem[]>(
-    `/api/watchlist/profile/${profileId}`
-  );
-  return response.data;
-}
-
-async function addToWatchlist(
-  profileId: string,
-  contentId: string,
-  contentType: ContentType
-): Promise<WatchlistItem> {
-  const response = await apiClient.post<WatchlistItem>('/api/watchlist', {
-    profileId,
-    contentId,
-    contentType,
-  });
-  return response.data;
-}
-
-async function removeFromWatchlist(id: string): Promise<void> {
-  await apiClient.delete(`/api/watchlist/${id}`);
-}
+import type { WatchlistItem } from '@/lib/api/watchlist';
 
 export function useWatchlist() {
   const queryClient = useQueryClient();
