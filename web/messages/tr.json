@@ -218,7 +218,15 @@
     "quality": "Kalite",
     "qualityAuto": "Otomatik",
     "qualitySelect": "Kalite seç",
-    "qualityUpgrade": "Yükselt"
+    "qualityUpgrade": "Yükselt",
+    "back": "Geri",
+    "buffering": "Yükleniyor...",
+    "upNext": "Sıradaki",
+    "nextEpisode": "Sonraki Bölüm",
+    "playAgain": "Tekrar Oynat",
+    "goBack": "Geri Dön",
+    "skipCountdown": "{seconds}s içinde oynatılıyor",
+    "cancelAutoPlay": "İptal"
   },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",

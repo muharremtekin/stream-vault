@@ -16,6 +16,7 @@ interface PlayerState {
   isFullscreen: boolean;
   isBuffering: boolean;
   playbackRate: number;
+  showControls: boolean;
 
   setContent: (
     contentId: string,
@@ -32,6 +33,7 @@ interface PlayerState {
   setIsFullscreen: (isFullscreen: boolean) => void;
   setIsBuffering: (isBuffering: boolean) => void;
   setPlaybackRate: (rate: number) => void;
+  setShowControls: (show: boolean) => void;
   reset: () => void;
 }
 
@@ -49,6 +51,7 @@ const initialState = {
   isFullscreen: false,
   isBuffering: false,
   playbackRate: 1,
+  showControls: true,
 };
 
 export const usePlayerStore = create<PlayerState>()((set) => ({
@@ -75,5 +78,6 @@ export const usePlayerStore = create<PlayerState>()((set) => ({
   setIsFullscreen: (isFullscreen) => set({ isFullscreen }),
   setIsBuffering: (isBuffering) => set({ isBuffering }),
   setPlaybackRate: (playbackRate) => set({ playbackRate }),
+  setShowControls: (showControls) => set({ showControls }),
   reset: () => set(initialState),
 }));

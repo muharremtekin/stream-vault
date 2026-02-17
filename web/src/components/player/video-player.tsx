@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Ref } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
@@ -8,16 +8,21 @@ import { useTranslations } from 'next-intl';
 
 import { getStreamingInfo } from '@/lib/api/streaming';
 import { useHlsPlayer } from '@/lib/hooks/use-hls-player';
+import { useKeyboardShortcuts } from '@/lib/hooks/use-keyboard-shortcuts';
 import { usePlayerStore } from '@/lib/stores/player-store';
 import { cn } from '@/lib/utils/cn';
 import { PlayerControls } from '@/components/player/player-controls';
+import { PlayerOverlay } from '@/components/player/player-overlay';
 import { ProgressTracker } from '@/components/player/progress-tracker';
 
-import type { StreamingInfo } from '@/lib/types/streaming';
+import type { NextEpisodeInfo, StreamingInfo } from '@/lib/types/streaming';
 
 interface VideoPlayerProps {
   contentId: string;
   contentType?: string;
+  title?: string;
+  onBack?: () => void;
+  nextEpisode?: NextEpisodeInfo;
   className?: string;
   ref?: Ref<HTMLVideoElement | null>;
 }
@@ -25,6 +30,9 @@ interface VideoPlayerProps {
 export function VideoPlayer({
   contentId,
   contentType = 'movie',
+  title,
+  onBack,
+  nextEpisode,
   className,
   ref,
 }: VideoPlayerProps) {
@@ -39,14 +47,23 @@ export function VideoPlayer({
   const setDuration = usePlayerStore((s) => s.setDuration);
   const setIsBuffering = usePlayerStore((s) => s.setIsBuffering);
   const setAvailableQualities = usePlayerStore((s) => s.setAvailableQualities);
+  const setShowControls = usePlayerStore((s) => s.setShowControls);
+  const [isEnded, setIsEnded] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Merge internal ref with optional external ref (React 19 — no forwardRef needed)
+  const handleMouseMove = useCallback(() => {
+    setShowControls(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setShowControls(false), 3000);
+  }, [setShowControls]);
+
+  useKeyboardShortcuts(internalRef, containerRef);
+
   const mergedRef = useCallback(
     (node: HTMLVideoElement | null) => {
       internalRef.current = node;
-      if (typeof ref === 'function') {
-        ref(node);
-      } else if (ref !== null && ref !== undefined) {
+      if (typeof ref === 'function') ref(node);
+      else if (ref !== null && ref !== undefined) {
         (ref as { current: HTMLVideoElement | null }).current = node;
       }
     },
@@ -69,30 +86,26 @@ export function VideoPlayer({
     isEnabled: !!manifestUrl,
   });
 
-  // Initialise player store content on mount, reset on unmount
   useEffect(() => {
     setContent(contentId, contentType);
-    return () => {
-      reset();
-    };
+    return () => { reset(); };
   }, [contentId, contentType, setContent, reset]);
 
-  // Sync available qualities to player store
   useEffect(() => {
-    const qualities =
-      streamingInfo?.availableQualities?.map((q) => q.label) ?? [];
-    setAvailableQualities(qualities);
+    setAvailableQualities(streamingInfo?.availableQualities?.map((q) => q.label) ?? []);
   }, [streamingInfo, setAvailableQualities]);
+
+  const handleReplay = useCallback(() => {
+    const video = internalRef.current;
+    if (!video) return;
+    video.currentTime = 0;
+    setIsEnded(false);
+    void video.play();
+  }, []);
 
   if (isLoading) {
     return (
-      <div
-        role="status"
-        className={cn(
-          'flex items-center justify-center bg-black',
-          className,
-        )}
-      >
+      <div role="status" className={cn('flex items-center justify-center bg-black', className)}>
         <span className="sr-only">{t('loading')}</span>
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
       </div>
@@ -101,13 +114,7 @@ export function VideoPlayer({
 
   if (queryError || hlsError === 'fatal' || hlsError === 'unsupported') {
     return (
-      <div
-        role="alert"
-        className={cn(
-          'flex items-center justify-center bg-black text-white',
-          className,
-        )}
-      >
+      <div role="alert" className={cn('flex items-center justify-center bg-black text-white', className)}>
         <p>{hlsError === 'unsupported' ? t('unsupported') : t('error')}</p>
       </div>
     );
@@ -115,12 +122,7 @@ export function VideoPlayer({
 
   if (streamingInfo?.videoStatus === 'Processing') {
     return (
-      <div
-        className={cn(
-          'flex items-center justify-center bg-black text-center text-white',
-          className,
-        )}
-      >
+      <div className={cn('flex items-center justify-center bg-black text-center text-white', className)}>
         <p>{t('encoding')}</p>
       </div>
     );
@@ -128,41 +130,36 @@ export function VideoPlayer({
 
   if (streamingInfo && streamingInfo.videoStatus !== 'Ready') {
     return (
-      <div
-        className={cn(
-          'flex items-center justify-center bg-black text-white',
-          className,
-        )}
-      >
+      <div className={cn('flex items-center justify-center bg-black text-white', className)}>
         <p>{t('notReady')}</p>
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className={cn('relative bg-black', className)}>
+    <div ref={containerRef} className={cn('relative bg-black', className)} onMouseMove={handleMouseMove}>
       <video
         ref={mergedRef}
         className="h-full w-full"
         playsInline
         aria-label={t('videoLabel')}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => { setIsPlaying(true); setIsEnded(false); }}
         onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => { setIsPlaying(false); setIsEnded(true); }}
         onWaiting={() => setIsBuffering(true)}
         onCanPlay={() => setIsBuffering(false)}
         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
         onDurationChange={(e) => setDuration(e.currentTarget.duration)}
       />
-      {!isReady && (
-        <div
-          role="status"
-          className="absolute inset-0 flex items-center justify-center bg-black"
-        >
-          <span className="sr-only">{t('loading')}</span>
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-white border-t-transparent" />
-        </div>
-      )}
+      <PlayerOverlay
+        isReady={isReady}
+        isEnded={isEnded}
+        title={title}
+        onBack={onBack}
+        nextEpisode={nextEpisode}
+        videoRef={internalRef}
+        onReplay={handleReplay}
+      />
       {isReady && (
         <>
           <ProgressTracker videoRef={internalRef} contentId={contentId} />

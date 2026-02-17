@@ -328,11 +328,11 @@
 - [x] `visibilitychange` event'inde pozisyon kaydet (tab değişimi)
 
 ### 7.5 Player Overlay & UX
-- [ ] `src/components/player/player-overlay.tsx` — Başlık, geri butonu
-- [ ] Buffering göstergesi (spinner)
-- [ ] Oynatma bittiğinde: dizi ise "Sonraki Bölüm" önerisi (10s countdown)
-- [ ] Oynatma bittiğinde: film ise "Benzerleri" önerisi
-- [ ] Keyboard shortcut'lar: Space (play/pause), F (fullscreen), ← (10s geri), → (10s ileri), M (mute), ↑/↓ (volume)
+- [x] `src/components/player/player-overlay.tsx` — Başlık, geri butonu
+- [x] Buffering göstergesi (spinner)
+- [x] Oynatma bittiğinde: dizi ise "Sonraki Bölüm" önerisi (10s countdown)
+- [x] Oynatma bittiğinde: film ise "Benzerleri" önerisi
+- [x] Keyboard shortcut'lar: Space (play/pause), F (fullscreen), ← (10s geri), → (10s ileri), M (mute), ↑/↓ (volume)
 
 ### 7.6 Watch Sayfası (`/watch/[contentId]`)
 - [ ] `src/app/(main)/watch/[contentId]/page.tsx` — Async params

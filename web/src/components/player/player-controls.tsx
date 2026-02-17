@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import type { RefObject } from 'react';
 
 import type Hls from 'hls.js';
@@ -22,13 +22,6 @@ interface PlayerControlsProps {
   hlsRef?: RefObject<Hls | null>;
 }
 
-interface SeekBarProps {
-  currentTime: number;
-  duration: number;
-  onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  ariaLabel: string;
-}
-
 function formatPlayerTime(seconds: number): string {
   if (!isFinite(seconds) || seconds < 0) return '0:00';
   const h = Math.floor(seconds / 3600);
@@ -40,7 +33,10 @@ function formatPlayerTime(seconds: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-function SeekBar({ currentTime, duration, onSeek, ariaLabel }: SeekBarProps) {
+function SeekBar({ currentTime, duration, onSeek, ariaLabel }: {
+  currentTime: number; duration: number;
+  onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void; ariaLabel: string;
+}) {
   const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
   return (
     <div className="relative mb-3 h-1">
@@ -65,9 +61,7 @@ function SeekBar({ currentTime, duration, onSeek, ariaLabel }: SeekBarProps) {
 
 export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControlsProps) {
   const t = useTranslations('player');
-  const [isVisible, setIsVisible] = useState(true);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  const showControls = usePlayerStore((s) => s.showControls);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const currentTime = usePlayerStore((s) => s.currentTime);
   const duration = usePlayerStore((s) => s.duration);
@@ -77,19 +71,6 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
   const setVolume = usePlayerStore((s) => s.setVolume);
   const setIsMuted = usePlayerStore((s) => s.setIsMuted);
   const setIsFullscreen = usePlayerStore((s) => s.setIsFullscreen);
-
-  const resetHideTimer = useCallback(() => {
-    setIsVisible(true);
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    hideTimerRef.current = setTimeout(() => setIsVisible(false), 3000);
-  }, []);
-
-  useEffect(() => {
-    resetHideTimer();
-    return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    };
-  }, [resetHideTimer]);
 
   useEffect(() => {
     const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -105,9 +86,7 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.currentTime = Number(e.target.value);
+    if (videoRef.current) videoRef.current.currentTime = Number(e.target.value);
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,28 +107,24 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
     setIsMuted(muted);
   };
 
-  const handleFullscreen = async () => {
+  const handleFullscreen = () => {
     const container = containerRef.current;
     if (!container) return;
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-    } else {
-      await container.requestFullscreen();
-    }
+    void (document.fullscreenElement ? document.exitFullscreen() : container.requestFullscreen());
   };
 
   return (
-    <div className="absolute inset-0" onMouseMove={resetHideTimer}>
+    <div className="absolute inset-0">
       <div
         className={cn(
           'absolute inset-0 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-300',
-          isVisible ? 'opacity-100' : 'opacity-0',
+          showControls ? 'opacity-100' : 'opacity-0',
         )}
       />
       <div
         className={cn(
           'absolute bottom-0 left-0 right-0 px-4 pb-3 transition-opacity duration-300',
-          isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none',
+          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none',
         )}
       >
         <SeekBar
@@ -175,11 +150,9 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
             aria-label={isMuted ? t('unmute') : t('mute')}
             className="rounded focus-visible:ring-2 focus-visible:ring-white"
           >
-            {isMuted || volume === 0 ? (
-              <VolumeX className="h-5 w-5" />
-            ) : (
-              <Volume2 className="h-5 w-5" />
-            )}
+            {isMuted || volume === 0
+              ? <VolumeX className="h-5 w-5" />
+              : <Volume2 className="h-5 w-5" />}
           </button>
           <input
             type="range"
@@ -193,15 +166,13 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
           />
           {hlsRef && <QualitySelector hlsRef={hlsRef} />}
           <button
-            onClick={() => void handleFullscreen()}
+            onClick={handleFullscreen}
             aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
             className="rounded focus-visible:ring-2 focus-visible:ring-white"
           >
-            {isFullscreen ? (
-              <Minimize className="h-5 w-5" />
-            ) : (
-              <Maximize className="h-5 w-5" />
-            )}
+            {isFullscreen
+              ? <Minimize className="h-5 w-5" />
+              : <Maximize className="h-5 w-5" />}
           </button>
         </div>
       </div>

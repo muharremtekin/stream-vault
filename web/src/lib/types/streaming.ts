@@ -36,3 +36,11 @@ export interface SaveProgressRequest {
 export interface ContinueWatchingResponse {
   items: WatchProgress[];
 }
+
+export interface NextEpisodeInfo {
+  id: string;
+  episodeNumber: number;
+  seasonNumber: number;
+  title: string;
+  thumbnailUrl?: string | null;
+}

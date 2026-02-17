@@ -218,7 +218,15 @@
     "quality": "Quality",
     "qualityAuto": "Auto",
     "qualitySelect": "Select quality",
-    "qualityUpgrade": "Upgrade"
+    "qualityUpgrade": "Upgrade",
+    "back": "Back",
+    "buffering": "Buffering...",
+    "upNext": "Up Next",
+    "nextEpisode": "Next Episode",
+    "playAgain": "Play Again",
+    "goBack": "Go Back",
+    "skipCountdown": "Playing in {seconds}s",
+    "cancelAutoPlay": "Cancel"
   },
   "api": {
     "networkError": "Network error. Please check your connection.",
