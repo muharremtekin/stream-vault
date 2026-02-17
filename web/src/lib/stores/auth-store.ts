@@ -42,7 +42,7 @@ export const useAuthStore = create<AuthState>()(
       ...initialState,
 
       setAuth: (user, accessToken, refreshToken) =>
-        set({ user, accessToken, refreshToken }),
+        set({ user, accessToken, refreshToken, subscriptionTier: user.role as SubscriptionTier }),
 
       setTokens: (accessToken, refreshToken) =>
         set({ accessToken, refreshToken }),

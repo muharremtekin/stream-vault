@@ -273,6 +273,10 @@ func buildHTTPRouter(cfg *config.Config, store storage.Storage, pub messaging.Pu
 	mux.Handle("GET /stream/{contentId}/{quality}/{segment}",
 		streamingMW(http.HandlerFunc(segmentH.ServeSegment)))
 
+	// Streaming info (consumed by frontend VideoPlayer)
+	infoH := handler.NewInfoHandler(store, redisClient, cfg.MinIO)
+	mux.HandleFunc("GET /api/stream/{contentId}/info", infoH.GetStreamingInfo)
+
 	// Progress
 	progressH := handler.NewProgressHandler(progressSvc)
 	mux.HandleFunc("GET /api/stream/continue-watching", progressH.ContinueWatching)

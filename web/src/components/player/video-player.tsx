@@ -11,6 +11,7 @@ import { useHlsPlayer } from '@/lib/hooks/use-hls-player';
 import { useKeyboardShortcuts } from '@/lib/hooks/use-keyboard-shortcuts';
 import { usePlayerStore } from '@/lib/stores/player-store';
 import { cn } from '@/lib/utils/cn';
+import { API_URL } from '@/lib/utils/constants';
 import { PlayerControls } from '@/components/player/player-controls';
 import { PlayerOverlay } from '@/components/player/player-overlay';
 import { ProgressTracker } from '@/components/player/progress-tracker';
@@ -78,8 +79,14 @@ export function VideoPlayer({
       enabled: !!contentId,
     });
 
-  const manifestUrl =
-    streamingInfo?.videoStatus === 'Ready' ? streamingInfo.manifestUrl : null;
+  // Backend returns a path (e.g. /stream/{id}/manifest.m3u8) — prefix with gateway URL
+  // so hls.js fetches from the API gateway, not the Next.js dev server.
+  const rawManifestUrl = streamingInfo?.videoStatus === 'Ready' ? streamingInfo.manifestUrl : null;
+  const manifestUrl = rawManifestUrl
+    ? rawManifestUrl.startsWith('http')
+      ? rawManifestUrl
+      : `${API_URL}${rawManifestUrl}`
+    : null;
 
   const { isReady, error: hlsError, hlsRef } = useHlsPlayer(internalRef, {
     manifestUrl,
