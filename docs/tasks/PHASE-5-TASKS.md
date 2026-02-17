@@ -313,12 +313,12 @@
 - [x] Kontroller 3 saniye hareketsizlikte gizlenir (mouse move ile gösterilir)
 
 ### 7.3 Kalite Seçici
-- [ ] `src/components/player/quality-selector.tsx`
-- [ ] "Otomatik" seçenek (ABR — `hls.currentLevel = -1`)
-- [ ] Manuel kalite seçenekleri (360p, 720p, 1080p, 4K)
-- [ ] Tier bazlı kısıtlama: Basic → max 720p, Standard → max 1080p, Premium → 4K
-- [ ] Yetkisi olmayan kalite seviyeleri `disabled` göster
-- [ ] `hls.currentLevel = index` ile manuel seçim
+- [x] `src/components/player/quality-selector.tsx`
+- [x] "Otomatik" seçenek (ABR — `hls.currentLevel = -1`)
+- [x] Manuel kalite seçenekleri (360p, 720p, 1080p, 4K)
+- [x] Tier bazlı kısıtlama: Basic → max 720p, Standard → max 1080p, Premium → 4K
+- [x] Yetkisi olmayan kalite seviyeleri `disabled` göster
+- [x] `hls.currentLevel = index` ile manuel seçim
 
 ### 7.4 İzleme Pozisyonu Takibi
 - [ ] `src/components/player/progress-tracker.tsx`

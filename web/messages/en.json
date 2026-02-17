@@ -214,7 +214,11 @@
     "fullscreen": "Enter full screen",
     "exitFullscreen": "Exit full screen",
     "seekBar": "Seek",
-    "volume": "Volume"
+    "volume": "Volume",
+    "quality": "Quality",
+    "qualityAuto": "Auto",
+    "qualitySelect": "Select quality",
+    "qualityUpgrade": "Upgrade"
   },
   "api": {
     "networkError": "Network error. Please check your connection.",

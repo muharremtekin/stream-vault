@@ -214,7 +214,11 @@
     "fullscreen": "Tam Ekrana Geç",
     "exitFullscreen": "Tam Ekrandan Çık",
     "seekBar": "İleri/Geri Al",
-    "volume": "Ses"
+    "volume": "Ses",
+    "quality": "Kalite",
+    "qualityAuto": "Otomatik",
+    "qualitySelect": "Kalite seç",
+    "qualityUpgrade": "Yükselt"
   },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",

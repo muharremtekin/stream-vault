@@ -3,15 +3,23 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
+import type Hls from 'hls.js';
 import { Maximize, Minimize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 
 import { usePlayerStore } from '@/lib/stores/player-store';
 import { cn } from '@/lib/utils/cn';
 
+const QualitySelector = dynamic(
+  () => import('@/components/player/quality-selector').then((m) => m.QualitySelector),
+  { ssr: false },
+);
+
 interface PlayerControlsProps {
   videoRef: RefObject<HTMLVideoElement | null>;
   containerRef: RefObject<HTMLDivElement | null>;
+  hlsRef?: RefObject<Hls | null>;
 }
 
 interface SeekBarProps {
@@ -55,7 +63,7 @@ function SeekBar({ currentTime, duration, onSeek, ariaLabel }: SeekBarProps) {
   );
 }
 
-export function PlayerControls({ videoRef, containerRef }: PlayerControlsProps) {
+export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControlsProps) {
   const t = useTranslations('player');
   const [isVisible, setIsVisible] = useState(true);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -183,6 +191,7 @@ export function PlayerControls({ videoRef, containerRef }: PlayerControlsProps) 
             className="w-20 cursor-pointer accent-white"
             aria-label={t('volume')}
           />
+          {hlsRef && <QualitySelector hlsRef={hlsRef} />}
           <button
             onClick={() => void handleFullscreen()}
             aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}

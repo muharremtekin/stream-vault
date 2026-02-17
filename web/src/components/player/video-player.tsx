@@ -63,7 +63,7 @@ export function VideoPlayer({
   const manifestUrl =
     streamingInfo?.videoStatus === 'Ready' ? streamingInfo.manifestUrl : null;
 
-  const { isReady, error: hlsError } = useHlsPlayer(internalRef, {
+  const { isReady, error: hlsError, hlsRef } = useHlsPlayer(internalRef, {
     manifestUrl,
     isEnabled: !!manifestUrl,
   });
@@ -163,7 +163,7 @@ export function VideoPlayer({
         </div>
       )}
       {isReady && (
-        <PlayerControls videoRef={internalRef} containerRef={containerRef} />
+        <PlayerControls videoRef={internalRef} containerRef={containerRef} hlsRef={hlsRef} />
       )}
     </div>
   );
