@@ -199,6 +199,15 @@
     "loadingMore": "Yükleniyor...",
     "results": "{count} içerik"
   },
+  "player": {
+    "loading": "Video yükleniyor...",
+    "error": "Video yüklenemedi",
+    "encoding": "Video işleniyor, lütfen daha sonra tekrar deneyin",
+    "notReady": "Video henüz hazır değil",
+    "unsupported": "Tarayıcınız video oynatmayı desteklemiyor",
+    "videoLabel": "Video oynatıcı",
+    "retry": "Tekrar Dene"
+  },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
     "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.",

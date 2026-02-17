@@ -199,6 +199,15 @@
     "loadingMore": "Loading more...",
     "results": "{count, plural, one {# title} other {# titles}}"
   },
+  "player": {
+    "loading": "Loading video...",
+    "error": "Failed to load video",
+    "encoding": "Video is being processed, please check back later",
+    "notReady": "Video is not available yet",
+    "unsupported": "Your browser does not support video playback",
+    "videoLabel": "Video player",
+    "retry": "Try Again"
+  },
   "api": {
     "networkError": "Network error. Please check your connection.",
     "timeout": "Request timed out. Please try again.",

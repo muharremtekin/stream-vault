@@ -295,13 +295,13 @@
 ## 7. Video Player
 
 ### 7.1 Ana Player Bileşeni
-- [ ] `src/components/player/video-player.tsx` — hls.js wrapper
-- [ ] hls.js instance oluşturma ve video element'e attach
-- [ ] HLS manifest yükleme (`GET /stream/{id}/manifest.m3u8`)
-- [ ] Adaptive bitrate otomatik kalite seçimi
-- [ ] Error handling (network, media, fatal/non-fatal)
-- [ ] Cleanup: unmount'ta `hls.destroy()`
-- [ ] Native fallback: Safari'de HLS natively desteklendiğinde `<video>` src doğrudan kullan
+- [x] `src/components/player/video-player.tsx` — hls.js wrapper
+- [x] hls.js instance oluşturma ve video element'e attach
+- [x] HLS manifest yükleme (`GET /stream/{id}/manifest.m3u8`)
+- [x] Adaptive bitrate otomatik kalite seçimi
+- [x] Error handling (network, media, fatal/non-fatal)
+- [x] Cleanup: unmount'ta `hls.destroy()`
+- [x] Native fallback: Safari'de HLS natively desteklendiğinde `<video>` src doğrudan kullan
 
 ### 7.2 Player Kontrolleri
 - [ ] `src/components/player/player-controls.tsx`
