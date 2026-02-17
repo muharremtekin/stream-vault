@@ -228,66 +228,67 @@
 ## 6. Browse & İçerik Sayfaları
 
 ### 6.1 Ana Sayfa (`/browse`)
-- [ ] `src/app/(main)/browse/page.tsx`
-- [ ] `src/components/browse/hero-banner.tsx` — Rastgele öne çıkan içerik (büyük banner)
-- [ ] Banner: poster arka plan, gradient overlay, başlık, rating, yıl, süre, açıklama
-- [ ] Banner butonları: "Oynat", "Listem", "Detay"
-- [ ] `src/components/browse/content-row.tsx` — Yatay kaydırmalı içerik sırası (ok butonları ile scroll)
-- [ ] Section başlığı (ör: "Sizin İçin Seçtiklerimiz", "Türkiye'de Trend")
-- [ ] Sağa/sola kaydırma ok butonları
-- [ ] "Kaldığın Yerden Devam Et" sırası — progress bar'lı kartlar
-- [ ] "Sizin İçin Seçtiklerimiz" sırası
-- [ ] "Trend" sırası (1-10 numaralı)
-- [ ] İzleme geçmişine dayalı öneri sıraları
+- [x] `src/app/(main)/browse/page.tsx`
+- [x] `src/components/browse/hero-banner.tsx` — Rastgele öne çıkan içerik (büyük banner)
+- [x] Banner: poster arka plan, gradient overlay, başlık, rating, yıl, süre, açıklama
+- [x] Banner butonları: "Oynat", "Listem", "Detay"
+- [x] `src/components/browse/content-row.tsx` — Yatay kaydırmalı içerik sırası (ok butonları ile scroll)
+- [x] Section başlığı (ör: "Sizin İçin Seçtiklerimiz", "Türkiye'de Trend")
+- [x] Sağa/sola kaydırma ok butonları
+- [x] "Kaldığın Yerden Devam Et" sırası — progress bar'lı kartlar
+- [x] "Sizin İçin Seçtiklerimiz" sırası
+- [x] "Trend" sırası (1-10 numaralı)
+- [x] İzleme geçmişine dayalı öneri sıraları
 - [ ] Tür bazlı sıralar (Bilim Kurgu, Dram, Aksiyon vb.)
-- [ ] "Yeni Eklenenler" sırası
-- [ ] API: `GET /api/recommendations/home`, `GET /api/stream/continue-watching`, `GET /api/search/trending?window=week`
+- [x] "Yeni Eklenenler" sırası
+- [x] API: `GET /api/recommendations/home`, `GET /api/stream/continue-watching`, `GET /api/search/trending?window=week`
 
 ### 6.2 Content Card
-- [ ] `src/components/browse/content-card.tsx` — Poster + başlık kartı
-- [ ] Poster image (fallback placeholder)
-- [ ] Başlık alt yazısı
-- [ ] `src/components/browse/content-card-hover.tsx` — Hover detay kartı
-- [ ] 300ms delay ile hover aktifleşir
-- [ ] Kart `scale(1.3)` ile büyür, `z-index` ile üste çıkar
-- [ ] Poster (zoom), başlık, rating, yıl, türler, süre
-- [ ] Aksiyon butonları: Oynat, Listeye Ekle, Beğen, Detay
-- [ ] Viewport kenarında sola/sağa kayma (taşma önleme)
-- [ ] `src/components/browse/genre-tags.tsx` — Tür etiketleri
-- [ ] `src/components/browse/trending-badge.tsx` — "#1 Trend" rozeti
+- [x] `src/components/browse/content-card.tsx` — Poster + başlık kartı
+- [x] Poster image (fallback placeholder)
+- [x] Başlık alt yazısı
+- [x] `src/components/browse/content-card-hover.tsx` — Hover detay kartı
+- [x] 300ms delay ile hover aktifleşir
+- [x] Kart `scale(1.3)` ile büyür, `z-index` ile üste çıkar
+- [x] Poster (zoom), başlık, rating, yıl, türler, süre
+- [x] Aksiyon butonları: Oynat, Listeye Ekle, Beğen, Detay
+- [x] Viewport kenarında sola/sağa kayma (taşma önleme)
+- [x] `src/components/browse/genre-tags.tsx` — Tür etiketleri
+- [x] `src/components/browse/trending-badge.tsx` — "#1 Trend" rozeti
 
 ### 6.3 Film Detay (`/movie/[id]`)
-- [ ] `src/app/(main)/movie/[id]/page.tsx` — Async params: `const { id } = await props.params`
-- [ ] `src/components/content/content-hero.tsx` — Banner arka plan + gradient + bilgi
-- [ ] Başlık, rating (oy sayısı), yıl, yaş sınıfı, süre
-- [ ] "Oynat" ve "Listem" butonları
-- [ ] `src/components/content/content-info.tsx` — Açıklama, yönetmen, oyuncular, türler
-- [ ] `src/components/content/rating-stars.tsx` — 5 yıldız puanlama (tıklanabilir)
-- [ ] `src/components/content/maturity-badge.tsx` — Yaş sınıfı rozeti (PG-13, R vb.)
-- [ ] `src/components/content/add-to-list-button.tsx` — Watchlist toggle butonu (ekle/çıkar)
-- [ ] `src/components/content/similar-content.tsx` — Benzerleri satırı
-- [ ] API: `GET /api/catalog/movies/{id}`, `GET /api/catalog/movies/{id}/streaming-info`, `GET /api/recommendations/similar/{id}`, `GET /api/stream/{id}/progress`, `POST /api/users/me/ratings`, `POST /api/users/me/profiles/{pid}/watchlist`
+- [x] `src/app/(main)/movie/[id]/page.tsx` — Async params: `const { id } = await props.params`
+- [x] `src/components/content/content-hero.tsx` — Banner arka plan + gradient + bilgi
+- [x] Başlık, rating (oy sayısı), yıl, yaş sınıfı, süre
+- [x] "Oynat" ve "Listem" butonları
+- [x] `src/components/content/content-info.tsx` — Açıklama, yönetmen, oyuncular, türler
+- [x] `src/components/content/rating-stars.tsx` — 5 yıldız puanlama (görsel)
+- [x] `src/components/content/maturity-badge.tsx` — Yaş sınıfı rozeti (PG-13, R vb.)
+- [x] `src/components/content/add-to-list-button.tsx` — Watchlist toggle butonu (ekle/çıkar)
+- [x] `src/components/content/similar-content.tsx` — Benzerleri satırı
+- [x] API: `GET /api/catalog/movies/{id}`, `GET /api/recommendations/similar/{id}`, `POST /api/users/me/profiles/{pid}/watchlist`
 
 ### 6.4 Dizi Detay (`/series/[id]`)
-- [ ] `src/app/(main)/series/[id]/page.tsx` — Async params
-- [ ] Film detayla aynı hero + info bileşenleri
-- [ ] `src/components/content/season-selector.tsx` — Sezon seçici (tab veya dropdown)
-- [ ] `src/components/content/episode-list.tsx` — Bölüm listesi (numara, başlık, süre, açıklama, oynat butonu)
+- [x] `src/app/(main)/series/[id]/page.tsx` — Async params
+- [x] Film detayla aynı hero + info bileşenleri
+- [x] `src/components/content/season-selector.tsx` — Sezon seçici (tab)
+- [x] `src/components/content/episode-list.tsx` — Bölüm listesi (numara, başlık, süre, açıklama, oynat butonu)
+- [x] `src/components/content/series-episodes-section.tsx` — Sezon/bölüm state yönetimi
 - [ ] Her bölümde izleme progress'i göster (izlenmişse)
-- [ ] API: `GET /api/catalog/series/{id}`, `GET /api/recommendations/similar/{id}`
+- [x] API: `GET /api/catalog/series/{id}`, `GET /api/recommendations/similar/{id}`
 
 ### 6.5 Watchlist (`/my-list`)
-- [ ] `src/app/(main)/my-list/page.tsx`
-- [ ] Grid görünümünde content card'lar
-- [ ] "Listeden Çıkar" hover aksiyonu
-- [ ] Liste boşsa empty state ("Henüz bir şey eklemediniz")
-- [ ] API: `GET /api/users/me/profiles/{pid}/watchlist`, `DELETE /api/users/me/profiles/{pid}/watchlist/{id}`
+- [x] `src/app/(main)/my-list/page.tsx`
+- [x] Grid görünümünde content card'lar
+- [x] "Listeden Çıkar" hover aksiyonu
+- [x] Liste boşsa empty state ("Henüz bir şey eklemediniz")
+- [x] API: `GET /api/users/me/profiles/{pid}/watchlist`, `DELETE /api/users/me/profiles/{pid}/watchlist/{id}`
 
 ### 6.6 Genre Sayfası (`/genre/[slug]`)
-- [ ] `src/app/(main)/genre/[slug]/page.tsx` — Async params
-- [ ] Tür başlığı + content card grid
-- [ ] Sayfalama (load more veya infinite scroll)
-- [ ] API: `GET /api/catalog/genres/{slug}/content`
+- [x] `src/app/(main)/genre/[slug]/page.tsx` — Async params
+- [x] Tür başlığı + content card grid
+- [x] Sayfalama (load more veya infinite scroll)
+- [x] API: `GET /api/catalog/genres/{slug}/content`
 
 ---
 

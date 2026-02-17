@@ -87,7 +87,15 @@
     "genres": "Türler",
     "similar": "Benzerleri",
     "nextEpisode": "Sonraki Bölüm",
-    "nextEpisodeIn": "Sonraki bölüm {seconds}s içinde"
+    "nextEpisodeIn": "Sonraki bölüm {seconds}s içinde",
+    "like": "Beğen",
+    "becauseYouWatched": "İzlediğin İçin",
+    "featured": "Öne Çıkan",
+    "noContent": "İçerik bulunamadı",
+    "scrollLeft": "Sola kaydır",
+    "scrollRight": "Sağa kaydır",
+    "emptyListDescription": "Listenize eklediğiniz film ve diziler burada görünecek.",
+    "browseContent": "İçeriklere Göz At"
   },
   "layout": {
     "navbar": {
@@ -172,6 +180,24 @@
     "readyToWatch": "İzlemeye hazır mısın?",
     "readyToWatchDesc": "Hesap oluşturmak veya giriş yapmak için e-postanızı girin.",
     "emailPlaceholder": "E-posta adresi"
+  },
+  "content": {
+    "noVideo": "Video mevcut değil",
+    "creator": "Yaratıcı",
+    "selectSeason": "Sezon Seç",
+    "noEpisodes": "Bölüm bulunamadı",
+    "ongoing": "Devam Ediyor",
+    "endedYear": "Sona Erdi",
+    "totalRatings": "{count} değerlendirme",
+    "episodeCount": "{count} bölüm",
+    "watchNow": "Şimdi İzle",
+    "about": "Hakkında"
+  },
+  "genre": {
+    "noContent": "Bu türde içerik bulunamadı",
+    "loadMore": "Daha Fazla Yükle",
+    "loadingMore": "Yükleniyor...",
+    "results": "{count} içerik"
   },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",

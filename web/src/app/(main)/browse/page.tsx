@@ -1,14 +1,13 @@
-import { getTranslations } from 'next-intl/server';
+import BrowseSections from '@/components/browse/browse-sections';
+import HeroBannerSection from '@/components/browse/hero-banner';
 
-export default async function BrowsePage() {
-  const t = await getTranslations('browse');
-
+export default function BrowsePage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-foreground">{t('home')}</h1>
-        <p className="mt-2 text-muted-foreground">{t('trending')}</p>
+    <main className="min-h-screen bg-background">
+      <HeroBannerSection />
+      <div className="relative z-10 -mt-16 pb-16">
+        <BrowseSections />
       </div>
-    </div>
+    </main>
   );
 }

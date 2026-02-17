@@ -87,7 +87,15 @@
     "genres": "Genres",
     "similar": "More Like This",
     "nextEpisode": "Next Episode",
-    "nextEpisodeIn": "Next episode in {seconds}s"
+    "nextEpisodeIn": "Next episode in {seconds}s",
+    "like": "Like",
+    "becauseYouWatched": "Because You Watched",
+    "featured": "Featured",
+    "noContent": "No content available",
+    "scrollLeft": "Scroll left",
+    "scrollRight": "Scroll right",
+    "emptyListDescription": "Movies and shows you add to your list will appear here.",
+    "browseContent": "Browse Content"
   },
   "layout": {
     "navbar": {
@@ -172,6 +180,24 @@
     "readyToWatch": "Ready to watch?",
     "readyToWatchDesc": "Enter your email to create or sign in to your account.",
     "emailPlaceholder": "Email address"
+  },
+  "content": {
+    "noVideo": "Video unavailable",
+    "creator": "Creator",
+    "selectSeason": "Select Season",
+    "noEpisodes": "No episodes available",
+    "ongoing": "Ongoing",
+    "endedYear": "Ended",
+    "totalRatings": "{count} ratings",
+    "episodeCount": "{count} ep",
+    "watchNow": "Watch Now",
+    "about": "About"
+  },
+  "genre": {
+    "noContent": "No content found in this genre",
+    "loadMore": "Load More",
+    "loadingMore": "Loading more...",
+    "results": "{count, plural, one {# title} other {# titles}}"
   },
   "api": {
     "networkError": "Network error. Please check your connection.",
