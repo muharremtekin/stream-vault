@@ -335,46 +335,46 @@
 - [x] Keyboard shortcut'lar: Space (play/pause), F (fullscreen), ← (10s geri), → (10s ileri), M (mute), ↑/↓ (volume)
 
 ### 7.6 Watch Sayfası (`/watch/[contentId]`)
-- [ ] `src/app/(main)/watch/[contentId]/page.tsx` — Async params
-- [ ] Tam ekran player layout (navbar gizli)
-- [ ] Player bileşenlerini birleştir (video-player + controls + quality + progress + overlay)
-- [ ] API: `GET /stream/{id}/manifest.m3u8`, `GET /api/stream/{id}/progress`, `POST /api/stream/{id}/progress`
+- [x] `src/app/(main)/watch/[contentId]/page.tsx` — Async params
+- [x] Tam ekran player layout (navbar gizli)
+- [x] Player bileşenlerini birleştir (video-player + controls + quality + progress + overlay)
+- [x] API: `GET /stream/{id}/manifest.m3u8`, `GET /api/stream/{id}/progress`, `POST /api/stream/{id}/progress`
 
 ---
 
 ## 8. Arama
 
 ### 8.1 Search Bar
-- [ ] `src/components/search/search-bar.tsx` — Navbar'da arama ikonu + genişleyen input
-- [ ] İkon tıklandığında input açılır (animasyonlu)
-- [ ] 300ms debounce ile autocomplete tetiklenir
-- [ ] 2+ karakter sonrasında öneri listesi göster
-- [ ] Enter'a basınca `/search?q=...` sayfasına yönlendir
+- [x] `src/components/search/search-bar.tsx` — Navbar'da arama ikonu + genişleyen input
+- [x] İkon tıklandığında input açılır (animasyonlu)
+- [x] 300ms debounce ile autocomplete tetiklenir
+- [x] 2+ karakter sonrasında öneri listesi göster
+- [x] Enter'a basınca `/search?q=...` sayfasına yönlendir
 
 ### 8.2 Autocomplete
-- [ ] Autocomplete dropdown (search bar altında)
-- [ ] Film/dizi ikonu + başlık + yıl
-- [ ] Tıklandığında ilgili detay sayfasına git
-- [ ] API: `GET /api/search/autocomplete?q=...`
+- [x] Autocomplete dropdown (search bar altında)
+- [x] Film/dizi ikonu + başlık + yıl
+- [x] Tıklandığında ilgili detay sayfasına git
+- [x] API: `GET /api/search/autocomplete?q=...`
 
 ### 8.3 Arama Sonuçları Sayfası (`/search`)
-- [ ] `src/app/(main)/search/page.tsx` — Async searchParams: `const query = (await props.searchParams).q`
-- [ ] `src/components/search/search-results.tsx` — Sonuç grid'i (content card'lar)
-- [ ] Sonuç sayısı + arama süresi gösterimi ("15 sonuç, 12ms")
-- [ ] `src/components/search/search-highlight.tsx` — Arama terimini vurgulu göster
-- [ ] Boş sonuç state'i ("Sonuç bulunamadı")
-- [ ] Boş arama → trending göster
+- [x] `src/app/(main)/search/page.tsx` — Async searchParams: `const query = (await props.searchParams).q`
+- [x] `src/components/search/search-results.tsx` — Sonuç grid'i (content card'lar)
+- [x] Sonuç sayısı + arama süresi gösterimi ("15 sonuç, 12ms")
+- [x] `src/components/search/search-highlight.tsx` — Arama terimini vurgulu göster
+- [x] Boş sonuç state'i ("Sonuç bulunamadı")
+- [x] Boş arama → trending göster
 
 ### 8.4 Facet Filtreleri
-- [ ] `src/components/search/search-filters.tsx`
-- [ ] Tür filtresi (checkbox grubu + sonuç sayıları)
-- [ ] Yıl filtresi (aralık seçimi: 2020+, 2015-2020, 2010-2015, Daha Eski)
-- [ ] Rating filtresi (minimum: 7+, 8+, 9+)
-- [ ] Tip filtresi (Filmler, Diziler, Tümü)
-- [ ] Sıralama (İlgililik, Puan, Yıl, İsim)
-- [ ] Filtre değişikliğinde URL parametreleri güncelle
-- [ ] Sayfalama (sayfa numaraları veya load more)
-- [ ] API: `GET /api/search?q=...&genres=...&yearFrom=...&yearTo=...&minRating=...&type=...&sort=...&page=...`
+- [x] `src/components/search/search-filters.tsx`
+- [x] Tür filtresi (checkbox grubu + sonuç sayıları)
+- [x] Yıl filtresi (aralık seçimi: 2020+, 2015-2020, 2010-2015, Daha Eski)
+- [x] Rating filtresi (minimum: 7+, 8+, 9+)
+- [x] Tip filtresi (Filmler, Diziler, Tümü)
+- [x] Sıralama (İlgililik, Puan, Yıl, İsim)
+- [x] Filtre değişikliğinde URL parametreleri güncelle
+- [x] Sayfalama (sayfa numaraları veya load more)
+- [x] API: `GET /api/search?q=...&genres=...&yearFrom=...&yearTo=...&minRating=...&type=...&sort=...&page=...`
 
 ---
 
