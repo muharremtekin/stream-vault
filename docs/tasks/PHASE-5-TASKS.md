@@ -414,33 +414,33 @@
 ## 10. Bildirimler
 
 ### 10.1 WebSocket Provider
-- [ ] `src/components/notification/notification-provider.tsx`
-- [ ] Kullanıcı login olduğunda WebSocket bağlantısı aç (`ws://.../ws/notifications?token=...`)
-- [ ] Gelen mesajları notification store'a ekle
-- [ ] Toast göster (Sonner ile — bildirim tipi bazlı ikon)
-- [ ] Bağlantı koparsa exponential backoff ile reconnect (1s → 2s → 4s → 8s → max 30s)
-- [ ] Heartbeat: her 30 saniyede ping, 10s içinde pong gelmezse reconnect
-- [ ] Logout'ta bağlantıyı kapat
-- [ ] Provider'ı `(main)/layout.tsx`'e sar
+- [x] `src/components/notification/notification-provider.tsx`
+- [x] Kullanıcı login olduğunda WebSocket bağlantısı aç (`ws://.../ws/notifications?token=...`)
+- [x] Gelen mesajları notification store'a ekle
+- [x] Toast göster (Sonner ile — bildirim tipi bazlı ikon)
+- [x] Bağlantı koparsa exponential backoff ile reconnect (1s → 2s → 4s → 8s → max 30s)
+- [x] Heartbeat: her 30 saniyede ping, 10s içinde pong gelmezse reconnect
+- [x] Logout'ta bağlantıyı kapat
+- [x] Provider'ı `(main)/layout.tsx`'e sar
 
 ### 10.2 Bildirim Bell & Dropdown
-- [ ] Navbar'da bildirim ikonu
-- [ ] Unread count badge (kırmızı daire + sayı)
-- [ ] Tıklandığında dropdown açılır (son 5-10 bildirim)
-- [ ] "Tümünü Okundu İşaretle" butonu
-- [ ] "Tüm Bildirimleri Gör" linki → `/account/notifications`
+- [x] Navbar'da bildirim ikonu
+- [x] Unread count badge (kırmızı daire + sayı)
+- [x] Tıklandığında dropdown açılır (son 5-10 bildirim)
+- [x] "Tümünü Okundu İşaretle" butonu
+- [x] "Tüm Bildirimleri Gör" linki → `/account/notifications`
 
 ### 10.3 Bildirim Listesi Sayfası
-- [ ] `src/app/(main)/account/notifications/page.tsx`
-- [ ] `src/components/notification/notification-list.tsx` — Sayfalı bildirim listesi
-- [ ] `src/components/notification/notification-item.tsx` — Tek bildirim kartı (ikon, mesaj, tarih, okundu/okunmadı)
-- [ ] Tıklandığında okundu işaretle + ilgili sayfaya yönlendir
-- [ ] API: `GET /api/notifications?unreadOnly=...`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all`
+- [x] `src/app/(main)/account/notifications/page.tsx`
+- [x] `src/components/notification/notification-list.tsx` — Sayfalı bildirim listesi
+- [x] `src/components/notification/notification-item.tsx` — Tek bildirim kartı (ikon, mesaj, tarih, okundu/okunmadı)
+- [x] Tıklandığında okundu işaretle + ilgili sayfaya yönlendir
+- [x] API: `GET /api/notifications?unreadOnly=...`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all`
 
 ### 10.4 Bildirim Tercihleri
-- [ ] `src/components/notification/notification-prefs.tsx` — Tercih ayarları formu
-- [ ] Bildirim türleri (yeni içerik, öneri, abonelik vb.) için toggle'lar
-- [ ] API: `GET /api/notifications/preferences`, `PUT /api/notifications/preferences`
+- [x] `src/components/notification/notification-prefs.tsx` — Tercih ayarları formu
+- [x] Bildirim türleri (yeni içerik, öneri, abonelik vb.) için toggle'lar
+- [x] API: `GET /api/notifications/preferences`, `PUT /api/notifications/preferences`
 
 ---
 

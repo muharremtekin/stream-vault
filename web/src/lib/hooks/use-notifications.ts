@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 
@@ -14,9 +14,14 @@ import { useAuthStore } from '@/lib/stores/auth-store';
 import { WS_URL } from '@/lib/utils/constants';
 import type { Notification } from '@/lib/types/notification';
 
-const WS_RECONNECT_DELAY = 5_000;
+const MAX_RECONNECT_DELAY = 30_000;
+const BASE_RECONNECT_DELAY = 1_000;
 
-export function useNotifications() {
+interface UseNotificationsOptions {
+  onNewNotification?: (notification: Notification) => void;
+}
+
+export function useNotifications(options?: UseNotificationsOptions) {
   const accessToken = useAuthStore((s) => s.accessToken);
   const setNotifications = useNotificationStore((s) => s.setNotifications);
   const addNotification = useNotificationStore((s) => s.addNotification);
@@ -27,8 +32,15 @@ export function useNotifications() {
   const notifications = useNotificationStore((s) => s.notifications);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const wsConnected = useNotificationStore((s) => s.wsConnected);
+
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const onNewNotificationRef = useRef(options?.onNewNotification);
+
+  useEffect(() => {
+    onNewNotificationRef.current = options?.onNewNotification;
+  }, [options?.onNewNotification]);
 
   const notificationsQuery = useQuery({
     queryKey: ['notifications', 'list'],
@@ -37,7 +49,6 @@ export function useNotifications() {
     enabled: !!accessToken,
   });
 
-  // Sync fetched data to store
   useEffect(() => {
     if (notificationsQuery.data) {
       setNotifications(notificationsQuery.data.items);
@@ -45,11 +56,18 @@ export function useNotifications() {
     }
   }, [notificationsQuery.data, setNotifications, setUnreadCount]);
 
-  // WebSocket connection managed entirely inside useEffect
   useEffect(() => {
     if (!accessToken) return;
 
     let isCancelled = false;
+
+    function getReconnectDelay(): number {
+      const delay = Math.min(
+        BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttemptRef.current),
+        MAX_RECONNECT_DELAY
+      );
+      return delay;
+    }
 
     function connect() {
       if (isCancelled) return;
@@ -61,7 +79,10 @@ export function useNotifications() {
       wsRef.current = ws;
 
       ws.onopen = () => {
-        if (!isCancelled) setWsConnected(true);
+        if (!isCancelled) {
+          setWsConnected(true);
+          reconnectAttemptRef.current = 0;
+        }
       };
 
       ws.onmessage = (event: MessageEvent) => {
@@ -74,6 +95,7 @@ export function useNotifications() {
           setUnreadCount(
             useNotificationStore.getState().unreadCount + 1
           );
+          onNewNotificationRef.current?.(notification);
         } catch {
           // Ignore malformed messages
         }
@@ -82,7 +104,9 @@ export function useNotifications() {
       ws.onclose = () => {
         if (!isCancelled) {
           setWsConnected(false);
-          reconnectRef.current = setTimeout(connect, WS_RECONNECT_DELAY);
+          const delay = getReconnectDelay();
+          reconnectAttemptRef.current += 1;
+          reconnectRef.current = setTimeout(connect, delay);
         }
       };
 
@@ -98,18 +122,18 @@ export function useNotifications() {
     };
   }, [accessToken, setWsConnected, addNotification, setUnreadCount]);
 
-  const markAsRead = async (id: string) => {
+  const markAsRead = useCallback(async (id: string) => {
     await markAsReadApi(id);
     markAsReadStore(id);
     setUnreadCount(
       Math.max(0, useNotificationStore.getState().unreadCount - 1)
     );
-  };
+  }, [markAsReadStore, setUnreadCount]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     await markAllAsReadApi();
     markAllAsReadStore();
-  };
+  }, [markAllAsReadStore]);
 
   return {
     notifications,

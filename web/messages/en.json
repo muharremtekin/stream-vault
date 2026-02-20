@@ -338,6 +338,32 @@
       "noInvoicesDesc": "Your invoice history will appear here after your first payment"
     }
   },
+  "account": {
+    "pageTitle": "Account",
+    "email": "Email",
+    "subscriptionTier": "Subscription Tier",
+    "noSubscription": "No active subscription",
+    "subscribeCta": "Choose a Plan",
+    "currentPlan": "Current Plan",
+    "sections": {
+      "profiles": "Profiles",
+      "profilesDesc": "Manage who watches on your account",
+      "subscription": "Subscription",
+      "subscriptionDesc": "Manage your plan and billing",
+      "notifications": "Notifications",
+      "notificationsDesc": "Configure your notification preferences"
+    },
+    "profiles": {
+      "pageTitle": "Manage Profiles",
+      "editProfile": "Edit Profile",
+      "deleteProfile": "Delete Profile",
+      "deleteConfirmTitle": "Delete Profile",
+      "deleteConfirmMessage": "Are you sure you want to delete the profile \"{name}\"? This action cannot be undone.",
+      "profileUpdated": "Profile updated successfully",
+      "profileDeleted": "Profile deleted",
+      "activeProfile": "Active"
+    }
+  },
   "api": {
     "networkError": "Network error. Please check your connection.",
     "timeout": "Request timed out. Please try again.",

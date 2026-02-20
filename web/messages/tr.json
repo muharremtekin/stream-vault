@@ -338,6 +338,32 @@
       "noInvoicesDesc": "İlk ödemenizden sonra fatura geçmişiniz burada görünecektir"
     }
   },
+  "account": {
+    "pageTitle": "Hesap",
+    "email": "E-posta",
+    "subscriptionTier": "Abonelik Seviyesi",
+    "noSubscription": "Aktif abonelik yok",
+    "subscribeCta": "Plan Seç",
+    "currentPlan": "Mevcut Plan",
+    "sections": {
+      "profiles": "Profiller",
+      "profilesDesc": "Hesabınızda kimlerin izleyeceğini yönetin",
+      "subscription": "Abonelik",
+      "subscriptionDesc": "Planınızı ve faturanızı yönetin",
+      "notifications": "Bildirimler",
+      "notificationsDesc": "Bildirim tercihlerinizi yapılandırın"
+    },
+    "profiles": {
+      "pageTitle": "Profilleri Yönet",
+      "editProfile": "Profili Düzenle",
+      "deleteProfile": "Profili Sil",
+      "deleteConfirmTitle": "Profili Sil",
+      "deleteConfirmMessage": "\"{name}\" profilini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+      "profileUpdated": "Profil başarıyla güncellendi",
+      "profileDeleted": "Profil silindi",
+      "activeProfile": "Aktif"
+    }
+  },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
     "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.",
