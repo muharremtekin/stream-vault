@@ -381,33 +381,33 @@
 ## 9. Abonelik Yönetimi
 
 ### 9.1 Abonelik Sayfası (`/account/subscription`)
-- [ ] `src/app/(main)/account/subscription/page.tsx`
-- [ ] `src/components/subscription/subscription-status.tsx` — Aktif abonelik kartı (plan adı, fiyat, durum, yenileme tarihi, özellikler)
-- [ ] "Plan Değiştir" ve "İptal Et" butonları
+- [x] `src/app/(main)/account/subscription/page.tsx`
+- [x] `src/components/subscription/subscription-status.tsx` — Aktif abonelik kartı (plan adı, fiyat, durum, yenileme tarihi, özellikler)
+- [x] "Plan Değiştir" ve "İptal Et" butonları
 
 ### 9.2 Plan Kartları
-- [ ] `src/components/subscription/plan-cards.tsx` — 3 plan kartı (Basic, Standard, Premium)
-- [ ] Her kart: plan adı, aylık fiyat, özellik listesi (kalite, ekran sayısı, indirme vb.)
-- [ ] Mevcut plan vurgulanmış ("Mevcut Plan" badge)
-- [ ] Upgrade/Downgrade butonları
-- [ ] API: `GET /api/plans`
+- [x] `src/components/subscription/plan-cards.tsx` — 3 plan kartı (Basic, Standard, Premium)
+- [x] Her kart: plan adı, aylık fiyat, özellik listesi (kalite, ekran sayısı, indirme vb.)
+- [x] Mevcut plan vurgulanmış ("Mevcut Plan" badge)
+- [x] Upgrade/Downgrade butonları
+- [x] API: `GET /api/plans`
 
 ### 9.3 Ödeme Formu
-- [ ] `src/components/subscription/payment-form.tsx` — Mock kart bilgisi formu
-- [ ] Kart numarası, son kullanma, CVV input'ları (Zod validasyon)
-- [ ] "Ödemeyi Onayla" butonu
-- [ ] Başarılı → abonelik durumu güncelle
-- [ ] API: `POST /api/subscriptions`
+- [x] `src/components/subscription/payment-form.tsx` — Mock kart bilgisi formu
+- [x] Kart numarası, son kullanma, CVV input'ları (Zod validasyon)
+- [x] "Ödemeyi Onayla" butonu
+- [x] Başarılı → abonelik durumu güncelle
+- [x] API: `POST /api/subscriptions`
 
 ### 9.4 Plan Değiştirme & İptal
-- [ ] Plan değiştirme onay modal'ı (fiyat farkı gösterimi)
-- [ ] İptal onay modal'ı ("Emin misiniz?")
-- [ ] API: `PUT /api/subscriptions/me/plan`, `POST /api/subscriptions/me/cancel`
+- [x] Plan değiştirme onay modal'ı (fiyat farkı gösterimi)
+- [x] İptal onay modal'ı ("Emin misiniz?")
+- [x] API: `PUT /api/subscriptions/me/plan`, `POST /api/subscriptions/me/cancel`
 
 ### 9.5 Fatura Geçmişi
-- [ ] `src/components/subscription/invoice-table.tsx` — Fatura tablosu
-- [ ] Sütunlar: tarih, plan, tutar, durum
-- [ ] API: `GET /api/subscriptions/me/invoices`
+- [x] `src/components/subscription/invoice-table.tsx` — Fatura tablosu
+- [x] Sütunlar: tarih, plan, tutar, durum
+- [x] API: `GET /api/subscriptions/me/invoices`
 
 ---
 

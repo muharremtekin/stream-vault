@@ -132,7 +132,8 @@
       "notifications": "Notifications",
       "markAllRead": "Mark all as read",
       "viewAll": "View all notifications",
-      "noNotifications": "No new notifications"
+      "noNotifications": "No new notifications",
+      "newNotificationToast": "New: {title}"
     }
   },
   "ui": {
@@ -260,6 +261,83 @@
     "previousPage": "Previous page",
     "nextPage": "Next page"
   },
+  "subscription": {
+    "pageTitle": "Manage Subscription",
+    "noSubscription": "You don't have an active subscription",
+    "noSubscriptionDesc": "Choose a plan to start streaming",
+    "status": {
+      "title": "Your Subscription",
+      "plan": "Plan",
+      "price": "Price",
+      "perMonth": "/mo",
+      "status": "Status",
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "expired": "Expired",
+      "pendingPayment": "Pending Payment",
+      "failed": "Failed",
+      "renewalDate": "Renewal Date",
+      "endsOn": "Your subscription ends on {date}",
+      "features": "Features",
+      "maxQuality": "Max Quality",
+      "maxScreens": "Simultaneous Screens",
+      "screens": "{count, plural, one {# screen} other {# screens}}",
+      "autoRenew": "Auto-Renewal"
+    },
+    "plans": {
+      "title": "Choose Your Plan",
+      "changePlan": "Change Plan",
+      "currentPlan": "Current Plan",
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade",
+      "select": "Select Plan",
+      "popular": "Most Popular"
+    },
+    "payment": {
+      "title": "Payment Details",
+      "cardNumber": "Card Number",
+      "cardNumberPlaceholder": "1234 5678 9012 3456",
+      "expiry": "Expiry Date",
+      "expiryPlaceholder": "MM/YY",
+      "cvv": "CVV",
+      "cvvPlaceholder": "123",
+      "confirmPayment": "Confirm Payment",
+      "summary": "Summary",
+      "total": "Total",
+      "cardNumberRequired": "Card number is required",
+      "cardNumberInvalid": "Card number must be 16 digits",
+      "expiryRequired": "Expiry date is required",
+      "expiryInvalid": "Must be in MM/YY format",
+      "cvvRequired": "CVV is required",
+      "cvvInvalid": "CVV must be 3 or 4 digits"
+    },
+    "changePlan": {
+      "title": "Change Plan",
+      "from": "From",
+      "to": "To",
+      "priceDifference": "Price Difference",
+      "upgradeNote": "You will be charged {amount} prorated for the remaining period",
+      "downgradeNote": "You will receive a credit of {amount} on your next billing cycle",
+      "confirm": "Confirm Change",
+      "enterCard": "Enter card details to confirm"
+    },
+    "cancel": {
+      "title": "Cancel Subscription",
+      "warning": "Are you sure you want to cancel?",
+      "description": "You will continue to have access until {date}. After that, you will lose access to all streaming content.",
+      "confirm": "Yes, Cancel Subscription",
+      "keepPlan": "Keep My Subscription"
+    },
+    "invoices": {
+      "title": "Invoice History",
+      "date": "Date",
+      "invoiceNumber": "Invoice #",
+      "period": "Period",
+      "amount": "Amount",
+      "noInvoices": "No invoices yet",
+      "noInvoicesDesc": "Your invoice history will appear here after your first payment"
+    }
+  },
   "api": {
     "networkError": "Network error. Please check your connection.",
     "timeout": "Request timed out. Please try again.",
@@ -280,5 +358,33 @@
     "allNotificationsRead": "All notifications marked as read",
     "preferencesUpdated": "Preferences updated",
     "feedbackSent": "Thanks for your feedback"
+  },
+  "notifications": {
+    "pageTitle": "Notifications",
+    "empty": "No notifications yet",
+    "emptyDescription": "When you receive notifications, they'll appear here.",
+    "unreadOnly": "Unread only",
+    "markAsRead": "Mark as read",
+    "page": "Page {current} of {total}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "types": {
+      "subscription": "Subscription",
+      "encoding": "Encoding",
+      "content": "Content",
+      "system": "System"
+    },
+    "preferences": {
+      "title": "Notification Preferences",
+      "description": "Choose how you'd like to be notified",
+      "email": "Email Notifications",
+      "emailDescription": "Receive notifications via email",
+      "push": "Push Notifications",
+      "pushDescription": "Receive push notifications on your devices",
+      "inApp": "In-App Notifications",
+      "inAppDescription": "Receive real-time notifications within the app",
+      "save": "Save Preferences",
+      "saving": "Saving..."
+    }
   }
 }

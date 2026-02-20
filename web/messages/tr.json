@@ -132,7 +132,8 @@
       "notifications": "Bildirimler",
       "markAllRead": "Tümünü okundu işaretle",
       "viewAll": "Tüm bildirimleri gör",
-      "noNotifications": "Yeni bildirim yok"
+      "noNotifications": "Yeni bildirim yok",
+      "newNotificationToast": "Yeni: {title}"
     }
   },
   "ui": {
@@ -260,6 +261,83 @@
     "previousPage": "Önceki sayfa",
     "nextPage": "Sonraki sayfa"
   },
+  "subscription": {
+    "pageTitle": "Abonelik Yönetimi",
+    "noSubscription": "Aktif bir aboneliğiniz bulunmuyor",
+    "noSubscriptionDesc": "Yayın izlemeye başlamak için bir plan seçin",
+    "status": {
+      "title": "Aboneliğiniz",
+      "plan": "Plan",
+      "price": "Fiyat",
+      "perMonth": "/ay",
+      "status": "Durum",
+      "active": "Aktif",
+      "cancelled": "İptal Edildi",
+      "expired": "Süresi Doldu",
+      "pendingPayment": "Ödeme Bekleniyor",
+      "failed": "Başarısız",
+      "renewalDate": "Yenileme Tarihi",
+      "endsOn": "Aboneliğiniz {date} tarihinde sona erecek",
+      "features": "Özellikler",
+      "maxQuality": "Maksimum Kalite",
+      "maxScreens": "Eş Zamanlı Ekran",
+      "screens": "{count} ekran",
+      "autoRenew": "Otomatik Yenileme"
+    },
+    "plans": {
+      "title": "Planınızı Seçin",
+      "changePlan": "Plan Değiştir",
+      "currentPlan": "Mevcut Plan",
+      "upgrade": "Yükselt",
+      "downgrade": "Düşür",
+      "select": "Plan Seç",
+      "popular": "En Popüler"
+    },
+    "payment": {
+      "title": "Ödeme Bilgileri",
+      "cardNumber": "Kart Numarası",
+      "cardNumberPlaceholder": "1234 5678 9012 3456",
+      "expiry": "Son Kullanma Tarihi",
+      "expiryPlaceholder": "AA/YY",
+      "cvv": "CVV",
+      "cvvPlaceholder": "123",
+      "confirmPayment": "Ödemeyi Onayla",
+      "summary": "Özet",
+      "total": "Toplam",
+      "cardNumberRequired": "Kart numarası gereklidir",
+      "cardNumberInvalid": "Kart numarası 16 haneli olmalıdır",
+      "expiryRequired": "Son kullanma tarihi gereklidir",
+      "expiryInvalid": "AA/YY formatında olmalıdır",
+      "cvvRequired": "CVV gereklidir",
+      "cvvInvalid": "CVV 3 veya 4 haneli olmalıdır"
+    },
+    "changePlan": {
+      "title": "Plan Değiştir",
+      "from": "Mevcut",
+      "to": "Yeni",
+      "priceDifference": "Fiyat Farkı",
+      "upgradeNote": "Kalan dönem için {amount} tutarında ücretlendirileceksiniz",
+      "downgradeNote": "Bir sonraki faturanızda {amount} tutarında kredi alacaksınız",
+      "confirm": "Değişikliği Onayla",
+      "enterCard": "Onaylamak için kart bilgilerinizi girin"
+    },
+    "cancel": {
+      "title": "Aboneliği İptal Et",
+      "warning": "İptal etmek istediğinize emin misiniz?",
+      "description": "{date} tarihine kadar erişiminiz devam edecektir. Bu tarihten sonra tüm yayın içeriğine erişiminiz kesilecektir.",
+      "confirm": "Evet, Aboneliği İptal Et",
+      "keepPlan": "Aboneliğimi Koru"
+    },
+    "invoices": {
+      "title": "Fatura Geçmişi",
+      "date": "Tarih",
+      "invoiceNumber": "Fatura No",
+      "period": "Dönem",
+      "amount": "Tutar",
+      "noInvoices": "Henüz fatura bulunmuyor",
+      "noInvoicesDesc": "İlk ödemenizden sonra fatura geçmişiniz burada görünecektir"
+    }
+  },
   "api": {
     "networkError": "Bağlantı hatası. Lütfen internet bağlantınızı kontrol edin.",
     "timeout": "İstek zaman aşımına uğradı. Lütfen tekrar deneyin.",
@@ -280,5 +358,33 @@
     "allNotificationsRead": "Tüm bildirimler okundu olarak işaretlendi",
     "preferencesUpdated": "Tercihler güncellendi",
     "feedbackSent": "Geri bildiriminiz için teşekkürler"
+  },
+  "notifications": {
+    "pageTitle": "Bildirimler",
+    "empty": "Henüz bildirim yok",
+    "emptyDescription": "Bildirim aldığınızda burada görünecektir.",
+    "unreadOnly": "Sadece okunmamışlar",
+    "markAsRead": "Okundu olarak işaretle",
+    "page": "Sayfa {current} / {total}",
+    "previousPage": "Önceki sayfa",
+    "nextPage": "Sonraki sayfa",
+    "types": {
+      "subscription": "Abonelik",
+      "encoding": "Kodlama",
+      "content": "İçerik",
+      "system": "Sistem"
+    },
+    "preferences": {
+      "title": "Bildirim Tercihleri",
+      "description": "Nasıl bildirim almak istediğinizi seçin",
+      "email": "E-posta Bildirimleri",
+      "emailDescription": "E-posta ile bildirim alın",
+      "push": "Anlık Bildirimler",
+      "pushDescription": "Cihazlarınızda anlık bildirim alın",
+      "inApp": "Uygulama İçi Bildirimler",
+      "inAppDescription": "Uygulama içinde anlık bildirim alın",
+      "save": "Tercihleri Kaydet",
+      "saving": "Kaydediliyor..."
+    }
   }
 }
