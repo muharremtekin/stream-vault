@@ -54,6 +54,10 @@
   --color-tooltip-foreground: var(--tooltip-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --animate-overlay-fade-in: overlay-fade-in 200ms ease-out;
+  --animate-dialog-scale-in: dialog-scale-in 200ms ease-out;
+  --animate-slide-in-from-left: slide-in-from-left 200ms ease-out;
+  --animate-dropdown-fade-in: dropdown-fade-in 150ms ease-out;
 }
 
 * {
@@ -94,4 +98,25 @@ body {
 ::selection {
   background: rgba(229, 9, 20, 0.3);
   color: var(--foreground);
+}
+
+/* Animation keyframes for UI transitions */
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dialog-scale-in {
+  from { opacity: 0; scale: 0.95; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes slide-in-from-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes dropdown-fade-in {
+  from { opacity: 0; scale: 0.95; }
+  to { opacity: 1; scale: 1; }
 }

@@ -101,7 +101,7 @@ export function Modal({
   return createPortal(
     <div className="fixed inset-0 z-50">
       <div
-        className="fixed inset-0 bg-background/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm animate-overlay-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -114,7 +114,7 @@ export function Modal({
         aria-describedby={descriptionId}
         className={cn(
           'fixed left-1/2 top-1/2 z-50 w-full -translate-x-1/2 -translate-y-1/2',
-          'rounded-lg border border-border bg-card p-6 shadow-lg',
+          'rounded-lg border border-border bg-card p-6 shadow-lg animate-dialog-scale-in',
           MODAL_SIZES[size]
         )}
       >

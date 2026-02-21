@@ -88,7 +88,7 @@ export function Dropdown({ trigger, children, align = 'left' }: DropdownProps) {
           ref={menuRef}
           role="menu"
           className={cn(
-            'absolute z-50 mt-2 min-w-48 rounded-md border border-border bg-card py-1 shadow-lg',
+            'absolute z-50 mt-2 min-w-48 rounded-md border border-border bg-card py-1 shadow-lg animate-dropdown-fade-in',
             DROPDOWN_ALIGNS[align]
           )}
         >

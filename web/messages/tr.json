@@ -122,7 +122,9 @@
       "dashboard": "Kontrol Paneli",
       "content": "İçerik Yönetimi",
       "encoding": "Encoding İşleri",
-      "admin": "Admin Paneli"
+      "admin": "Admin Paneli",
+      "openSidebar": "Yan menüyü aç",
+      "closeSidebar": "Yan menüyü kapat"
     },
     "profileSwitcher": {
       "switchProfile": "Profil Değiştir",
@@ -154,7 +156,10 @@
     "title": "Bir hata oluştu",
     "description": "Beklenmeyen bir hata meydana geldi. Lütfen tekrar deneyin.",
     "tryAgain": "Tekrar Dene",
-    "goHome": "Ana Sayfaya Dön"
+    "goHome": "Ana Sayfaya Dön",
+    "notFoundTitle": "Sayfa Bulunamadı",
+    "notFoundDescription": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
+    "backToHome": "Ana Sayfaya Dön"
   },
   "landing": {
     "heroTitle": "Sınırsız film, dizi ve daha fazlası",

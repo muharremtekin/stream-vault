@@ -122,7 +122,9 @@
       "dashboard": "Dashboard",
       "content": "Content Management",
       "encoding": "Encoding Jobs",
-      "admin": "Admin Panel"
+      "admin": "Admin Panel",
+      "openSidebar": "Open sidebar",
+      "closeSidebar": "Close sidebar"
     },
     "profileSwitcher": {
       "switchProfile": "Switch Profile",
@@ -154,7 +156,10 @@
     "title": "Something went wrong",
     "description": "An unexpected error occurred. Please try again.",
     "tryAgain": "Try Again",
-    "goHome": "Go Home"
+    "goHome": "Go Home",
+    "notFoundTitle": "Page Not Found",
+    "notFoundDescription": "The page you are looking for does not exist or has been moved.",
+    "backToHome": "Back to Home"
   },
   "landing": {
     "heroTitle": "Unlimited movies, series, and more",

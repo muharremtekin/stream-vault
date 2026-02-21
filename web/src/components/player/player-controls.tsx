@@ -39,7 +39,7 @@ function SeekBar({ currentTime, duration, onSeek, ariaLabel }: {
 }) {
   const pct = duration > 0 ? (currentTime / duration) * 100 : 0;
   return (
-    <div className="relative mb-3 h-1">
+    <div className="relative mb-3 h-2 sm:h-1">
       <div className="absolute inset-0 rounded-full bg-white/30" />
       <div
         className="absolute inset-y-0 left-0 rounded-full bg-primary"
@@ -137,42 +137,39 @@ export function PlayerControls({ videoRef, containerRef, hlsRef }: PlayerControl
           <button
             onClick={handlePlayPause}
             aria-label={isPlaying ? t('pause') : t('play')}
-            className="rounded focus-visible:ring-2 focus-visible:ring-white"
+            className="rounded p-2 sm:p-0 focus-visible:ring-2 focus-visible:ring-white"
           >
-            {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            {isPlaying ? <Pause className="h-7 w-7 sm:h-5 sm:w-5" /> : <Play className="h-7 w-7 sm:h-5 sm:w-5" />}
           </button>
-          <span className="text-sm tabular-nums">
+          <span className="text-xs tabular-nums sm:text-sm">
             {formatPlayerTime(currentTime)} / {formatPlayerTime(duration)}
           </span>
           <div className="flex-1" />
           <button
             onClick={handleMuteToggle}
             aria-label={isMuted ? t('unmute') : t('mute')}
-            className="rounded focus-visible:ring-2 focus-visible:ring-white"
+            className="rounded p-2 sm:p-0 focus-visible:ring-2 focus-visible:ring-white"
           >
             {isMuted || volume === 0
-              ? <VolumeX className="h-5 w-5" />
-              : <Volume2 className="h-5 w-5" />}
+              ? <VolumeX className="h-6 w-6 sm:h-5 sm:w-5" />
+              : <Volume2 className="h-6 w-6 sm:h-5 sm:w-5" />}
           </button>
           <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
+            type="range" min={0} max={1} step={0.05}
             value={isMuted ? 0 : volume}
             onChange={handleVolumeChange}
-            className="w-20 cursor-pointer accent-white"
+            className="hidden w-20 cursor-pointer accent-white sm:block"
             aria-label={t('volume')}
           />
           {hlsRef && <QualitySelector hlsRef={hlsRef} />}
           <button
             onClick={handleFullscreen}
             aria-label={isFullscreen ? t('exitFullscreen') : t('fullscreen')}
-            className="rounded focus-visible:ring-2 focus-visible:ring-white"
+            className="rounded p-2 sm:p-0 focus-visible:ring-2 focus-visible:ring-white"
           >
             {isFullscreen
-              ? <Minimize className="h-5 w-5" />
-              : <Maximize className="h-5 w-5" />}
+              ? <Minimize className="h-6 w-6 sm:h-5 sm:w-5" />
+              : <Maximize className="h-6 w-6 sm:h-5 sm:w-5" />}
           </button>
         </div>
       </div>

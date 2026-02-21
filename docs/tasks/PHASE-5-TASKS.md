@@ -511,36 +511,36 @@
 ## 13. UX & Responsive
 
 ### 13.1 Loading State'ler
-- [ ] Her sayfa için loading skeleton'lar (Suspense boundary veya TanStack Query `isLoading`)
-- [ ] Content card skeleton (poster + text placeholder)
-- [ ] Tablo skeleton (satır placeholder)
-- [ ] Hero banner skeleton
+- [x] Her sayfa için loading skeleton'lar (Suspense boundary veya TanStack Query `isLoading`)
+- [x] Content card skeleton (poster + text placeholder)
+- [x] Tablo skeleton (satır placeholder)
+- [x] Hero banner skeleton
 
 ### 13.2 Error State'ler
-- [ ] Global error boundary (`error.tsx`)
-- [ ] API hata gösterimi (toast veya inline mesaj)
-- [ ] 404 sayfası (`not-found.tsx`)
-- [ ] Network hata sayfası
+- [x] Global error boundary (`error.tsx`)
+- [x] API hata gösterimi (toast veya inline mesaj)
+- [x] 404 sayfası (`not-found.tsx`)
+- [x] Network hata sayfası
 
 ### 13.3 Empty State'ler
-- [ ] Watchlist boş ("Henüz bir şey eklemediniz")
-- [ ] Arama sonuç yok ("Sonuç bulunamadı")
-- [ ] Bildirim yok ("Yeni bildiriminiz yok")
-- [ ] Admin içerik yok ("Henüz içerik eklenmemiş")
+- [x] Watchlist boş ("Henüz bir şey eklemediniz")
+- [x] Arama sonuç yok ("Sonuç bulunamadı")
+- [x] Bildirim yok ("Yeni bildiriminiz yok")
+- [x] Admin içerik yok ("Henüz içerik eklenmemiş")
 
 ### 13.4 Responsive Tasarım
-- [ ] Navbar: mobilde hamburger menü
-- [ ] Content card grid: mobilde 2 sütun, tablette 3, masaüstünde 5-6
-- [ ] Content row: mobilde tek sıra kaydırma
-- [ ] Player: mobilde kontrol boyutları büyütülmüş
-- [ ] Admin sidebar: mobilde overlay
-- [ ] Form'lar: mobilde full-width
+- [x] Navbar: mobilde hamburger menü
+- [x] Content card grid: mobilde 2 sütun, tablette 3, masaüstünde 5-6
+- [x] Content row: mobilde tek sıra kaydırma
+- [x] Player: mobilde kontrol boyutları büyütülmüş
+- [x] Admin sidebar: mobilde overlay
+- [x] Form'lar: mobilde full-width
 
 ### 13.5 Animasyonlar & Geçişler
-- [ ] React 19.2 View Transitions API ile sayfa geçiş animasyonları (opsiyonel)
-- [ ] Content card hover animasyonu (scale + opacity transition)
-- [ ] Modal açılış/kapanış animasyonu
-- [ ] Navbar scroll'da arka plan değişimi (transparent → solid)
+- [x] React 19.2 View Transitions API ile sayfa geçiş animasyonları (opsiyonel)
+- [x] Content card hover animasyonu (scale + opacity transition)
+- [x] Modal açılış/kapanış animasyonu
+- [x] Navbar scroll'da arka plan değişimi (transparent → solid)
 
 ---
 
