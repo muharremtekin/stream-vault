@@ -43,3 +43,9 @@ export interface CreateProfileRequest {
   icon: string;
   isKids: boolean;
 }
+
+export interface UpdateProfileRequest {
+  name: string;
+  icon: string;
+  isKids: boolean;
+}

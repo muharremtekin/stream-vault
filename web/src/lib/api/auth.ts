@@ -6,6 +6,7 @@ import type {
   RefreshTokenRequest,
   Profile,
   CreateProfileRequest,
+  UpdateProfileRequest,
 } from '@/lib/types/auth';
 
 export async function login(data: LoginRequest): Promise<AuthResponse> {
@@ -47,4 +48,16 @@ export async function createProfile(
 ): Promise<Profile> {
   const response = await apiClient.post<Profile>('/api/profile', data);
   return response.data;
+}
+
+export async function updateProfile(
+  id: string,
+  data: UpdateProfileRequest
+): Promise<Profile> {
+  const response = await apiClient.put<Profile>(`/api/profile/${id}`, data);
+  return response.data;
+}
+
+export async function deleteProfile(id: string): Promise<void> {
+  await apiClient.delete(`/api/profile/${id}`);
 }

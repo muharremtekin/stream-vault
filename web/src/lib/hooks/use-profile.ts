@@ -4,9 +4,18 @@ import { useEffect } from 'react';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { getProfiles, createProfile } from '@/lib/api/auth';
+import {
+  getProfiles,
+  createProfile,
+  updateProfile,
+  deleteProfile,
+} from '@/lib/api/auth';
 import { useAuthStore } from '@/lib/stores/auth-store';
-import type { CreateProfileRequest, Profile } from '@/lib/types/auth';
+import type {
+  CreateProfileRequest,
+  UpdateProfileRequest,
+  Profile,
+} from '@/lib/types/auth';
 
 export function useProfile() {
   const queryClient = useQueryClient();
@@ -36,6 +45,21 @@ export function useProfile() {
     },
   });
 
+  const updateProfileMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProfileRequest }) =>
+      updateProfile(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['auth', 'profiles'] });
+    },
+  });
+
+  const deleteProfileMutation = useMutation({
+    mutationFn: (id: string) => deleteProfile(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['auth', 'profiles'] });
+    },
+  });
+
   const switchProfile = (profile: Profile) => {
     setActiveProfile(profile);
   };
@@ -47,5 +71,9 @@ export function useProfile() {
     switchProfile,
     createProfile: createProfileMutation.mutateAsync,
     isCreating: createProfileMutation.isPending,
+    updateProfile: updateProfileMutation.mutateAsync,
+    isUpdating: updateProfileMutation.isPending,
+    deleteProfile: deleteProfileMutation.mutateAsync,
+    isDeleting: deleteProfileMutation.isPending,
   };
 }
