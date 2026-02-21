@@ -33,3 +33,17 @@ export interface EncodingJobsParams {
   limit?: number;
   offset?: number;
 }
+
+export const ENCODING_STATUS_BADGE: Record<string, 'default' | 'warning' | 'success' | 'error'> = {
+  pending: 'default',
+  processing: 'warning',
+  completed: 'success',
+  failed: 'error',
+};
+
+export const ENCODING_PROGRESS_VARIANT: Record<string, 'primary' | 'success' | 'warning'> = {
+  pending: 'primary',
+  processing: 'warning',
+  completed: 'success',
+  failed: 'primary',
+};

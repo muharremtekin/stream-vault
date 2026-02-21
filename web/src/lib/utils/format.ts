@@ -52,3 +52,46 @@ export function formatCurrency(amount: number): string {
     minimumFractionDigits: 2,
   }).format(amount);
 }
+
+/**
+ * Locale-aware date+time formatting.
+ * Default: "Jan 15, 2024, 14:30" (varies by browser locale)
+ */
+export function formatDateTime(
+  date: string | Date,
+  options?: { showSeconds?: boolean }
+): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const opts: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(options?.showSeconds && { second: '2-digit' }),
+  };
+  return new Intl.DateTimeFormat(undefined, opts).format(d);
+}
+
+/**
+ * Locale-aware short date (no time).
+ * e.g. "Jan 15, 2024" (varies by browser locale)
+ */
+export function formatShortDate(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(d);
+}
+
+/**
+ * Format byte count to human-readable file size.
+ * e.g. 1536 → "1.5 KB", 2621440 → "2.5 MB"
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}

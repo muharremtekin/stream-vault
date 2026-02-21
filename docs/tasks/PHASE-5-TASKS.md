@@ -464,47 +464,47 @@
 ## 12. Admin Paneli
 
 ### 12.1 Admin Layout & Guard
-- [ ] `src/app/(main)/admin/layout.tsx` — Admin sidebar + role guard
-- [ ] Kullanıcının `role === "Admin"` kontrolü, değilse `/browse`'a redirect
-- [ ] Sidebar: Dashboard, İçerikler, Encoding linkleri
+- [x] `src/app/(main)/admin/layout.tsx` — Admin sidebar + role guard
+- [x] Kullanıcının `role === "Admin"` kontrolü, değilse `/browse`'a redirect
+- [x] Sidebar: Dashboard, İçerikler, Encoding linkleri
 
 ### 12.2 Admin Dashboard (`/admin`)
-- [ ] `src/app/(main)/admin/page.tsx`
-- [ ] `src/components/admin/stats-cards.tsx` — İstatistik kartları (toplam içerik, encoding işlemde, aktif abone)
-- [ ] Son encoding işlemleri listesi (kısa tablo: başlık, kalite, progress, durum)
+- [x] `src/app/(main)/admin/page.tsx`
+- [x] `src/components/admin/stats-cards.tsx` — İstatistik kartları (toplam içerik, encoding işlemde, aktif abone)
+- [x] Son encoding işlemleri listesi (kısa tablo: başlık, kalite, progress, durum)
 
 ### 12.3 İçerik Yönetimi (`/admin/content`)
-- [ ] `src/app/(main)/admin/content/page.tsx` — İçerik listesi tablosu
-- [ ] Sütunlar: başlık, tür (Film/Dizi), video durumu (Ready/Encoding/No Video), tarih
-- [ ] Arama filtresi
-- [ ] "Yeni Ekle" butonu → `/admin/content/new`
-- [ ] Satır tıklandığında → `/admin/content/[id]`
-- [ ] API: `GET /api/catalog/movies`, `GET /api/catalog/series`
+- [x] `src/app/(main)/admin/content/page.tsx` — İçerik listesi tablosu
+- [x] Sütunlar: başlık, tür (Film/Dizi), video durumu (Ready/Encoding/No Video), tarih
+- [x] Arama filtresi
+- [x] "Yeni Ekle" butonu → `/admin/content/new`
+- [x] Satır tıklandığında → `/admin/content/[id]`
+- [x] API: `GET /api/catalog/movies`, `GET /api/catalog/series`
 
 ### 12.4 İçerik Ekleme/Düzenleme (`/admin/content/new`, `/admin/content/[id]`)
-- [ ] `src/app/(main)/admin/content/new/page.tsx`
-- [ ] `src/app/(main)/admin/content/[id]/page.tsx` — Async params
-- [ ] `src/components/admin/content-form.tsx` — Film/dizi ekleme/düzenleme formu (React Hook Form + Zod)
-- [ ] Alanlar: başlık, açıklama, yıl, rating (dropdown), türler (multi-select), yönetmen, oyuncular (tag input)
-- [ ] Film/Dizi tipi seçimi (dizi seçilince sezon/bölüm ekleme alanları)
-- [ ] "Kaydet" ve "İptal" butonları
-- [ ] API: `POST /api/catalog/movies`, `POST /api/catalog/series`, `GET /api/catalog/movies/{id}`
+- [x] `src/app/(main)/admin/content/new/page.tsx`
+- [x] `src/app/(main)/admin/content/[id]/page.tsx` — Async params
+- [x] `src/components/admin/content-form.tsx` — Film/dizi ekleme/düzenleme formu (React Hook Form + Zod)
+- [x] Alanlar: başlık, açıklama, yıl, rating (dropdown), türler (multi-select), yönetmen, oyuncular (tag input)
+- [x] Film/Dizi tipi seçimi (dizi seçilince sezon/bölüm ekleme alanları)
+- [x] "Kaydet" ve "İptal" butonları
+- [x] API: `POST /api/catalog/movies`, `POST /api/catalog/series`, `GET /api/catalog/movies/{id}`
 
 ### 12.5 Video Upload
-- [ ] `src/components/admin/video-uploader.tsx` — Drag & drop video upload bileşeni
-- [ ] Desteklenen formatlar gösterimi (MP4, MKV, AVI — max 10GB)
-- [ ] Upload progress bar (yüzde + boyut)
-- [ ] Upload tamamlanınca encoding job ID göster
-- [ ] Axios `onUploadProgress` ile gerçek zamanlı ilerleme
-- [ ] API: `POST /api/stream/upload` (multipart/form-data)
+- [x] `src/components/admin/video-uploader.tsx` — Drag & drop video upload bileşeni
+- [x] Desteklenen formatlar gösterimi (MP4, MKV, AVI — max 10GB)
+- [x] Upload progress bar (yüzde + boyut)
+- [x] Upload tamamlanınca encoding job ID göster
+- [x] Axios `onUploadProgress` ile gerçek zamanlı ilerleme
+- [x] API: `POST /api/stream/upload` (multipart/form-data)
 
 ### 12.6 Encoding İzleme (`/admin/encoding`)
-- [ ] `src/app/(main)/admin/encoding/page.tsx`
-- [ ] `src/components/admin/encoding-status.tsx` — Encoding job listesi tablosu
-- [ ] Sütunlar: içerik adı, kalite, progress bar, durum (Pending/Processing/Completed/Failed)
-- [ ] `src/components/admin/encoding-progress.tsx` — Gerçek zamanlı ilerleme çubuğu (polling ile güncelleme, 5s interval)
-- [ ] Detay sayfası: job bilgileri, hata mesajı (varsa)
-- [ ] API: `GET /api/encoding/jobs`, `GET /api/encoding/jobs/{id}`
+- [x] `src/app/(main)/admin/encoding/page.tsx`
+- [x] `src/components/admin/encoding-status.tsx` — Encoding job listesi tablosu
+- [x] Sütunlar: içerik adı, kalite, progress bar, durum (Pending/Processing/Completed/Failed)
+- [x] `src/components/admin/encoding-progress.tsx` — Gerçek zamanlı ilerleme çubuğu (polling ile güncelleme, 5s interval)
+- [x] Detay sayfası: job bilgileri, hata mesajı (varsa)
+- [x] API: `GET /api/encoding/jobs`, `GET /api/encoding/jobs/{id}`
 
 ---
 

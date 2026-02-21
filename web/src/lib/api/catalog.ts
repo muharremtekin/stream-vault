@@ -7,6 +7,7 @@ import type {
   ContentSummary,
   CatalogParams,
 } from '@/lib/types/catalog';
+import type { MovieFormData, SeriesFormData } from '@/lib/validations/content';
 
 export async function getMovies(
   params?: CatalogParams
@@ -50,6 +51,26 @@ export async function getGenreContent(
   const response = await apiClient.get<PaginatedResponse<ContentSummary>>(
     `/api/catalog/genres/${slug}/content`,
     { params }
+  );
+  return response.data;
+}
+
+export async function createMovie(
+  data: MovieFormData
+): Promise<{ id: string }> {
+  const response = await apiClient.post<{ id: string }>(
+    '/api/catalog/movies',
+    data
+  );
+  return response.data;
+}
+
+export async function createSeries(
+  data: SeriesFormData
+): Promise<{ id: string }> {
+  const response = await apiClient.post<{ id: string }>(
+    '/api/catalog/series',
+    data
   );
   return response.data;
 }
