@@ -34,6 +34,7 @@ func DefaultCORSOptions() CORSOptions {
 			"Authorization",
 			"Content-Type",
 			"X-Requested-With",
+			"X-Profile-Id",
 		},
 		ExposedHeaders:   []string{"X-Request-Id", "X-Correlation-Id"},
 		AllowCredentials: false,

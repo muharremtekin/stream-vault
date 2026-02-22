@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/streamvault/gateway/internal/discovery"
@@ -143,12 +144,57 @@ func (rt *Router) Handler() http.Handler {
 			handler = rt.plainHandler(r)
 		}
 
+		// Wrap the handler so that WebSocket upgrade requests bypass
+		// resilience patterns (timeouts, circuit breakers, bulkheads)
+		// which are incompatible with long-lived connections.
+		wrapped := rt.withWebSocketBypass(r, handler)
+
 		// Register both with and without trailing slash to avoid 301 redirects.
-		mux.Handle(r.PathPrefix+"/", handler)
-		mux.Handle(r.PathPrefix, handler)
+		mux.Handle(r.PathPrefix+"/", wrapped)
+		mux.Handle(r.PathPrefix, wrapped)
 	}
 
 	return mux
+}
+
+// isWebSocketUpgrade reports whether the request is a WebSocket upgrade.
+func isWebSocketUpgrade(r *http.Request) bool {
+	return strings.EqualFold(r.Header.Get("Upgrade"), "websocket")
+}
+
+// withWebSocketBypass returns a handler that detects WebSocket upgrade
+// requests and proxies them directly (without resilience patterns) using
+// a bare HTTP transport. Non-WebSocket requests are forwarded to the
+// original handler unchanged.
+func (rt *Router) withWebSocketBypass(route Route, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		if !isWebSocketUpgrade(req) {
+			next.ServeHTTP(w, req)
+			return
+		}
+
+		addr, err := rt.resolver.Resolve(route.ServiceName)
+		if err != nil {
+			log.Error().Err(err).Str("service", route.ServiceName).Msg("service resolution failed for websocket")
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "service unavailable")
+			return
+		}
+
+		proxy, err := rt.manager.GetWebSocketProxy(addr, route.StripPrefix, route.PathPrefix)
+		if err != nil {
+			log.Error().Err(err).Str("address", addr).Msg("failed to create websocket proxy")
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "bad gateway")
+			return
+		}
+
+		log.Debug().
+			Str("service", route.ServiceName).
+			Str("upstream", addr).
+			Str("path", req.URL.Path).
+			Msg("proxying websocket upgrade")
+
+		proxy.ServeHTTP(w, req)
+	}
 }
 
 // plainHandler proxies requests without resilience patterns (backward compat).

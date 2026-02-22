@@ -1,9 +1,11 @@
 package resilience
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -195,4 +197,13 @@ func (sc *StatusCapture) Flush() {
 	if f, ok := sc.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
+}
+
+// Hijack implements http.Hijacker so that WebSocket upgrades work through
+// the status-capturing wrapper.
+func (sc *StatusCapture) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if h, ok := sc.ResponseWriter.(http.Hijacker); ok {
+		return h.Hijack()
+	}
+	return nil, nil, fmt.Errorf("upstream ResponseWriter does not implement http.Hijacker")
 }

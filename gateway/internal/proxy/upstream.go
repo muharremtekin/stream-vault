@@ -231,13 +231,7 @@ func (um *UpstreamManager) GetProxy(address string, stripPrefix bool, pathPrefix
 
 			middleware.WriteErrorResponse(w, http.StatusBadGateway, "upstream service unavailable")
 		},
-		ModifyResponse: func(resp *http.Response) error {
-			log.Debug().
-				Str("upstream", address).
-				Int("status", resp.StatusCode).
-				Msg("upstream response received")
-			return nil
-		},
+		ModifyResponse: stripAndLog(address),
 	}
 
 	um.mu.Lock()
@@ -245,6 +239,26 @@ func (um *UpstreamManager) GetProxy(address string, stripPrefix bool, pathPrefix
 	um.mu.Unlock()
 
 	return proxy, nil
+}
+
+// stripAndLog returns a ModifyResponse function that removes CORS headers
+// set by upstream services (the gateway CORS middleware is the single source
+// of truth) and logs the response.
+func stripAndLog(address string) func(*http.Response) error {
+	return func(resp *http.Response) error {
+		resp.Header.Del("Access-Control-Allow-Origin")
+		resp.Header.Del("Access-Control-Allow-Methods")
+		resp.Header.Del("Access-Control-Allow-Headers")
+		resp.Header.Del("Access-Control-Allow-Credentials")
+		resp.Header.Del("Access-Control-Expose-Headers")
+		resp.Header.Del("Access-Control-Max-Age")
+
+		log.Debug().
+			Str("upstream", address).
+			Int("status", resp.StatusCode).
+			Msg("upstream response received")
+		return nil
+	}
 }
 
 // GetStreamingProxy returns a reverse proxy optimised for streaming responses.
@@ -304,12 +318,78 @@ func (um *UpstreamManager) GetStreamingProxy(address string, stripPrefix bool, p
 
 			middleware.WriteErrorResponse(w, http.StatusBadGateway, "upstream service unavailable")
 		},
-		ModifyResponse: func(resp *http.Response) error {
-			log.Debug().
+		ModifyResponse: stripAndLog(address),
+	}
+
+	um.mu.Lock()
+	um.proxies[cacheKey] = proxy
+	um.mu.Unlock()
+
+	return proxy, nil
+}
+
+// GetWebSocketProxy returns a reverse proxy suitable for WebSocket connections.
+// It uses a bare http.Transport without retry/otelhttp wrapping so that the
+// 101 Switching Protocols upgrade and subsequent bidirectional byte-copy work
+// correctly with httputil.ReverseProxy's built-in hijack support.
+func (um *UpstreamManager) GetWebSocketProxy(address string, stripPrefix bool, pathPrefix string) (*httputil.ReverseProxy, error) {
+	cacheKey := fmt.Sprintf("%s|%v|%s|websocket", address, stripPrefix, pathPrefix)
+
+	um.mu.RLock()
+	if proxy, ok := um.proxies[cacheKey]; ok {
+		um.mu.RUnlock()
+		return proxy, nil
+	}
+	um.mu.RUnlock()
+
+	if !strings.HasPrefix(address, "http://") && !strings.HasPrefix(address, "https://") {
+		address = "http://" + address
+	}
+
+	target, err := url.Parse(address)
+	if err != nil {
+		return nil, fmt.Errorf("parsing upstream url %q: %w", address, err)
+	}
+
+	proxy := &httputil.ReverseProxy{
+		Director: func(req *http.Request) {
+			req.URL.Scheme = target.Scheme
+			req.URL.Host = target.Host
+			req.Host = target.Host
+
+			if stripPrefix && pathPrefix != "" {
+				req.URL.Path = strings.TrimPrefix(req.URL.Path, pathPrefix)
+				if req.URL.Path == "" {
+					req.URL.Path = "/"
+				}
+			}
+
+			if req.URL.RawPath != "" {
+				if stripPrefix && pathPrefix != "" {
+					req.URL.RawPath = strings.TrimPrefix(req.URL.RawPath, pathPrefix)
+					if req.URL.RawPath == "" {
+						req.URL.RawPath = "/"
+					}
+				}
+			}
+		},
+		// Bare transport — no otelhttp or retry wrapping so that
+		// resp.Body implements io.ReadWriteCloser for the hijack.
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 20,
+			IdleConnTimeout:     90 * time.Second,
+		},
+		FlushInterval: -1,
+		ErrorHandler: func(w http.ResponseWriter, r *http.Request, err error) {
+			log.Error().
+				Err(err).
 				Str("upstream", address).
-				Int("status", resp.StatusCode).
-				Msg("upstream response received")
-			return nil
+				Str("method", r.Method).
+				Str("path", r.URL.Path).
+				Msg("websocket proxy failed")
+
+			middleware.WriteErrorResponse(w, http.StatusBadGateway, "upstream service unavailable")
 		},
 	}
 
