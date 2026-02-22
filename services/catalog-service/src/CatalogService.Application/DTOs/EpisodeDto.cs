@@ -8,4 +8,5 @@ public record EpisodeDto
     public int DurationMinutes { get; init; }
     public string DurationFormatted { get; init; } = string.Empty;
     public string ThumbnailUrl { get; init; } = string.Empty;
+    public string VideoStatus { get; init; } = string.Empty;
 }

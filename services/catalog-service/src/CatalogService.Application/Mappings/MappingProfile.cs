@@ -14,7 +14,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.DurationMinutes, opt => opt.MapFrom(src => src.Duration.TotalMinutes))
             .ForMember(dest => dest.DurationFormatted, opt => opt.MapFrom(src => src.Duration.ToString()))
             .ForMember(dest => dest.MaturityRating, opt => opt.MapFrom(src => src.MaturityRating.ToString()))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+            .ForMember(dest => dest.VideoStatus, opt => opt.MapFrom(src => src.VideoStatus.ToString()));
 
         // Movie -> ContentSummaryDto
         CreateMap<Movie, ContentSummaryDto>()
@@ -44,7 +45,8 @@ public class MappingProfile : Profile
         // Episode -> EpisodeDto
         CreateMap<Episode, EpisodeDto>()
             .ForMember(dest => dest.DurationMinutes, opt => opt.MapFrom(src => src.Duration.TotalMinutes))
-            .ForMember(dest => dest.DurationFormatted, opt => opt.MapFrom(src => src.Duration.ToString()));
+            .ForMember(dest => dest.DurationFormatted, opt => opt.MapFrom(src => src.Duration.ToString()))
+            .ForMember(dest => dest.VideoStatus, opt => opt.MapFrom(src => src.VideoStatus.ToString()));
 
         // CastMember -> CastMemberDto
         CreateMap<CastMember, CastMemberDto>();

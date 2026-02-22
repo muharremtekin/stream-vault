@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace CatalogService.Domain.Enums;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MaturityRating
 {
     G = 0,

@@ -99,17 +99,6 @@ builder.Services.AddHealthChecks()
         name: "mongodb",
         tags: new[] { "ready" });
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 var app = builder.Build();
 
 // ---------------------------------------------------------------------------
@@ -129,8 +118,6 @@ if (app.Environment.IsDevelopment())
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Catalog Service v1");
     });
 }
-
-app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

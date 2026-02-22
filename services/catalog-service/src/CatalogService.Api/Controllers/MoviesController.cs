@@ -1,9 +1,9 @@
+using AutoMapper;
 using CatalogService.Application.Commands.CreateMovie;
 using CatalogService.Application.DTOs;
-using CatalogService.Application.Queries.GetContentById;
+using CatalogService.Application.Interfaces;
 using CatalogService.Application.Queries.GetMovies;
 using CatalogService.Application.Queries.GetStreamingInfo;
-using CatalogService.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,10 +14,14 @@ namespace CatalogService.Api.Controllers;
 public class MoviesController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IMovieRepository _movieRepository;
+    private readonly IMapper _mapper;
 
-    public MoviesController(IMediator mediator)
+    public MoviesController(IMediator mediator, IMovieRepository movieRepository, IMapper mapper)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _movieRepository = movieRepository ?? throw new ArgumentNullException(nameof(movieRepository));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     /// <summary>
@@ -50,24 +54,19 @@ public class MoviesController : ControllerBase
     /// Gets a movie by its ID.
     /// </summary>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ContentSummaryDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(MovieDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMovieById(
         string id,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetContentByIdQuery
-        {
-            Id = id,
-            ContentType = ContentType.Movie
-        };
+        var movie = await _movieRepository.GetByIdAsync(id, cancellationToken);
 
-        var result = await _mediator.Send(query, cancellationToken);
-
-        if (result is null)
+        if (movie is null)
             return NotFound(new { message = $"Movie with ID '{id}' not found." });
 
-        return Ok(result);
+        var movieDto = _mapper.Map<MovieDto>(movie);
+        return Ok(movieDto);
     }
 
     /// <summary>

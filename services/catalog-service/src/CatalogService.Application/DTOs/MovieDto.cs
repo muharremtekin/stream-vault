@@ -21,6 +21,7 @@ public record MovieDto
     public double AverageRating { get; init; }
     public int RatingCount { get; init; }
     public string Status { get; init; } = string.Empty;
+    public string VideoStatus { get; init; } = string.Empty;
     public List<string> Tags { get; init; } = new();
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }

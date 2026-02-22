@@ -1,4 +1,6 @@
+using CatalogService.Domain.Enums;
 using CatalogService.Domain.ValueObjects;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace CatalogService.Domain.Entities;
 
@@ -13,6 +15,11 @@ public class Episode
     public Duration Duration { get; set; } = new();
 
     public string ThumbnailUrl { get; set; } = string.Empty;
+
+    [BsonRepresentation(MongoDB.Bson.BsonType.String)]
+    public VideoStatus VideoStatus { get; set; } = VideoStatus.NotUploaded;
+
+    public StreamingInfo? StreamingInfo { get; set; }
 
     public Episode() { }
 
