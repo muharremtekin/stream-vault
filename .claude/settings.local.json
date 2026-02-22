@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose build:*)",
+      "Bash(docker compose exec:*)",
+      "Bash(curl:*)",
+      "Bash(docker compose up:*)",
+      "Bash(python3:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNzUxNTViYS0wNzliLTQwMmEtYTYxMi04NWMyNmM3YzVlMzgiLCJqdGkiOiJmNTUzNzA1Zi1jMDZkLTRmYzctOTBkZi02N2NlNTI3YzFiM2QiLCJyb2xlIjoiRnJlZSIsImV4cCI6MTc3MTY5OTk3MiwiaXNzIjoiU3RyZWFtVmF1bHQuVXNlclNlcnZpY2UiLCJhdWQiOiJTdHJlYW1WYXVsdC5DbGllbnQifQ.6NLsZpx2VOiTHkBFlesNFHhYgLNkKs2Z8hJ7PQ4VCac\")",
+      "Bash(xxd:*)",
+      "Bash(done)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npm run build:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(node -e:*)",
+      "Bash(cargo test:*)",
+      "Bash(go build:*)",
+      "Bash(go test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
