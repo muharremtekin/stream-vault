@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import Hls from 'hls.js';
 
+import { useAuthStore } from '@/lib/stores/auth-store';
+
 interface UseHlsPlayerOptions {
   manifestUrl: string | null;
   isEnabled: boolean;
@@ -45,7 +47,16 @@ export function useHlsPlayer(
       return;
     }
 
-    const hls = new Hls({ startLevel: -1, enableWorker: true });
+    const token = useAuthStore.getState().accessToken;
+    const hls = new Hls({
+      startLevel: -1,
+      enableWorker: true,
+      xhrSetup(xhr) {
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+      },
+    });
     hlsRef.current = hls;
 
     hls.loadSource(manifestUrl);

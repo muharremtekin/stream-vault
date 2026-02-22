@@ -3,13 +3,20 @@
 import { useState, useRef, useEffect } from 'react';
 
 import Link from 'next/link';
-import { User, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, ChevronDown, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils/cn';
+import { useAuthStore } from '@/lib/stores/auth-store';
+import { SUBSCRIPTION_TIERS } from '@/lib/types/common';
 
 export function ProfileSwitcher() {
   const t = useTranslations('layout');
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const isAdmin = user?.role === SUBSCRIPTION_TIERS.Admin;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -71,9 +78,23 @@ export function ProfileSwitcher() {
           >
             {t('navbar.account')}
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-primary transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Shield className="h-4 w-4" />
+              {t('admin.admin')}
+            </Link>
+          )}
           <div className="my-1 border-t border-border" />
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              setIsOpen(false);
+              logout();
+              router.push('/login');
+            }}
             className="block w-full px-4 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             {t('navbar.signOut')}

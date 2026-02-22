@@ -36,12 +36,14 @@ export const CONTENT_TYPES = {
 
 export type ContentType = (typeof CONTENT_TYPES)[keyof typeof CONTENT_TYPES];
 
-/** Video status from streaming/encoding services */
+/** Video status from catalog service (matches CatalogService.Domain.Enums.VideoStatus) */
 export const VIDEO_STATUSES = {
-  Pending: 'Pending',
-  Processing: 'Processing',
+  NotUploaded: 'NotUploaded',
+  Uploading: 'Uploading',
+  Queued: 'Queued',
+  Encoding: 'Encoding',
   Ready: 'Ready',
-  Failed: 'Failed',
+  Error: 'Error',
 } as const;
 
 export type VideoStatus = (typeof VIDEO_STATUSES)[keyof typeof VIDEO_STATUSES];

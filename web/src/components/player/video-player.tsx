@@ -127,7 +127,7 @@ export function VideoPlayer({
     );
   }
 
-  if (streamingInfo?.videoStatus === 'Processing') {
+  if (streamingInfo?.videoStatus === 'Encoding' || streamingInfo?.videoStatus === 'Queued') {
     return (
       <div className={cn('flex items-center justify-center bg-black text-center text-white', className)}>
         <p>{t('encoding')}</p>

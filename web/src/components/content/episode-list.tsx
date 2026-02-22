@@ -34,10 +34,28 @@ export default function EpisodeList({
     );
   }
 
-  const handlePlay = (episodeNumber: number) => {
-    router.push(
-      `/watch/${seriesId}?season=${seasonNumber}&episode=${episodeNumber}`
-    );
+  const buildContentId = (epNum: number) =>
+    `${seriesId}_s${seasonNumber}_e${epNum}`;
+
+  const handlePlay = (episode: Episode) => {
+    const contentId = buildContentId(episode.episodeNumber);
+    const idx = episodes.findIndex((e) => e.episodeNumber === episode.episodeNumber);
+    const next = idx >= 0 && idx < episodes.length - 1 ? episodes[idx + 1] : undefined;
+
+    const params = new URLSearchParams({
+      type: 'series',
+      title: episode.title,
+    });
+
+    if (next) {
+      params.set('nextEpisodeId', buildContentId(next.episodeNumber));
+      params.set('nextEpisodeTitle', next.title);
+      params.set('nextSeason', String(seasonNumber));
+      params.set('nextEpisodeNum', String(next.episodeNumber));
+      if (next.thumbnailUrl) params.set('nextThumbnail', next.thumbnailUrl);
+    }
+
+    router.push(`/watch/${contentId}?${params.toString()}`);
   };
 
   return (
@@ -46,7 +64,7 @@ export default function EpisodeList({
         <button
           key={episode.episodeNumber}
           type="button"
-          onClick={() => handlePlay(episode.episodeNumber)}
+          onClick={() => handlePlay(episode)}
           className={cn(
             'group flex w-full items-start gap-4 rounded-md p-3 text-left',
             'bg-muted/30 hover:bg-muted transition-colors',

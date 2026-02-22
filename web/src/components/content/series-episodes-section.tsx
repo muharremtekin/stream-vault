@@ -32,7 +32,7 @@ export default function SeriesEpisodesSection({ seriesId }: SeriesEpisodesSectio
     );
   }
 
-  if (!series || series.seasons.length === 0) return null;
+  if (!series || !series.seasons?.length) return null;
 
   const activeSeason = series.seasons.find(
     (s) => s.seasonNumber === selectedSeason

@@ -66,7 +66,7 @@ export default function ContentInfo({ id, contentType, className }: ContentInfoP
       )}
 
       {/* Cast */}
-      {data.cast.length > 0 && (
+      {data.cast?.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground">{tb('cast')}</h3>
           <div className="flex flex-wrap gap-3">
@@ -94,7 +94,7 @@ export default function ContentInfo({ id, contentType, className }: ContentInfoP
       )}
 
       {/* Genres */}
-      {data.genres.length > 0 && (
+      {data.genres?.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold text-foreground">{tb('genres')}</h3>
           <div className="flex flex-wrap gap-2">
@@ -118,7 +118,7 @@ export default function ContentInfo({ id, contentType, className }: ContentInfoP
       )}
 
       {/* Tags */}
-      {data.tags.length > 0 && (
+      {data.tags?.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {data.tags.map((tag) => (
             <span

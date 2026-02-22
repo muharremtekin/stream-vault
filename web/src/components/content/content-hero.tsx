@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useContent } from '@/lib/hooks/use-content';
 import { cn } from '@/lib/utils/cn';
-import type { Movie } from '@/lib/types/catalog';
+import type { Movie, Series } from '@/lib/types/catalog';
 import type { ContentType } from '@/lib/types/common';
 
 interface ContentHeroProps {
@@ -23,6 +23,10 @@ interface ContentHeroProps {
 
 function isMovie(data: unknown): data is Movie {
   return typeof data === 'object' && data !== null && 'durationMinutes' in data;
+}
+
+function isSeries(data: unknown): data is Series {
+  return typeof data === 'object' && data !== null && 'seasons' in data;
 }
 
 export default function ContentHero({ id, contentType }: ContentHeroProps) {
@@ -50,6 +54,19 @@ export default function ContentHero({ id, contentType }: ContentHeroProps) {
 
   const apiContentType: ContentType = contentType === 'movie' ? 'Movie' : 'Series';
   const movie = isMovie(data) ? data : null;
+  const series = isSeries(data) ? data : null;
+
+  const getPlayUrl = () => {
+    if (series && series.seasons?.length > 0) {
+      const firstSeason = series.seasons[0];
+      if (firstSeason.episodes?.length > 0) {
+        const firstEp = firstSeason.episodes[0];
+        const contentId = `${id}_s${firstSeason.seasonNumber}_e${firstEp.episodeNumber}`;
+        return `/watch/${contentId}?type=series&title=${encodeURIComponent(firstEp.title)}`;
+      }
+    }
+    return `/watch/${id}`;
+  };
   const metaInfo = movie
     ? [data.releaseYear, movie.durationFormatted].filter(Boolean).join(' · ')
     : [data.releaseYear, `${'totalSeasons' in data ? data.totalSeasons : ''} ${t('seasons')}`].filter(Boolean).join(' · ');
@@ -84,11 +101,13 @@ export default function ContentHero({ id, contentType }: ContentHeroProps) {
           </h1>
 
           <div className={cn('flex items-center gap-3 text-sm text-muted-foreground')}>
-            <RatingStars rating={data.averageRating} totalRatings={data.ratingCount} size="sm" />
+            {data.averageRating != null && data.averageRating > 0 && (
+              <RatingStars rating={data.averageRating} totalRatings={data.ratingCount} size="sm" />
+            )}
             <span>{metaInfo}</span>
           </div>
 
-          {data.genres.length > 0 && (
+          {data.genres?.length > 0 && (
             <p className="text-sm text-muted-foreground">
               {data.genres.slice(0, 3).join(' · ')}
             </p>
@@ -96,7 +115,7 @@ export default function ContentHero({ id, contentType }: ContentHeroProps) {
 
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Button
-              onClick={() => router.push(`/watch/${id}`)}
+              onClick={() => router.push(getPlayUrl())}
               className="gap-2"
             >
               <Play className="h-4 w-4 fill-current" />

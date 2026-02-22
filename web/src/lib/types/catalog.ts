@@ -24,6 +24,7 @@ export interface Movie {
   averageRating: number;
   ratingCount: number;
   status: string;
+  videoStatus: string;
   tags: string[];
   createdAt: string;
   updatedAt: string;
@@ -36,6 +37,7 @@ export interface Episode {
   durationMinutes: number;
   durationFormatted: string;
   thumbnailUrl: string;
+  videoStatus: string;
 }
 
 export interface Season {

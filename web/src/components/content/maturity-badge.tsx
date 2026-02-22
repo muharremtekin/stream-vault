@@ -8,15 +8,16 @@ interface MaturityBadgeProps {
 
 const MATURITY_COLORS: Record<string, string> = {
   G: 'border-green-500 text-green-400',
-  'TV-Y': 'border-green-500 text-green-400',
-  'TV-G': 'border-green-500 text-green-400',
   PG: 'border-yellow-500 text-yellow-400',
-  'TV-PG': 'border-yellow-500 text-yellow-400',
-  'PG-13': 'border-orange-500 text-orange-400',
-  'TV-14': 'border-orange-500 text-orange-400',
+  PG13: 'border-orange-500 text-orange-400',
   R: 'border-red-500 text-red-400',
-  'NC-17': 'border-red-700 text-red-500',
-  'TV-MA': 'border-red-500 text-red-400',
+  NC17: 'border-red-700 text-red-500',
+};
+
+/** User-friendly display labels for enum-style rating values */
+const MATURITY_LABELS: Record<string, string> = {
+  PG13: 'PG-13',
+  NC17: 'NC-17',
 };
 
 const SIZES = {
@@ -40,7 +41,7 @@ export default function MaturityBadge({
         className
       )}
     >
-      {rating}
+      {MATURITY_LABELS[rating] ?? rating}
     </span>
   );
 }

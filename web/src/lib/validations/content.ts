@@ -7,7 +7,16 @@ const castMemberSchema = z.object({
   photoUrl: z.string().url().nullable().optional(),
 });
 
-const MATURITY_RATINGS = ['G', 'PG', 'PG-13', 'R', 'NC-17', 'TV-Y', 'TV-G', 'TV-PG', 'TV-14', 'TV-MA'] as const;
+const MATURITY_RATINGS = ['G', 'PG', 'PG13', 'R', 'NC17'] as const;
+
+/** Display labels for maturity ratings (user-friendly names) */
+export const MATURITY_RATING_LABELS: Record<string, string> = {
+  G: 'G',
+  PG: 'PG',
+  PG13: 'PG-13',
+  R: 'R',
+  NC17: 'NC-17',
+};
 
 const currentYear = new Date().getFullYear();
 
