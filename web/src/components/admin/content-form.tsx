@@ -15,7 +15,7 @@ import { CastInput } from '@/components/admin/cast-input';
 import { useCreateMovie, useCreateSeries } from '@/lib/hooks/use-admin';
 import { extractErrorMessage } from '@/lib/utils/error';
 import { cn } from '@/lib/utils/cn';
-import { contentFormSchema, MATURITY_RATING_OPTIONS } from '@/lib/validations/content';
+import { contentFormSchema, MATURITY_RATING_OPTIONS, MATURITY_RATING_LABELS } from '@/lib/validations/content';
 
 import type { ContentFormData } from '@/lib/validations/content';
 
@@ -90,7 +90,7 @@ export function ContentForm() {
             errors.maturityRating ? 'border-destructive' : 'border-input-border'
           )}>
             <option value="">{t('selectRating')}</option>
-            {MATURITY_RATING_OPTIONS.map((r) => <option key={r} value={r}>{r}</option>)}
+            {MATURITY_RATING_OPTIONS.map((r) => <option key={r} value={r}>{MATURITY_RATING_LABELS[r] ?? r}</option>)}
           </select>
           {errors.maturityRating && <p className="mt-1.5 text-xs text-destructive">{errors.maturityRating.message}</p>}
         </div>

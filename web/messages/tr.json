@@ -498,6 +498,33 @@
       "uploadAnother": "Başka Yükle",
       "tryAgain": "Tekrar Dene"
     },
+    "episodes": {
+      "title": "Sezonlar & Bölümler",
+      "addEpisode": "Bölüm Ekle",
+      "noSeasons": "Henüz sezon yok",
+      "noSeasonsHint": "İlk bölümü ekleyerek otomatik olarak bir sezon oluşturun.",
+      "noEpisodes": "Bu sezonda bölüm yok",
+      "seasonLabel": "Sezon {number}",
+      "episodeCount": "{count} bölüm",
+      "season": "Sezon",
+      "episodeNumber": "Bölüm #",
+      "episodeTitle": "Başlık",
+      "episodeTitlePlaceholder": "Bölüm başlığı...",
+      "description": "Açıklama",
+      "descriptionPlaceholder": "Kısa bölüm açıklaması...",
+      "duration": "Süre (dk)",
+      "thumbnailUrl": "Küçük Resim URL",
+      "newSeason": "Yeni Sezon",
+      "add": "Ekle",
+      "adding": "Ekleniyor...",
+      "addSuccess": "Bölüm başarıyla eklendi",
+      "validationError": "Lütfen tüm zorunlu alanları doldurun",
+      "uploadVideo": "Video Yükle",
+      "statusReady": "Hazır",
+      "statusProcessing": "İşleniyor",
+      "statusError": "Hata",
+      "statusNoVideo": "Video Yok"
+    },
     "encoding": {
       "pageTitle": "Encoding İşleri",
       "all": "Tümü",
@@ -523,6 +550,173 @@
       "segments": "Segmentler",
       "errorMessage": "Hata",
       "backToList": "İşlere Dön"
+    }
+  },
+  "pages": {
+    "movies": {
+      "title": "Filmler",
+      "noContent": "Henüz film eklenmemiş",
+      "metaDescription": "Film katalogumuza göz atın",
+      "resultsCount": "{count, plural, one {# film} other {# film}}",
+      "allGenres": "Tümü",
+      "clearFilters": "Filtreleri Temizle",
+      "sortBy": "Sırala",
+      "sortNewest": "En Yeni",
+      "sortRating": "En Çok Beğenilen",
+      "sortYear": "Yayın Yılı",
+      "sortTitle": "A-Z",
+      "noResults": "Filtrelerinizle eşleşen film bulunamadı",
+      "noResultsHint": "Filtrelerinizi değiştirmeyi veya temizlemeyi deneyin",
+      "page": "{total} sayfadan {current}. sayfa",
+      "previousPage": "Önceki sayfa",
+      "nextPage": "Sonraki sayfa"
+    },
+    "series": {
+      "title": "Diziler",
+      "noContent": "Henüz dizi eklenmemiş"
+    },
+    "about": {
+      "title": "StreamVault Hakkında",
+      "description": "StreamVault, film ve dizi severler için tasarlanmış modern bir yayın platformudur. Geniş içerik kütüphanemizle en sevdiğiniz yapımları istediğiniz zaman, istediğiniz yerde izleyebilirsiniz.",
+      "missionTitle": "Misyonumuz",
+      "missionDescription": "Herkesin kaliteli eğlenceye erişimi olması gerektiğine inanıyoruz. StreamVault, en yeni gişe rekorları kıran filmlerden zamansız klasiklere kadar her şeyi tek bir yerde sunan kusursuz, yüksek kaliteli bir yayın deneyimi sunmak için tasarlandı.",
+      "featuresTitle": "Bizi Farklı Kılan Ne?",
+      "featureAdaptiveTitle": "Adaptif Yayın",
+      "featureAdaptiveDesc": "Bağlantı hızınıza göre otomatik kalite ayarlamasıyla kesintisiz izleme deneyiminin keyfini çıkarın.",
+      "featureMultiProfileTitle": "Çoklu Profiller",
+      "featureMultiProfileDesc": "Evinizin her üyesi için ayrı izleme listeleri ve önerilerle kişiselleştirilmiş profiller oluşturun.",
+      "featureMultiLangTitle": "Çoklu Dil Desteği",
+      "featureMultiLangDesc": "İçerikleri birden fazla dilde altyazı ve arayüz seçeneğiyle izleyin.",
+      "featureCuratedTitle": "Özenle Seçilmiş Koleksiyonlar",
+      "featureCuratedDesc": "Tür, ruh hali ve popüler konulara göre düzenlenmiş el yapımı koleksiyonları keşfedin.",
+      "statsTitle": "Rakamlarla StreamVault",
+      "statContentLibrary": "Mevcut İçerik",
+      "statContentLibraryValue": "10.000+",
+      "statDevices": "Desteklenen Cihaz",
+      "statDevicesValue": "6+",
+      "statQuality": "Maks. Yayın Kalitesi",
+      "statQualityValue": "4K HDR",
+      "statLanguages": "Dil",
+      "statLanguagesValue": "2+",
+      "teamTitle": "StreamVault'un Arkasında",
+      "teamDescription": "StreamVault, size en iyi yayın deneyimini sunmaya adanmış tutkulu mühendisler, tasarımcılar ve içerik küratörlerinden oluşan bir ekip tarafından geliştirilmektedir.",
+      "contactCta": "Sorularınız mı var? Yardım Merkezimizi ziyaret edin"
+    },
+    "help": {
+      "title": "Yardım Merkezi",
+      "description": "StreamVault ile ilgili sorularınız mı var? Aşağıdaki kaynakları inceleyebilir veya destek ekibimizle iletişime geçebilirsiniz.",
+      "contact": "İletişim: support@streamvault.com",
+      "faq": {
+        "title": "Sıkça Sorulan Sorular",
+        "categories": {
+          "account": "Hesap",
+          "streaming": "İzleme",
+          "subscription": "Abonelik",
+          "technical": "Teknik"
+        },
+        "account": {
+          "q1": "StreamVault hesabını nasıl oluştururum?",
+          "a1": "Ana sayfadaki 'Kayıt Ol' butonuna tıklayıp kayıt adımlarını takip edin. Geçerli bir e-posta adresi ve şifre gereklidir.",
+          "q2": "Kaç profil oluşturabilirim?",
+          "a2": "Abonelik planınıza bağlı olarak hesabınızda çocuk profili dahil en fazla 5 profil oluşturabilirsiniz.",
+          "q3": "E-posta adresimi veya şifremi nasıl değiştirebilirim?",
+          "a3": "Profil menüsünden Hesap sayfasına gidin. Hesap ayarları bölümünden e-posta adresinizi ve şifrenizi güncelleyebilirsiniz."
+        },
+        "streaming": {
+          "q1": "Hangi cihazlarda izleyebilirim?",
+          "a1": "StreamVault web tarayıcıları, akıllı telefonlar, tabletler, akıllı TV'ler ve yayın cihazlarında kullanılabilir. İzlemeye başlamak için hesabınızla giriş yapın.",
+          "q2": "Videom neden takılıyor veya düşük kalitede?",
+          "a2": "Video kalitesi internet hızınıza bağlıdır. HD için en az 5 Mbps, 4K için 25 Mbps öneriyoruz. Diğer uygulamaları kapatmayı veya yönlendiricinizi yeniden başlatmayı deneyin.",
+          "q3": "İçerik çevrimdışı izlenebilir mi?",
+          "a3": "Çevrimdışı indirme şu anda web platformunda desteklenmemektedir. Bu özellik gelecekteki mobil uygulama sürümlerinde sunulabilir."
+        },
+        "subscription": {
+          "q1": "Hangi planlar mevcut?",
+          "a1": "Video kalitesi, eş zamanlı ekran sayısı ve içerik erişimi dahil farklı özelliklere sahip birden fazla plan sunuyoruz. Güncel fiyatlandırma için Abonelik sayfasını ziyaret edin.",
+          "q2": "Aboneliğimi nasıl iptal edebilirim?",
+          "a2": "Hesap > Abonelik sayfasından istediğiniz zaman iptal edebilirsiniz. Erişiminiz mevcut fatura döneminin sonuna kadar devam eder.",
+          "q3": "Planımı değiştirebilir miyim?",
+          "a3": "Evet, Abonelik yönetim sayfasından istediğiniz zaman planınızı yükseltebilir veya düşürebilirsiniz. Değişiklikler bir sonraki fatura döneminde geçerli olur."
+        },
+        "technical": {
+          "q1": "Hangi tarayıcılar destekleniyor?",
+          "a1": "StreamVault Chrome, Firefox, Safari ve Edge'in en son sürümlerinde en iyi şekilde çalışır. En iyi deneyim için tarayıcınızı güncel tutmanızı öneririz.",
+          "q2": "Bir hata mesajı alıyorum. Ne yapmalıyım?",
+          "a2": "Sayfayı yenilemeyi, tarayıcı önbelleğini temizlemeyi veya farklı bir tarayıcıya geçmeyi deneyin. Sorun devam ederse destek ekibimizle iletişime geçin.",
+          "q3": "Bir hatayı nasıl bildiririm veya geri bildirim verebilirim?",
+          "a3": "Destek ekibimize support@streamvault.com adresinden ulaşabilirsiniz. Lütfen sorunun ayrıntıları, tarayıcınız ve gördüğünüz hata mesajlarını ekleyin."
+        }
+      }
+    },
+    "terms": {
+      "title": "Kullanım Koşulları",
+      "description": "StreamVault hizmetlerini kullanarak aşağıdaki koşulları kabul etmiş olursunuz. Bu koşullar zaman zaman güncellenebilir.",
+      "lastUpdated": "Son Güncelleme: Şubat 2026",
+      "sections": {
+        "acceptance": {
+          "title": "1. Koşulların Kabulü",
+          "content": "StreamVault'a erişerek veya hizmeti kullanarak, bu Kullanım Koşulları ile tüm geçerli yasa ve yönetmeliklere bağlı kalmayı kabul edersiniz. Bu koşullardan herhangi birine katılmıyorsanız, bu hizmeti kullanmanız veya erişmeniz yasaktır. StreamVault bu koşulları istediği zaman değiştirme hakkını saklı tutar ve hizmeti kullanmaya devam etmeniz bu değişiklikleri kabul ettiğiniz anlamına gelir."
+        },
+        "account": {
+          "title": "2. Hesap ve Kayıt",
+          "content": "StreamVault'un belirli özelliklerine erişmek için bir hesap oluşturmanız gerekir. Hesap bilgilerinizin gizliliğini korumak ve hesabınız altında gerçekleşen tüm etkinliklerden siz sorumlusunuz. Kayıt sırasında doğru ve eksiksiz bilgi sağlamalı ve hesap bilgilerinizi güncel tutmalısınız. Hesabınızın yetkisiz kullanımını derhal bize bildirmelisiniz."
+        },
+        "contentUsage": {
+          "title": "3. İçerik ve Kullanım",
+          "content": "StreamVault'ta bulunan tüm içerikler yalnızca kişisel ve ticari olmayan kullanım içindir. Önceden yazılı izin almadan herhangi bir içeriği kopyalayamaz, dağıtamaz, değiştiremez, görüntüleyemez, sergileyemez veya türev eserler oluşturamazsınız. Yayın içerikleri lisanslıdır, satılmamıştır ve erişiminiz geçerli lisans sözleşmelerinin koşullarına tabidir. İçeriklerin izinsiz indirilmesi, kaydedilmesi veya yeniden dağıtılması kesinlikle yasaktır."
+        },
+        "subscription": {
+          "title": "4. Abonelik ve Ödeme",
+          "content": "StreamVault, farklı özelliklere ve fiyatlandırmaya sahip çeşitli abonelik planları sunar. Abone olarak, satın alma sırasında belirtilen geçerli ücretleri ödemeyi kabul edersiniz. Abonelikler, yenileme tarihinden önce iptal edilmedikçe otomatik olarak yenilenir. İadeler, iade politikamıza uygun olarak işlenir. Makul bir bildirimle abonelik fiyatlarını değiştirme hakkımızı saklı tutarız."
+        },
+        "intellectualProperty": {
+          "title": "5. Fikri Mülkiyet",
+          "content": "StreamVault'ta görüntülenen tüm içerikler, ticari markalar, logolar ve fikri mülkiyet hakları ilgili sahiplerine aittir. StreamVault adı, logosu ve ilgili işaretler bizim ticari markalarımızdır. Bunları önceden yazılı izin almadan kullanamazsınız. Sağladığınız geri bildirimler veya öneriler, size karşı herhangi bir yükümlülük olmaksızın tarafımızca kullanılabilir."
+        },
+        "termination": {
+          "title": "6. Fesih",
+          "content": "Bu Koşulların ihlali de dahil olmak üzere herhangi bir nedenle, önceden bildirimde bulunmaksızın veya sorumluluk üstlenmeksizin hesabınızı ve hizmete erişiminizi derhal askıya alabilir veya feshedebiliriz. Fesih üzerine, hizmeti kullanma hakkınız derhal sona erer. Doğaları gereği fesihten sonra da geçerliliğini koruması gereken tüm hükümler, mülkiyet hükümleri, garanti feragatnameleri ve sorumluluk sınırlamaları dahil olmak üzere geçerliliğini koruyacaktır."
+        },
+        "liability": {
+          "title": "7. Sorumluluk Sınırlaması",
+          "content": "StreamVault ve bağlı kuruluşları, hizmeti kullanmanızdan veya kullanamamanızdan kaynaklanan dolaylı, arızi, özel, sonuç olarak ortaya çıkan veya cezai zararlardan sorumlu tutulamaz. Bu koşullardan veya hizmetten kaynaklanan herhangi bir talep için toplam sorumluluğumuz, talepten önceki on iki ay içinde bize ödediğiniz tutarı aşmayacaktır. Hizmet, herhangi bir garanti olmaksızın 'olduğu gibi' ve 'mevcut olduğu şekliyle' sunulmaktadır."
+        }
+      }
+    },
+    "privacy": {
+      "title": "Gizlilik Politikası",
+      "description": "StreamVault olarak kişisel verilerinizin korunmasına büyük önem veriyoruz. Bu politika, verilerinizin nasıl toplandığını, kullanıldığını ve korunduğunu açıklar.",
+      "lastUpdated": "Son Güncelleme: Şubat 2026",
+      "sections": {
+        "dataCollection": {
+          "title": "1. Topladığımız Veriler",
+          "content": "Hesap oluşturduğunuzda veya abone olduğunuzda adınız, e-posta adresiniz ve ödeme bilgileriniz gibi doğrudan sağladığınız bilgileri topluyoruz. Ayrıca hizmetlerimizi iyileştirmek için izleme geçmişi, arama sorguları, cihaz bilgileri ve IP adresi gibi kullanım verilerini otomatik olarak topluyoruz."
+        },
+        "dataUsage": {
+          "title": "2. Verilerinizi Nasıl Kullanıyoruz",
+          "content": "Verileriniz StreamVault deneyimini sağlamak ve kişiselleştirmek, ödemeleri işlemek ve abonelikleri yönetmek, izleme alışkanlıklarınıza göre içerik önermek, hizmetle ilgili bildirimler göndermek ve platform performansını ve güvenliğini artırmak için kullanılır."
+        },
+        "dataSecurity": {
+          "title": "3. Veri Güvenliği",
+          "content": "Kişisel verilerinizi korumak için aktarım sırasında ve beklemede şifreleme, güvenli ödeme işleme, düzenli güvenlik denetimleri ve sistemlerimize erişim kontrolleri dahil olmak üzere endüstri standardı güvenlik önlemleri uyguluyoruz."
+        },
+        "cookies": {
+          "title": "4. Çerezler ve İzleme",
+          "content": "StreamVault, oturumunuzu sürdürmek, tercihlerinizi hatırlamak, platform kullanımını analiz etmek ve ilgili içerik önerileri sunmak için çerezler ve benzer teknolojiler kullanır. Çerez tercihlerinizi tarayıcı ayarlarınızdan yönetebilirsiniz."
+        },
+        "thirdParty": {
+          "title": "5. Üçüncü Taraf Paylaşımı",
+          "content": "Kişisel verilerinizi satmıyoruz. İşlemleri gerçekleştirmek için ödeme işlemcileri, hizmetimizi iyileştirmek için analiz sağlayıcıları ve yürürlükteki yasaların gerektirdiği durumlarda kolluk kuvvetleri ile sınırlı veri paylaşabiliriz."
+        },
+        "rights": {
+          "title": "6. Haklarınız",
+          "content": "Kişisel verilerinize erişme, düzeltme veya silme, verilerinizin bir kopyasını talep etme, pazarlama iletişimlerinden çıkma ve hesabınızı istediğiniz zaman kapatma hakkına sahipsiniz. Bu haklarınızı kullanmak için hesap ayarlarınızı ziyaret edebilir veya destek ekibimizle iletişime geçebilirsiniz."
+        },
+        "changes": {
+          "title": "7. Politika Değişiklikleri",
+          "content": "Bu gizlilik politikasını zaman zaman güncelleyebiliriz. Önemli değişiklikler yaptığımızda, sizi e-posta yoluyla veya platformumuzda bir bildirim aracılığıyla bilgilendireceğiz. Değişikliklerden sonra StreamVault'u kullanmaya devam etmeniz, güncellenmiş politikayı kabul ettiğiniz anlamına gelir."
+        }
+      }
     }
   },
   "notifications": {

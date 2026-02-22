@@ -21,15 +21,17 @@ type UploadState = 'idle' | 'selected' | 'uploading' | 'complete' | 'error';
 
 interface VideoUploaderProps {
   contentId: string;
+  onUploadComplete?: (jobId: string) => void;
 }
 
-export function VideoUploader({ contentId }: VideoUploaderProps) {
+export function VideoUploader({ contentId, onUploadComplete }: VideoUploaderProps) {
   const t = useTranslations('admin.upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<UploadState>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
 
   const handleFile = useCallback((f: File) => {
     if (!ACCEPTED_TYPES.includes(f.type) && !f.name.match(/\.(mp4|mkv|avi)$/i)) {
@@ -60,9 +62,11 @@ export function VideoUploader({ contentId }: VideoUploaderProps) {
       const formData = new FormData();
       formData.append('content_id', contentId);
       formData.append('file', file);
-      await uploadVideo(formData, (pct) => setProgress(pct));
+      const response = await uploadVideo(formData, (pct) => setProgress(pct));
+      setJobId(response.job_id);
       setState('complete');
       toast.success(t('successMessage'));
+      onUploadComplete?.(response.job_id);
     } catch (err) {
       setState('error');
       toast.error(extractErrorMessage(err));
@@ -73,6 +77,7 @@ export function VideoUploader({ contentId }: VideoUploaderProps) {
     setFile(null);
     setState('idle');
     setProgress(0);
+    setJobId(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -139,7 +144,7 @@ export function VideoUploader({ contentId }: VideoUploaderProps) {
           <CheckCircle className="h-5 w-5 text-success" />
           <div className="flex-1">
             <p className="text-sm font-medium text-foreground">{t('complete')}</p>
-            <Link href="/admin/encoding" className="text-xs text-primary hover:underline">
+            <Link href={jobId ? `/admin/encoding?jobId=${jobId}` : '/admin/encoding'} className="text-xs text-primary hover:underline">
               {t('viewEncodingJobs')}
             </Link>
           </div>

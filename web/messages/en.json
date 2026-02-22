@@ -498,6 +498,33 @@
       "uploadAnother": "Upload Another",
       "tryAgain": "Try Again"
     },
+    "episodes": {
+      "title": "Seasons & Episodes",
+      "addEpisode": "Add Episode",
+      "noSeasons": "No seasons yet",
+      "noSeasonsHint": "Add the first episode to create a season automatically.",
+      "noEpisodes": "No episodes in this season",
+      "seasonLabel": "Season {number}",
+      "episodeCount": "{count, plural, one {# episode} other {# episodes}}",
+      "season": "Season",
+      "episodeNumber": "Episode #",
+      "episodeTitle": "Title",
+      "episodeTitlePlaceholder": "Episode title...",
+      "description": "Description",
+      "descriptionPlaceholder": "Brief episode description...",
+      "duration": "Duration (min)",
+      "thumbnailUrl": "Thumbnail URL",
+      "newSeason": "New Season",
+      "add": "Add",
+      "adding": "Adding...",
+      "addSuccess": "Episode added successfully",
+      "validationError": "Please fill in all required fields",
+      "uploadVideo": "Upload Video",
+      "statusReady": "Ready",
+      "statusProcessing": "Processing",
+      "statusError": "Error",
+      "statusNoVideo": "No Video"
+    },
     "encoding": {
       "pageTitle": "Encoding Jobs",
       "all": "All",
@@ -523,6 +550,173 @@
       "segments": "Segments",
       "errorMessage": "Error",
       "backToList": "Back to Jobs"
+    }
+  },
+  "pages": {
+    "movies": {
+      "title": "Movies",
+      "noContent": "No movies available yet",
+      "metaDescription": "Browse our complete movie catalog",
+      "resultsCount": "{count, plural, one {# movie} other {# movies}}",
+      "allGenres": "All",
+      "clearFilters": "Clear Filters",
+      "sortBy": "Sort",
+      "sortNewest": "Newest",
+      "sortRating": "Top Rated",
+      "sortYear": "Release Year",
+      "sortTitle": "A-Z",
+      "noResults": "No movies match your filters",
+      "noResultsHint": "Try adjusting your filters or clearing them",
+      "page": "Page {current} of {total}",
+      "previousPage": "Previous page",
+      "nextPage": "Next page"
+    },
+    "series": {
+      "title": "Series",
+      "noContent": "No series available yet"
+    },
+    "about": {
+      "title": "About StreamVault",
+      "description": "StreamVault is a modern streaming platform designed for movie and series enthusiasts. With our extensive content library, you can watch your favorite productions anytime, anywhere.",
+      "missionTitle": "Our Mission",
+      "missionDescription": "We believe everyone deserves access to quality entertainment. StreamVault was built to deliver a seamless, high-quality streaming experience — from the latest blockbusters to timeless classics, all in one place.",
+      "featuresTitle": "What Makes Us Different",
+      "featureAdaptiveTitle": "Adaptive Streaming",
+      "featureAdaptiveDesc": "Enjoy smooth playback with automatic quality adjustment based on your connection speed.",
+      "featureMultiProfileTitle": "Multiple Profiles",
+      "featureMultiProfileDesc": "Create personalized profiles for every member of your household with individual watchlists and recommendations.",
+      "featureMultiLangTitle": "Multi-Language Support",
+      "featureMultiLangDesc": "Watch content with subtitles and interface available in multiple languages.",
+      "featureCuratedTitle": "Curated Collections",
+      "featureCuratedDesc": "Discover handpicked collections organized by genre, mood, and trending topics.",
+      "statsTitle": "StreamVault in Numbers",
+      "statContentLibrary": "Titles Available",
+      "statContentLibraryValue": "10,000+",
+      "statDevices": "Supported Devices",
+      "statDevicesValue": "6+",
+      "statQuality": "Max Streaming Quality",
+      "statQualityValue": "4K HDR",
+      "statLanguages": "Languages",
+      "statLanguagesValue": "2+",
+      "teamTitle": "Behind StreamVault",
+      "teamDescription": "StreamVault is developed by a passionate team of engineers, designers, and content curators dedicated to bringing you the best streaming experience possible.",
+      "contactCta": "Have questions? Visit our Help Center"
+    },
+    "help": {
+      "title": "Help Center",
+      "description": "Have questions about StreamVault? Browse the resources below or contact our support team.",
+      "contact": "Contact: support@streamvault.com",
+      "faq": {
+        "title": "Frequently Asked Questions",
+        "categories": {
+          "account": "Account",
+          "streaming": "Streaming",
+          "subscription": "Subscription",
+          "technical": "Technical"
+        },
+        "account": {
+          "q1": "How do I create a StreamVault account?",
+          "a1": "Click the 'Sign Up' button on the homepage and follow the registration steps. You'll need a valid email address and a password.",
+          "q2": "How many profiles can I create?",
+          "a2": "Depending on your subscription plan, you can create up to 5 profiles per account, including a kids profile.",
+          "q3": "How do I change my email or password?",
+          "a3": "Go to your Account page from the profile menu. You can update your email address and password in the account settings section."
+        },
+        "streaming": {
+          "q1": "What devices can I watch on?",
+          "a1": "StreamVault is available on web browsers, smartphones, tablets, smart TVs, and streaming devices. Simply sign in with your account to start watching.",
+          "q2": "Why is my video buffering or low quality?",
+          "a2": "Video quality depends on your internet speed. We recommend at least 5 Mbps for HD and 25 Mbps for 4K streaming. Try closing other apps or restarting your router.",
+          "q3": "Can I watch content offline?",
+          "a3": "Offline downloads are currently not supported on the web platform. This feature may be available in future mobile app releases."
+        },
+        "subscription": {
+          "q1": "What plans are available?",
+          "a1": "We offer multiple plans with different features including video quality, number of simultaneous screens, and content access. Visit the Subscription page for current pricing.",
+          "q2": "How do I cancel my subscription?",
+          "a2": "You can cancel anytime from your Account > Subscription page. Your access will continue until the end of your current billing period.",
+          "q3": "Can I change my plan?",
+          "a3": "Yes, you can upgrade or downgrade your plan at any time from the Subscription management page. Changes take effect on your next billing cycle."
+        },
+        "technical": {
+          "q1": "Which browsers are supported?",
+          "a1": "StreamVault works best on the latest versions of Chrome, Firefox, Safari, and Edge. We recommend keeping your browser up to date for the best experience.",
+          "q2": "I'm getting an error message. What should I do?",
+          "a2": "Try refreshing the page, clearing your browser cache, or switching to a different browser. If the issue persists, contact our support team.",
+          "q3": "How do I report a bug or give feedback?",
+          "a3": "You can reach our support team at support@streamvault.com. Please include details about the issue, your browser, and any error messages you see."
+        }
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "description": "By using StreamVault services, you agree to the following terms. These terms may be updated from time to time.",
+      "lastUpdated": "Last Updated: February 2026",
+      "sections": {
+        "acceptance": {
+          "title": "1. Acceptance of Terms",
+          "content": "By accessing or using StreamVault, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this service. StreamVault reserves the right to modify these terms at any time, and your continued use of the service constitutes acceptance of those changes."
+        },
+        "account": {
+          "title": "2. Account & Registration",
+          "content": "To access certain features of StreamVault, you must create an account. You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must provide accurate and complete information during registration and keep your account information up to date. You must notify us immediately of any unauthorized use of your account."
+        },
+        "contentUsage": {
+          "title": "3. Content & Usage",
+          "content": "All content available on StreamVault is for personal, non-commercial use only. You may not copy, distribute, modify, display, perform, or create derivative works from any content without prior written consent. Streaming content is licensed, not sold, and your access is subject to the terms of the applicable license agreements. Unauthorized downloading, recording, or redistribution of content is strictly prohibited."
+        },
+        "subscription": {
+          "title": "4. Subscription & Payment",
+          "content": "StreamVault offers various subscription plans with different features and pricing. By subscribing, you agree to pay the applicable fees as described at the time of purchase. Subscriptions automatically renew unless cancelled before the renewal date. Refunds are handled in accordance with our refund policy. We reserve the right to change subscription prices with reasonable notice."
+        },
+        "intellectualProperty": {
+          "title": "5. Intellectual Property",
+          "content": "All content, trademarks, logos, and intellectual property displayed on StreamVault are the property of their respective owners. The StreamVault name, logo, and related marks are our trademarks. You may not use any of these without prior written permission. Any feedback or suggestions you provide may be used by us without obligation to you."
+        },
+        "termination": {
+          "title": "6. Termination",
+          "content": "We may terminate or suspend your account and access to the service immediately, without prior notice or liability, for any reason, including breach of these Terms. Upon termination, your right to use the service will immediately cease. All provisions of the Terms which by their nature should survive termination shall survive, including ownership provisions, warranty disclaimers, and limitations of liability."
+        },
+        "liability": {
+          "title": "7. Limitation of Liability",
+          "content": "StreamVault and its affiliates shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service. Our total liability for any claims arising from these terms or the service shall not exceed the amount you paid us in the twelve months preceding the claim. The service is provided on an 'as is' and 'as available' basis without warranties of any kind."
+        }
+      }
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "At StreamVault, we value the protection of your personal data. This policy explains how your data is collected, used, and protected.",
+      "lastUpdated": "Last Updated: February 2026",
+      "sections": {
+        "dataCollection": {
+          "title": "1. Data We Collect",
+          "content": "We collect information you provide directly, such as your name, email address, and payment details when you create an account or subscribe. We also automatically collect usage data, including viewing history, search queries, device information, and IP address to improve our services."
+        },
+        "dataUsage": {
+          "title": "2. How We Use Your Data",
+          "content": "Your data is used to provide and personalize the StreamVault experience, process payments and manage subscriptions, recommend content based on your viewing habits, send service-related communications, and improve platform performance and security."
+        },
+        "dataSecurity": {
+          "title": "3. Data Security",
+          "content": "We implement industry-standard security measures to protect your personal data, including encryption of data in transit and at rest, secure payment processing, regular security audits, and access controls for our systems."
+        },
+        "cookies": {
+          "title": "4. Cookies & Tracking",
+          "content": "StreamVault uses cookies and similar technologies to maintain your session, remember your preferences, analyze platform usage, and deliver relevant content recommendations. You can manage cookie preferences through your browser settings."
+        },
+        "thirdParty": {
+          "title": "5. Third-Party Sharing",
+          "content": "We do not sell your personal data. We may share limited data with payment processors to handle transactions, analytics providers to improve our service, and law enforcement when required by applicable law."
+        },
+        "rights": {
+          "title": "6. Your Rights",
+          "content": "You have the right to access, correct, or delete your personal data, request a copy of your data, opt out of marketing communications, and close your account at any time. To exercise these rights, visit your account settings or contact our support team."
+        },
+        "changes": {
+          "title": "7. Policy Changes",
+          "content": "We may update this privacy policy from time to time. When we make significant changes, we will notify you via email or through a notice on our platform. Continued use of StreamVault after changes constitutes acceptance of the updated policy."
+        }
+      }
     }
   },
   "notifications": {

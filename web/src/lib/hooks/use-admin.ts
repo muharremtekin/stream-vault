@@ -9,7 +9,9 @@ import {
   getSeriesById,
   createMovie,
   createSeries,
+  addEpisode,
 } from '@/lib/api/catalog';
+import type { AddEpisodeRequest } from '@/lib/api/catalog';
 import { getJobs, getJob } from '@/lib/api/encoding';
 
 import type { CatalogParams } from '@/lib/types/catalog';
@@ -58,6 +60,11 @@ export function useAdminEncodingJobs(params?: EncodingJobsParams) {
     queryKey: ['admin', 'encoding', 'jobs', params],
     queryFn: () => getJobs(params),
     staleTime: STALE_2MIN,
+    refetchInterval: (query) => {
+      const jobs = query.state.data?.jobs;
+      const hasActive = jobs?.some((j) => j.status === 'processing' || j.status === 'pending');
+      return hasActive ? 10_000 : false;
+    },
   });
 }
 
@@ -90,6 +97,17 @@ export function useCreateSeries() {
     mutationFn: (data: SeriesFormData) => createSeries(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'series'] });
+    },
+  });
+}
+
+export function useAddEpisode(seriesId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { seasonNumber: number; data: AddEpisodeRequest }) =>
+      addEpisode(seriesId, vars.seasonNumber, vars.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'seriesDetail', seriesId] });
     },
   });
 }

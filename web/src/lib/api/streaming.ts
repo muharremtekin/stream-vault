@@ -46,6 +46,12 @@ export async function getContinueWatching(
   return response.data;
 }
 
+export interface UploadResponse {
+  job_id: string;
+  content_id: string;
+  status: string;
+}
+
 /**
  * Upload a video file for encoding (admin-only).
  * Uses a separate axios instance with extended timeout for large files.
@@ -53,7 +59,7 @@ export async function getContinueWatching(
 export async function uploadVideo(
   formData: FormData,
   onUploadProgress?: (percentage: number) => void
-): Promise<void> {
+): Promise<UploadResponse> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { useAuthStore } = require('@/lib/stores/auth-store') as {
     useAuthStore: {
@@ -63,7 +69,7 @@ export async function uploadVideo(
 
   const { accessToken } = useAuthStore.getState();
 
-  await axios.post(`${API_URL}/api/stream/upload`, formData, {
+  const response = await axios.post<UploadResponse>(`${API_URL}/api/stream/upload`, formData, {
     timeout: 5 * 60_000, // 5 minutes for large uploads
     headers: {
       'Content-Type': 'multipart/form-data',
@@ -76,4 +82,5 @@ export async function uploadVideo(
       }
     },
   });
+  return response.data;
 }

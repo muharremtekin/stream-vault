@@ -1,15 +1,17 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { ArrowLeft, Film, Tv } from 'lucide-react';
+import { ArrowLeft, Film, Tv, CheckCircle, Loader2, AlertCircle, Upload } from 'lucide-react';
 
 import { useAdminMovie, useAdminSeriesDetail } from '@/lib/hooks/use-admin';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoUploader } from '@/components/admin/video-uploader';
+import { EpisodeManager } from '@/components/admin/episode-manager';
 import { cn } from '@/lib/utils/cn';
 
 interface ContentDetailProps {
@@ -19,6 +21,7 @@ interface ContentDetailProps {
 export function ContentDetail({ contentId }: ContentDetailProps) {
   const t = useTranslations('admin.contentDetail');
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const movieQuery = useAdminMovie(contentId);
   const movieResolved = movieQuery.isFetched;
@@ -104,10 +107,26 @@ export function ContentDetail({ contentId }: ContentDetailProps) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border p-6">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">{t('videoUpload')}</h2>
-        <VideoUploader contentId={contentId} />
-      </div>
+      {isMovie && movie && (
+        <div className="rounded-lg border border-border p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">{t('videoUpload')}</h2>
+            <MovieVideoStatusBadge status={movie.videoStatus} />
+          </div>
+          <VideoUploader
+            contentId={contentId}
+            onUploadComplete={() => {
+              queryClient.invalidateQueries({ queryKey: ['admin', 'movie', contentId] });
+            }}
+          />
+        </div>
+      )}
+
+      {!isMovie && series && (
+        <div className="rounded-lg border border-border p-6">
+          <EpisodeManager series={series} />
+        </div>
+      )}
     </div>
   );
 }
@@ -126,6 +145,42 @@ function InfoCard({ label, value }: InfoCardProps) {
       </p>
     </div>
   );
+}
+
+function MovieVideoStatusBadge({ status }: { status: string }) {
+  const t = useTranslations('admin.episodes');
+  switch (status) {
+    case 'Ready':
+      return (
+        <Badge size="sm" variant="success" className="gap-1">
+          <CheckCircle className="h-3 w-3" />
+          {t('statusReady')}
+        </Badge>
+      );
+    case 'Encoding':
+    case 'Queued':
+    case 'Uploading':
+      return (
+        <Badge size="sm" variant="warning" className="gap-1">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          {t('statusProcessing')}
+        </Badge>
+      );
+    case 'Error':
+      return (
+        <Badge size="sm" variant="error" className="gap-1">
+          <AlertCircle className="h-3 w-3" />
+          {t('statusError')}
+        </Badge>
+      );
+    default:
+      return (
+        <Badge size="sm" variant="default" className="gap-1 opacity-60">
+          <Upload className="h-3 w-3" />
+          {t('statusNoVideo')}
+        </Badge>
+      );
+  }
 }
 
 function DetailSkeleton() {

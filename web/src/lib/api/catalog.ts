@@ -74,3 +74,22 @@ export async function createSeries(
   );
   return response.data;
 }
+
+export interface AddEpisodeRequest {
+  episodeNumber: number;
+  title: string;
+  description: string;
+  durationMinutes: number;
+  thumbnailUrl: string;
+}
+
+export async function addEpisode(
+  seriesId: string,
+  seasonNumber: number,
+  data: AddEpisodeRequest
+): Promise<void> {
+  await apiClient.post(
+    `/api/catalog/series/${seriesId}/seasons/${seasonNumber}/episodes`,
+    data
+  );
+}
