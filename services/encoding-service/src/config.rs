@@ -6,6 +6,7 @@ pub struct Config {
     pub consul: ConsulConfig,
     pub minio: MinIOConfig,
     pub rabbitmq: RabbitMQConfig,
+    pub redis: RedisConfig,
     pub encoding: EncodingConfig,
     pub logging: LoggingConfig,
     pub telemetry: TelemetryConfig,
@@ -46,6 +47,11 @@ pub struct RabbitMQConfig {
     pub prefetch: u16,
     pub max_retries: u32,
     pub retry_delay_secs: u64,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RedisConfig {
+    pub url: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -94,6 +100,7 @@ pub fn load() -> anyhow::Result<Config> {
         .set_default("rabbitmq.prefetch", 2)?
         .set_default("rabbitmq.max_retries", 3)?
         .set_default("rabbitmq.retry_delay_secs", 5)?
+        .set_default("redis.url", "redis://localhost:6379/1")?
         .set_default("encoding.temp_dir", "/tmp/encoding")?
         .set_default("encoding.ffmpeg_path", "/usr/bin/ffmpeg")?
         .set_default("encoding.ffprobe_path", "/usr/bin/ffprobe")?

@@ -63,7 +63,7 @@ impl From<&crate::messaging::models::EncodingOutput> for JobOutput {
             width: o.width,
             height: o.height,
             bitrate_kbps: o.bitrate_kbps,
-            file_size_bytes: 0,
+            file_size_bytes: o.file_size_bytes,
             segment_count: o.segment_count,
             playlist_path: o.playlist_path.clone(),
             storage_path: String::new(),
@@ -111,6 +111,7 @@ mod tests {
             width: 1280,
             height: 720,
             bitrate_kbps: 2800,
+            file_size_bytes: 50_000_000,
             segment_count: 15,
             playlist_path: "movie-456/720p/playlist.m3u8".to_string(),
         };
@@ -121,7 +122,7 @@ mod tests {
         assert_eq!(output.width, 1280);
         assert_eq!(output.height, 720);
         assert_eq!(output.bitrate_kbps, 2800);
-        assert_eq!(output.file_size_bytes, 0); // not tracked
+        assert_eq!(output.file_size_bytes, 50_000_000);
         assert_eq!(output.segment_count, 15);
         assert_eq!(output.playlist_path, "movie-456/720p/playlist.m3u8");
         assert!(output.storage_path.is_empty());

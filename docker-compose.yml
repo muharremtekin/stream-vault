@@ -313,7 +313,9 @@ services:
           memory: 256M
 
   encoding-service:
-    build: ./services/encoding-service
+    build:
+      context: .
+      dockerfile: services/encoding-service/Dockerfile
     restart: unless-stopped
     environment:
       - ENCODING_CONSUL__ADDRESS=consul:8500
@@ -321,11 +323,14 @@ services:
       - ENCODING_MINIO__ACCESS_KEY=${MINIO_ACCESS_KEY}
       - ENCODING_MINIO__SECRET_KEY=${MINIO_SECRET_KEY}
       - ENCODING_RABBITMQ__URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/%2f
+      - ENCODING_REDIS__URL=redis://redis:6379/1
       - ENCODING_TELEMETRY__ENDPOINT=http://jaeger:4318
     depends_on:
       minio:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       consul:
         condition: service_healthy
@@ -340,8 +345,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1G
+          cpus: "3.0"
+          memory: 3G
 
   # --- Phase 3 Services ---
 

@@ -196,8 +196,9 @@ async fn main() -> anyhow::Result<()> {
     // Shutdown channel
     let (shutdown_tx, shutdown_rx) = watch::channel(false);
 
-    // Job store (shared between pipeline, HTTP API, and gRPC)
-    let job_store = store::new_job_store();
+    // Job store — Redis-backed (shared between pipeline, HTTP API, and gRPC)
+    let job_store = store::JobStore::new(&cfg.redis.url).await?;
+    info!(url = %cfg.redis.url, "redis job store initialized");
 
     // Pipeline orchestrator
     let orchestrator = PipelineOrchestrator::new(
@@ -205,7 +206,7 @@ async fn main() -> anyhow::Result<()> {
         &cfg.minio,
         Arc::clone(&storage),
         Arc::clone(&publisher),
-        Arc::clone(&job_store),
+        job_store.clone(),
     );
 
     // RabbitMQ consumer
@@ -230,14 +231,14 @@ async fn main() -> anyhow::Result<()> {
     };
 
     // gRPC service (clone store before moving into spawned task)
-    let grpc_store = Arc::clone(&job_store);
+    let grpc_store = job_store.clone();
 
     // HTTP server
     let startup_ready = Arc::new(AtomicBool::new(false));
     let app_state = AppState {
         storage: Arc::clone(&storage),
         config: cfg.clone(),
-        store: Arc::clone(&job_store),
+        store: job_store.clone(),
         rabbit_check,
         startup_ready: Arc::clone(&startup_ready),
     };

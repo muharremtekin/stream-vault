@@ -57,13 +57,23 @@ impl Uploader {
                 )
                 .await?;
 
-            // Upload segments
+            // Upload segments and accumulate total file size
+            let mut total_bytes: i64 = 0;
+
+            // Include playlist size
+            if let Ok(meta) = tokio::fs::metadata(&result.playlist_path).await {
+                total_bytes += meta.len() as i64;
+            }
+
             let mut entries = tokio::fs::read_dir(&result.output_dir).await?;
             while let Some(entry) = entries.next_entry().await? {
                 let file_name = entry.file_name();
                 let file_name_str = file_name.to_string_lossy();
 
                 if file_name_str.ends_with(".ts") {
+                    if let Ok(meta) = entry.metadata().await {
+                        total_bytes += meta.len() as i64;
+                    }
                     let segment_key = format!("{}/{}", base_key, file_name_str);
                     self.storage
                         .upload_from_file(
@@ -79,6 +89,7 @@ impl Uploader {
             info!(
                 quality = quality_str,
                 segments = result.segment_count,
+                file_size_bytes = total_bytes,
                 "uploaded quality"
             );
 
@@ -87,6 +98,7 @@ impl Uploader {
                 width: profile.width,
                 height: profile.height,
                 bitrate_kbps: profile.video_bitrate_kbps,
+                file_size_bytes: total_bytes,
                 segment_count: result.segment_count as i32,
                 playlist_path: playlist_key,
             });

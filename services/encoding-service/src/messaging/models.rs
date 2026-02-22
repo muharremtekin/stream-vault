@@ -44,6 +44,7 @@ pub struct EncodingOutput {
     pub width: i32,
     pub height: i32,
     pub bitrate_kbps: i32,
+    pub file_size_bytes: i64,
     pub segment_count: i32,
     pub playlist_path: String,
 }
@@ -85,6 +86,7 @@ mod tests {
                 width: 1280,
                 height: 720,
                 bitrate_kbps: 2800,
+                file_size_bytes: 50_000_000,
                 segment_count: 12,
                 playlist_path: "movie-456/720p/playlist.m3u8".into(),
             }],

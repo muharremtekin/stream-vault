@@ -69,7 +69,7 @@ impl PipelineOrchestrator {
         // Step 0: Create job temp directory
         tokio::fs::create_dir_all(job_dir).await?;
 
-        // Step 1: Download source file from MinIO
+        // Step 1: Download source file from MinIO (0% → 5%)
         store::update_status(&self.store, &job.job_id, JobStatus::Processing, "downloading", 5.0).await;
         let source_path = job_dir.join("source.mp4");
         info!(job_id = %job.job_id, step = "download", "downloading source file");
@@ -79,22 +79,22 @@ impl PipelineOrchestrator {
             .await?;
         info!(job_id = %job.job_id, bytes, "source file downloaded");
 
-        // Step 2: Validate
-        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "validating", 15.0).await;
+        // Step 2: Validate (5% → 10%)
+        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "validating", 10.0).await;
         info!(job_id = %job.job_id, step = "validate", "validating source file");
         let metadata = self.validator.validate(&source_path).await?;
 
-        // Step 3: Transcode + Segment (combined, parallel across qualities)
-        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "transcoding", 25.0).await;
+        // Step 3: Transcode + Segment (15% → 75%, per-quality progress updated by transcoder)
+        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "transcoding", 15.0).await;
         info!(job_id = %job.job_id, step = "transcode", qualities = metadata.target_qualities.len(), "starting transcode");
         let transcode_results = self
             .transcoder
-            .transcode_all(&source_path, &job.job_id, &metadata)
+            .transcode_all(&source_path, &job.job_id, &metadata, &self.store)
             .await?;
         info!(job_id = %job.job_id, "transcode completed");
 
-        // Step 4: Generate thumbnails
-        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "thumbnailing", 75.0).await;
+        // Step 4: Generate thumbnails (75% → 80%)
+        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "thumbnailing", 80.0).await;
         info!(job_id = %job.job_id, step = "thumbnail", "generating thumbnails");
         let thumb_dir = job_dir.join("thumbnails");
         let thumbnail_result = self
@@ -102,8 +102,8 @@ impl PipelineOrchestrator {
             .generate(&source_path, metadata.duration_secs, &thumb_dir)
             .await?;
 
-        // Step 5: Upload everything to MinIO
-        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "uploading", 85.0).await;
+        // Step 5: Upload everything to MinIO (80% → 90%)
+        store::update_status(&self.store, &job.job_id, JobStatus::Processing, "uploading", 90.0).await;
         info!(job_id = %job.job_id, step = "upload", "uploading to storage");
         let outputs = self
             .uploader
@@ -321,9 +321,16 @@ mod tests {
         }
     }
 
+    async fn test_store() -> store::JobStore {
+        store::JobStore::new("redis://localhost:6379/15")
+            .await
+            .expect("redis required for integration tests (DB 15)")
+    }
+
     #[tokio::test]
+    #[ignore]
     async fn process_inserts_job_into_store() {
-        let store = store::new_job_store();
+        let store = test_store().await;
         let publisher: Arc<dyn ResultPublisher> = Arc::new(MockPublisher::new());
         let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
 
@@ -339,15 +346,15 @@ mod tests {
         let _ = orchestrator.process(job.clone()).await;
 
         // Job should exist in store regardless of pipeline outcome
-        let store_read = store.read().await;
-        let stored_job = store_read.get("test-job-001");
+        let stored_job = store.get_job("test-job-001").await;
         assert!(stored_job.is_some(), "job should be inserted into store");
         assert_eq!(stored_job.unwrap().content_id, "movie-123");
     }
 
     #[tokio::test]
+    #[ignore]
     async fn process_with_failing_download_publishes_failure() {
-        let store = store::new_job_store();
+        let store = test_store().await;
         let mock_pub = Arc::new(MockPublisher::new());
         let publisher: Arc<dyn ResultPublisher> = Arc::clone(&mock_pub) as Arc<dyn ResultPublisher>;
         let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
@@ -384,8 +391,9 @@ mod tests {
     }
 
     #[tokio::test]
+    #[ignore]
     async fn process_with_failing_download_marks_job_as_failed_in_store() {
-        let store = store::new_job_store();
+        let store = test_store().await;
         let publisher: Arc<dyn ResultPublisher> = Arc::new(MockPublisher::new());
         let storage: Arc<dyn StorageClient> = Arc::new(FailingStorageClient);
 
@@ -401,8 +409,7 @@ mod tests {
         let _ = orchestrator.process(job).await;
 
         // Job in store should be marked as Failed
-        let store_read = store.read().await;
-        let stored_job = store_read.get("test-job-001").unwrap();
+        let stored_job = store.get_job("test-job-001").await.unwrap();
         assert_eq!(
             stored_job.status,
             crate::domain::status::JobStatus::Failed,

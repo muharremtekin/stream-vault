@@ -9,7 +9,7 @@ RUN apk add --no-cache musl-dev protobuf-dev protoc openssl-dev openssl-libs-sta
 WORKDIR /build
 
 # Copy manifests and build script first for dependency caching
-COPY Cargo.toml Cargo.lock* build.rs ./
+COPY services/encoding-service/Cargo.toml services/encoding-service/Cargo.lock* services/encoding-service/build.rs ./
 
 # Create stub source and proto so cargo can resolve and build dependencies
 RUN mkdir -p src proto/encoding/v1 && \
@@ -22,8 +22,10 @@ RUN --mount=type=cache,target=/build/target \
     cargo build --release && \
     rm -rf src proto
 
-# Copy real source and proto files
-COPY . .
+# Copy real source and proto files from repo root
+COPY services/encoding-service/src ./src
+COPY services/encoding-service/config.toml* ./
+COPY proto ./proto
 
 # Build the actual binary (only recompiles our crate, deps are cached)
 # touch source + build.rs to invalidate cargo fingerprints from the stub build

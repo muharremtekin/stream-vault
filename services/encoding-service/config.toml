@@ -27,6 +27,9 @@ prefetch = 2
 max_retries = 3
 retry_delay_secs = 5
 
+[redis]
+url = "redis://localhost:6379/1"
+
 [encoding]
 temp_dir = "/tmp/encoding"
 ffmpeg_path = "/usr/bin/ffmpeg"
