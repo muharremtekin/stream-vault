@@ -32,7 +32,7 @@ public class GetUserProfilesHandler : IRequestHandler<GetUserProfilesQuery, List
         {
             Id = p.Id,
             Name = p.Name,
-            Icon = p.Icon.ToString(),
+            Icon = p.Icon.ToString().ToLowerInvariant(),
             IsKids = p.IsKids
         }).ToList();
     }

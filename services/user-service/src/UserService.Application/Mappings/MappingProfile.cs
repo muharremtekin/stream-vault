@@ -13,7 +13,7 @@ public class MappingProfile : AutoMapper.Profile
             .ForMember(dest => dest.ProfileCount, opt => opt.MapFrom(src => src.Profiles.Count));
 
         CreateMap<Domain.Entities.Profile, ProfileDto>()
-            .ForMember(dest => dest.Icon, opt => opt.MapFrom(src => src.Icon.ToString()));
+            .ForMember(dest => dest.Icon, opt => opt.MapFrom(src => src.Icon.ToString().ToLowerInvariant()));
 
         CreateMap<WatchlistItem, WatchlistItemDto>()
             .ForMember(dest => dest.ContentType, opt => opt.MapFrom(src => src.ContentType.ToString()));

@@ -52,7 +52,7 @@ public class CreateProfileHandler : IRequestHandler<CreateProfileCommand, Profil
         {
             Id = profile.Id,
             Name = profile.Name,
-            Icon = profile.Icon.ToString(),
+            Icon = profile.Icon.ToString().ToLowerInvariant(),
             IsKids = profile.IsKids
         };
     }

@@ -10,7 +10,7 @@ public class Profile
 
     public string Name { get; set; } = string.Empty;
 
-    public ProfileIcon Icon { get; set; } = ProfileIcon.Avatar1;
+    public ProfileIcon Icon { get; set; } = ProfileIcon.Smile;
 
     public bool IsKids { get; set; }
 

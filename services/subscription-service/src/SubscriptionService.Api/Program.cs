@@ -99,17 +99,6 @@ builder.Services.AddHealthChecks()
         name: "rabbitmq",
         tags: new[] { "ready" });
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 // Background services
 builder.Services.AddHostedService<OutboxProcessorService>();
 builder.Services.AddHostedService<SubscriptionRenewalService>();
@@ -164,8 +153,6 @@ app.UseCorrelationId();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
 app.UseHttpMetrics();
-
-app.UseCors("AllowAll");
 
 app.MapControllers();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });

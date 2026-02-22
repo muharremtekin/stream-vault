@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Consul;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,6 +66,10 @@ if (!string.IsNullOrEmpty(otelEndpoint))
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidationFilter>();
+}).AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(
+        new JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase));
 });
 
 // Swagger / OpenAPI
@@ -155,17 +160,6 @@ builder.Services.AddHealthChecks()
         name: "rabbitmq",
         tags: new[] { "ready" });
 
-// CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 // Consul service discovery
 builder.Services.AddSingleton<IConsulClient, ConsulClient>(_ =>
     new ConsulClient(config =>
@@ -216,8 +210,6 @@ app.UseCorrelationId();
 app.UseSerilogRequestLogging();
 app.UseExceptionHandling();
 app.UseHttpMetrics();
-
-app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();

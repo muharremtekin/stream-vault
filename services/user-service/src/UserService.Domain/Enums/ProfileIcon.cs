@@ -1,15 +1,18 @@
+using System.Text.Json.Serialization;
+
 namespace UserService.Domain.Enums;
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProfileIcon>))]
 public enum ProfileIcon
 {
-    Avatar1 = 1,
-    Avatar2 = 2,
-    Avatar3 = 3,
-    Avatar4 = 4,
-    Avatar5 = 5,
-    Avatar6 = 6,
-    Avatar7 = 7,
-    Avatar8 = 8,
-    Avatar9 = 9,
-    Avatar10 = 10
+    Smile = 1,
+    Cat = 2,
+    Dog = 3,
+    Bird = 4,
+    Fish = 5,
+    Rabbit = 6,
+    Star = 7,
+    Heart = 8,
+    Ghost = 9,
+    Rocket = 10
 }
