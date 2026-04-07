@@ -100,6 +100,8 @@ builder.Services.AddHealthChecks()
         tags: new[] { "ready" });
 
 // Background services
+builder.Services.Configure<OutboxProcessorOptions>(
+    builder.Configuration.GetSection(OutboxProcessorOptions.SectionName));
 builder.Services.AddHostedService<OutboxProcessorService>();
 builder.Services.AddHostedService<SubscriptionRenewalService>();
 

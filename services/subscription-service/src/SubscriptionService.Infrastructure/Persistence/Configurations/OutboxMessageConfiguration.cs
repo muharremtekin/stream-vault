@@ -44,5 +44,16 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
         builder.Property(o => o.ErrorMessage)
             .HasColumnName("error_message")
             .HasMaxLength(2000);
+
+        builder.Property(o => o.LastAttemptedAt)
+            .HasColumnName("last_attempted_at");
+
+        builder.Property(o => o.IsDeadLetter)
+            .HasColumnName("is_dead_letter")
+            .HasDefaultValue(false)
+            .IsRequired();
+
+        builder.HasIndex(o => o.IsDeadLetter)
+            .HasDatabaseName("idx_outbox_messages_is_dead_letter");
     }
 }

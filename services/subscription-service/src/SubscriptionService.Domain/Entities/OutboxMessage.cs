@@ -9,4 +9,6 @@ public class OutboxMessage
     public DateTime? ProcessedAt { get; set; }
     public int RetryCount { get; set; }
     public string? ErrorMessage { get; set; }
+    public DateTime? LastAttemptedAt { get; set; }
+    public bool IsDeadLetter { get; set; }
 }

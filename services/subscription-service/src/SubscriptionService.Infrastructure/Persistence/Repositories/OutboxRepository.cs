@@ -22,7 +22,7 @@ public class OutboxRepository : IOutboxRepository
     public async Task<List<OutboxMessage>> GetUnprocessedAsync(int batchSize = 50, CancellationToken cancellationToken = default)
     {
         return await _context.OutboxMessages
-            .Where(o => o.ProcessedAt == null && o.RetryCount < 3)
+            .Where(o => o.ProcessedAt == null && !o.IsDeadLetter)
             .OrderBy(o => o.CreatedAt)
             .Take(batchSize)
             .ToListAsync(cancellationToken);
@@ -30,22 +30,42 @@ public class OutboxRepository : IOutboxRepository
 
     public async Task MarkAsProcessedAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var message = await _context.OutboxMessages.FindAsync(new object[] { id }, cancellationToken);
-        if (message is not null)
-        {
-            message.ProcessedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        await _context.OutboxMessages
+            .Where(o => o.Id == id)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(o => o.ProcessedAt, DateTime.UtcNow),
+                cancellationToken);
     }
 
     public async Task IncrementRetryAsync(Guid id, string errorMessage, CancellationToken cancellationToken = default)
     {
-        var message = await _context.OutboxMessages.FindAsync(new object[] { id }, cancellationToken);
-        if (message is not null)
-        {
-            message.RetryCount++;
-            message.ErrorMessage = errorMessage;
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        await _context.OutboxMessages
+            .Where(o => o.Id == id)
+            .ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(o => o.RetryCount, o => o.RetryCount + 1)
+                    .SetProperty(o => o.ErrorMessage, errorMessage)
+                    .SetProperty(o => o.LastAttemptedAt, DateTime.UtcNow),
+                cancellationToken);
+    }
+
+    public async Task MarkAsDeadLetterAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await _context.OutboxMessages
+            .Where(o => o.Id == id)
+            .ExecuteUpdateAsync(
+                s => s
+                    .SetProperty(o => o.IsDeadLetter, true)
+                    .SetProperty(o => o.LastAttemptedAt, DateTime.UtcNow),
+                cancellationToken);
+    }
+
+    public async Task<List<OutboxMessage>> GetDeadLetterMessagesAsync(int batchSize = 50, CancellationToken cancellationToken = default)
+    {
+        return await _context.OutboxMessages
+            .Where(o => o.IsDeadLetter)
+            .OrderBy(o => o.CreatedAt)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
     }
 }

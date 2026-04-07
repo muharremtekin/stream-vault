@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\SubscriptionService.Api\SubscriptionService.Api.csproj" />
     <ProjectReference Include="..\..\src\SubscriptionService.Application\SubscriptionService.Application.csproj" />
     <ProjectReference Include="..\..\src\SubscriptionService.Domain\SubscriptionService.Domain.csproj" />
   </ItemGroup>
