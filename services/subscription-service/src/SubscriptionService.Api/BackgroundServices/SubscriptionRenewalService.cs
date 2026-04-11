@@ -48,6 +48,7 @@ public class SubscriptionRenewalService : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var subscriptionRepository = scope.ServiceProvider.GetRequiredService<ISubscriptionRepository>();
         var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<ISubscriptionUnitOfWork>();
 
         var expiredSubscriptions = await subscriptionRepository.GetExpiredSubscriptionsAsync(cancellationToken);
         if (expiredSubscriptions.Count == 0)
@@ -89,6 +90,8 @@ public class SubscriptionRenewalService : BackgroundService
                         Payload = payload,
                     }, cancellationToken);
 
+                    await unitOfWork.SaveChangesAsync(cancellationToken);
+
                     _logger.LogInformation(
                         "Renewed subscription {SubscriptionId} for user {UserId}. New period: {Start} - {End}.",
                         subscription.Id, subscription.UserId, subscription.PeriodStart, subscription.PeriodEnd);
@@ -99,6 +102,7 @@ public class SubscriptionRenewalService : BackgroundService
                     subscription.UpdatedAt = DateTime.UtcNow;
 
                     await subscriptionRepository.UpdateAsync(subscription, cancellationToken);
+                    await unitOfWork.SaveChangesAsync(cancellationToken);
 
                     _logger.LogInformation(
                         "Expired subscription {SubscriptionId} for user {UserId} (auto-renew disabled).",

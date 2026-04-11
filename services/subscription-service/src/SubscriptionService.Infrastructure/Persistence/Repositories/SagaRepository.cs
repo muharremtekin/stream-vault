@@ -23,14 +23,13 @@ public class SagaRepository : ISagaRepository
     public async Task AddAsync(SagaState saga, CancellationToken cancellationToken = default)
     {
         await _context.SagaStates.AddAsync(saga, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(SagaState saga, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(SagaState saga, CancellationToken cancellationToken = default)
     {
         saga.UpdatedAt = DateTime.UtcNow;
         _context.SagaStates.Update(saga);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<List<SagaState>> GetPendingSagasAsync(CancellationToken cancellationToken = default)

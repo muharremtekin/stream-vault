@@ -18,6 +18,7 @@ public class ChangePlanSagaTests
     private readonly Mock<IPaymentGateway> _payGateway = new();
     private readonly Mock<IOutboxRepository> _outboxRepo = new();
     private readonly Mock<ISagaRepository> _sagaRepo = new();
+    private readonly Mock<ISubscriptionUnitOfWork> _unitOfWork = new();
     private readonly CompensatingActions _compensatingActions;
     private readonly ChangePlanSaga _saga;
 
@@ -74,10 +75,14 @@ public class ChangePlanSagaTests
             AutoRenew = true
         };
 
+        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
         _compensatingActions = new CompensatingActions(
             _subRepo.Object,
             _payGateway.Object,
             _sagaRepo.Object,
+            _unitOfWork.Object,
             Mock.Of<ILogger<CompensatingActions>>());
 
         _saga = new ChangePlanSaga(
@@ -87,6 +92,7 @@ public class ChangePlanSagaTests
             _payGateway.Object,
             _outboxRepo.Object,
             _sagaRepo.Object,
+            _unitOfWork.Object,
             _compensatingActions,
             Mock.Of<ILogger<ChangePlanSaga>>());
     }
@@ -143,6 +149,7 @@ public class ChangePlanSagaTests
         _outboxRepo.Verify(r => r.AddAsync(
             It.Is<OutboxMessage>(m => m.EventType == "plan.changed"),
             It.IsAny<CancellationToken>()), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -167,6 +174,7 @@ public class ChangePlanSagaTests
         _payGateway.Verify(g => g.ChargeAsync(
             It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

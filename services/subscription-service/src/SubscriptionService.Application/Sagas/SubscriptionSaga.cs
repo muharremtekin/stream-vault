@@ -17,6 +17,7 @@ public class SubscriptionSaga
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IOutboxRepository _outboxRepository;
     private readonly ISagaRepository _sagaRepository;
+    private readonly ISubscriptionUnitOfWork _unitOfWork;
     private readonly CompensatingActions _compensatingActions;
     private readonly ILogger<SubscriptionSaga> _logger;
 
@@ -28,6 +29,7 @@ public class SubscriptionSaga
         IInvoiceRepository invoiceRepository,
         IOutboxRepository outboxRepository,
         ISagaRepository sagaRepository,
+        ISubscriptionUnitOfWork unitOfWork,
         CompensatingActions compensatingActions,
         ILogger<SubscriptionSaga> logger)
     {
@@ -38,6 +40,7 @@ public class SubscriptionSaga
         _invoiceRepository = invoiceRepository;
         _outboxRepository = outboxRepository;
         _sagaRepository = sagaRepository;
+        _unitOfWork = unitOfWork;
         _compensatingActions = compensatingActions;
         _logger = logger;
     }
@@ -68,27 +71,41 @@ public class SubscriptionSaga
             Status = SagaStatus.InProgress,
             StateData = JsonSerializer.Serialize(sagaData)
         };
-        await _sagaRepository.AddAsync(saga, cancellationToken);
+
+        var pendingPhaseCommitted = false;
 
         try
         {
-            var subscription = await CreatePendingSubscriptionAsync(
+            var subscription = await CreatePendingSubscriptionPhaseAsync(
                 saga, sagaData, plan, cancellationToken);
+            pendingPhaseCommitted = true;
 
-            await ProcessPaymentAsync(
-                saga, sagaData, plan, subscription, cancellationToken);
+            var paymentResult = await _paymentGateway.ChargeAsync(
+                sagaData.CardNumber,
+                plan.PriceMonthly,
+                "TRY",
+                cancellationToken);
 
-            await ActivateSubscriptionAsync(
-                saga, sagaData, subscription, cancellationToken);
+            if (!paymentResult.IsSuccess)
+            {
+                await PersistFailedPaymentPhaseAsync(
+                    saga,
+                    sagaData,
+                    subscription,
+                    plan,
+                    paymentResult,
+                    cancellationToken);
 
-            await CreateInvoiceAsync(
-                saga, sagaData, plan, subscription, cancellationToken);
+                throw new PaymentFailedException(paymentResult.FailureReason ?? "Payment declined");
+            }
 
-            await PublishEventsAsync(
-                saga, sagaData, plan, subscription, cancellationToken);
-
-            saga.Status = SagaStatus.Completed;
-            await _sagaRepository.UpdateAsync(saga, cancellationToken);
+            await FinalizeSuccessfulSubscriptionPhaseAsync(
+                saga,
+                sagaData,
+                plan,
+                subscription,
+                paymentResult,
+                cancellationToken);
 
             _logger.LogInformation(
                 "CreateSubscription saga {SagaId} completed for user {UserId}",
@@ -107,8 +124,12 @@ public class SubscriptionSaga
                 saga.Id, saga.CurrentStep);
 
             saga.ErrorMessage = ex.Message;
-            await _compensatingActions.CompensateCreateSubscriptionAsync(
-                saga, sagaData, cancellationToken);
+
+            if (pendingPhaseCommitted)
+            {
+                await _compensatingActions.CompensateCreateSubscriptionAsync(
+                    saga, sagaData, cancellationToken);
+            }
 
             throw new PaymentFailedException(
                 $"Subscription creation failed at {saga.CurrentStep}: {ex.Message}");
@@ -134,22 +155,12 @@ public class SubscriptionSaga
         return plan;
     }
 
-    private async Task<Subscription> CreatePendingSubscriptionAsync(
+    private async Task<Subscription> CreatePendingSubscriptionPhaseAsync(
         SagaState saga,
         CreateSubscriptionSagaData sagaData,
         Plan plan,
         CancellationToken cancellationToken)
     {
-        if (sagaData.SubscriptionId.HasValue)
-        {
-            var existing = await _subscriptionRepository.GetByIdAsync(
-                sagaData.SubscriptionId.Value, cancellationToken);
-            if (existing is not null) return existing;
-        }
-
-        saga.CurrentStep = SagaStep.CreateSubscription;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
         var now = DateTime.UtcNow;
         var subscription = new Subscription
         {
@@ -164,82 +175,70 @@ public class SubscriptionSaga
             Plan = plan
         };
 
-        await _subscriptionRepository.AddAsync(subscription, cancellationToken);
-
         sagaData.SubscriptionId = subscription.Id;
+        saga.CurrentStep = SagaStep.ProcessPayment;
         saga.StateData = JsonSerializer.Serialize(sagaData);
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
+
+        await _sagaRepository.AddAsync(saga, cancellationToken);
+        await _subscriptionRepository.AddAsync(subscription, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Saga {SagaId}: Created pending subscription {SubscriptionId}",
+            "Saga {SagaId}: Committed pre-payment phase for subscription {SubscriptionId}",
             saga.Id, subscription.Id);
 
         return subscription;
     }
 
-    private async Task ProcessPaymentAsync(
+    private async Task PersistFailedPaymentPhaseAsync(
         SagaState saga,
         CreateSubscriptionSagaData sagaData,
-        Plan plan,
         Subscription subscription,
+        Plan plan,
+        PaymentResult paymentResult,
         CancellationToken cancellationToken)
     {
-        if (sagaData.PaymentId.HasValue)
-            return;
-
         saga.CurrentStep = SagaStep.ProcessPayment;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
-        var result = await _paymentGateway.ChargeAsync(
-            sagaData.CardNumber, plan.PriceMonthly, "TRY", cancellationToken);
 
         var payment = new Payment
         {
             SubscriptionId = subscription.Id,
             Amount = plan.PriceMonthly,
             Currency = "TRY",
-            Status = result.IsSuccess ? PaymentStatus.Succeeded : PaymentStatus.Failed,
-            TransactionId = result.TransactionId,
-            FailureReason = result.FailureReason,
+            Status = PaymentStatus.Failed,
+            TransactionId = paymentResult.TransactionId,
+            FailureReason = paymentResult.FailureReason,
             CardLastFour = sagaData.CardNumber.Replace(" ", "").Replace("-", "")[^4..]
         };
 
         await _paymentRepository.AddAsync(payment, cancellationToken);
 
         sagaData.PaymentId = payment.Id;
-        sagaData.TransactionId = result.TransactionId;
+        sagaData.TransactionId = paymentResult.TransactionId;
+
+        subscription.Status = SubscriptionStatus.Failed;
+        await _subscriptionRepository.UpdateAsync(subscription, cancellationToken);
+
+        saga.Status = SagaStatus.Failed;
+        saga.ErrorMessage = paymentResult.FailureReason;
         saga.StateData = JsonSerializer.Serialize(sagaData);
         await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
-        if (!result.IsSuccess)
-        {
-            _logger.LogWarning(
-                "Saga {SagaId}: Payment failed — {Reason}",
-                saga.Id, result.FailureReason);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            await _compensatingActions.CompensateCreateSubscriptionAsync(
-                saga, sagaData, cancellationToken);
-
-            throw new PaymentFailedException(result.FailureReason ?? "Payment declined");
-        }
-
-        _logger.LogInformation(
-            "Saga {SagaId}: Payment {PaymentId} succeeded (txn: {TransactionId})",
-            saga.Id, payment.Id, result.TransactionId);
+        _logger.LogWarning(
+            "Saga {SagaId}: Persisted failed payment for subscription {SubscriptionId}",
+            saga.Id, subscription.Id);
     }
 
-    private async Task ActivateSubscriptionAsync(
+    private async Task FinalizeSuccessfulSubscriptionPhaseAsync(
         SagaState saga,
         CreateSubscriptionSagaData sagaData,
+        Plan plan,
         Subscription subscription,
+        PaymentResult paymentResult,
         CancellationToken cancellationToken)
     {
-        if (subscription.Status == SubscriptionStatus.Active)
-            return;
-
-        saga.CurrentStep = SagaStep.Activate;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
         var otherActive = await _subscriptionRepository.GetActiveByUserIdAsync(
             sagaData.UserId, cancellationToken);
 
@@ -248,26 +247,25 @@ public class SubscriptionSaga
             throw new ActiveSubscriptionExistsException(sagaData.UserId);
         }
 
+        var payment = new Payment
+        {
+            SubscriptionId = subscription.Id,
+            Amount = plan.PriceMonthly,
+            Currency = "TRY",
+            Status = PaymentStatus.Succeeded,
+            TransactionId = paymentResult.TransactionId,
+            FailureReason = paymentResult.FailureReason,
+            CardLastFour = sagaData.CardNumber.Replace(" ", "").Replace("-", "")[^4..]
+        };
+        await _paymentRepository.AddAsync(payment, cancellationToken);
+        sagaData.PaymentId = payment.Id;
+        sagaData.TransactionId = paymentResult.TransactionId;
+
+        saga.CurrentStep = SagaStep.Activate;
         subscription.Status = SubscriptionStatus.Active;
         await _subscriptionRepository.UpdateAsync(subscription, cancellationToken);
 
-        _logger.LogInformation(
-            "Saga {SagaId}: Activated subscription {SubscriptionId}",
-            saga.Id, subscription.Id);
-    }
-
-    private async Task CreateInvoiceAsync(
-        SagaState saga,
-        CreateSubscriptionSagaData sagaData,
-        Plan plan,
-        Subscription subscription,
-        CancellationToken cancellationToken)
-    {
-        if (sagaData.InvoiceId.HasValue)
-            return;
-
         saga.CurrentStep = SagaStep.CreateInvoice;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
         var invoiceNumber = await _invoiceRepository.GenerateInvoiceNumberAsync(cancellationToken);
 
@@ -283,25 +281,9 @@ public class SubscriptionSaga
         };
 
         await _invoiceRepository.AddAsync(invoice, cancellationToken);
-
         sagaData.InvoiceId = invoice.Id;
-        saga.StateData = JsonSerializer.Serialize(sagaData);
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
-        _logger.LogInformation(
-            "Saga {SagaId}: Created invoice {InvoiceNumber} for subscription {SubscriptionId}",
-            saga.Id, invoiceNumber, subscription.Id);
-    }
-
-    private async Task PublishEventsAsync(
-        SagaState saga,
-        CreateSubscriptionSagaData sagaData,
-        Plan plan,
-        Subscription subscription,
-        CancellationToken cancellationToken)
-    {
         saga.CurrentStep = SagaStep.PublishEvents;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
         var now = DateTime.UtcNow;
 
@@ -321,27 +303,30 @@ public class SubscriptionSaga
             CreatedAt = now
         }, cancellationToken);
 
-        if (sagaData.PaymentId.HasValue)
-        {
-            var paymentEvent = new PaymentProcessedEvent(
-                sagaData.PaymentId.Value,
-                subscription.Id,
-                subscription.UserId,
-                plan.PriceMonthly,
-                "TRY",
-                PaymentStatus.Succeeded.ToString(),
-                now);
+        var paymentEvent = new PaymentProcessedEvent(
+            payment.Id,
+            subscription.Id,
+            subscription.UserId,
+            plan.PriceMonthly,
+            "TRY",
+            PaymentStatus.Succeeded.ToString(),
+            now);
 
-            await _outboxRepository.AddAsync(new OutboxMessage
-            {
-                EventType = "subscription.payment.processed",
-                Payload = JsonSerializer.Serialize(paymentEvent),
-                CreatedAt = now
-            }, cancellationToken);
-        }
+        await _outboxRepository.AddAsync(new OutboxMessage
+        {
+            EventType = "subscription.payment.processed",
+            Payload = JsonSerializer.Serialize(paymentEvent),
+            CreatedAt = now
+        }, cancellationToken);
+
+        saga.Status = SagaStatus.Completed;
+        saga.StateData = JsonSerializer.Serialize(sagaData);
+        await _sagaRepository.UpdateAsync(saga, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Saga {SagaId}: Published outbox events for subscription {SubscriptionId}",
+            "Saga {SagaId}: Committed activation, invoice and outbox phase for subscription {SubscriptionId}",
             saga.Id, subscription.Id);
     }
 }

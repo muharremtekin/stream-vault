@@ -22,7 +22,6 @@ public class InvoiceRepository : IInvoiceRepository
     public async Task AddAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         await _context.Invoices.AddAsync(invoice, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<List<Invoice>> GetBySubscriptionIdAsync(

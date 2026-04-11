@@ -16,6 +16,7 @@ public class ChangePlanSaga
     private readonly IPaymentGateway _paymentGateway;
     private readonly IOutboxRepository _outboxRepository;
     private readonly ISagaRepository _sagaRepository;
+    private readonly ISubscriptionUnitOfWork _unitOfWork;
     private readonly CompensatingActions _compensatingActions;
     private readonly ILogger<ChangePlanSaga> _logger;
 
@@ -26,6 +27,7 @@ public class ChangePlanSaga
         IPaymentGateway paymentGateway,
         IOutboxRepository outboxRepository,
         ISagaRepository sagaRepository,
+        ISubscriptionUnitOfWork unitOfWork,
         CompensatingActions compensatingActions,
         ILogger<ChangePlanSaga> logger)
     {
@@ -35,6 +37,7 @@ public class ChangePlanSaga
         _paymentGateway = paymentGateway;
         _outboxRepository = outboxRepository;
         _sagaRepository = sagaRepository;
+        _unitOfWork = unitOfWork;
         _compensatingActions = compensatingActions;
         _logger = logger;
     }
@@ -75,21 +78,46 @@ public class ChangePlanSaga
             Status = SagaStatus.InProgress,
             StateData = JsonSerializer.Serialize(sagaData)
         };
-        await _sagaRepository.AddAsync(saga, cancellationToken);
+
+        var prePaymentPhaseCommitted = false;
 
         try
         {
-            await ProcessPriceDifferenceAsync(
-                saga, sagaData, subscription, cancellationToken);
+            await _sagaRepository.AddAsync(saga, cancellationToken);
 
-            await UpdateSubscriptionAsync(
-                saga, sagaData, subscription, newPlanId, cancellationToken);
+            PaymentResult? paymentResult = null;
 
-            await PublishChangeEventsAsync(
-                saga, sagaData, subscription, oldPlan, newPlan, cancellationToken);
+            if (isUpgrade && priceDifference > 0)
+            {
+                saga.CurrentStep = SagaStep.ProcessPriceDifference;
+                saga.StateData = JsonSerializer.Serialize(sagaData);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                prePaymentPhaseCommitted = true;
 
-            saga.Status = SagaStatus.Completed;
-            await _sagaRepository.UpdateAsync(saga, cancellationToken);
+                paymentResult = await _paymentGateway.ChargeAsync(
+                    sagaData.CardNumber,
+                    sagaData.PriceDifference,
+                    "TRY",
+                    cancellationToken);
+
+                if (!paymentResult.IsSuccess)
+                {
+                    await PersistFailedUpgradePaymentPhaseAsync(
+                        saga, sagaData, subscription, paymentResult, cancellationToken);
+
+                    throw new PaymentFailedException(paymentResult.FailureReason ?? "Payment declined");
+                }
+            }
+
+            await FinalizePlanChangePhaseAsync(
+                saga,
+                sagaData,
+                subscription,
+                oldPlan,
+                newPlan,
+                paymentResult,
+                prePaymentPhaseCommitted,
+                cancellationToken);
 
             _logger.LogInformation(
                 "ChangePlan saga {SagaId} completed for subscription {SubscriptionId}",
@@ -108,8 +136,12 @@ public class ChangePlanSaga
                 saga.Id, saga.CurrentStep);
 
             saga.ErrorMessage = ex.Message;
-            await _compensatingActions.CompensateChangePlanAsync(
-                saga, sagaData, cancellationToken);
+
+            if (prePaymentPhaseCommitted)
+            {
+                await _compensatingActions.CompensateChangePlanAsync(
+                    saga, sagaData, cancellationToken);
+            }
 
             throw new PaymentFailedException(
                 $"Plan change failed at {saga.CurrentStep}: {ex.Message}");
@@ -141,59 +173,68 @@ public class ChangePlanSaga
         return (subscription, subscription.Plan, newPlan);
     }
 
-    private async Task ProcessPriceDifferenceAsync(
+    private async Task PersistFailedUpgradePaymentPhaseAsync(
         SagaState saga,
         ChangePlanSagaData sagaData,
         Subscription subscription,
+        PaymentResult paymentResult,
         CancellationToken cancellationToken)
     {
-        if (sagaData.PaymentId.HasValue)
-            return;
-
         saga.CurrentStep = SagaStep.ProcessPriceDifference;
+
+        var payment = new Payment
+        {
+            SubscriptionId = subscription.Id,
+            Amount = sagaData.PriceDifference,
+            Currency = "TRY",
+            Status = PaymentStatus.Failed,
+            TransactionId = paymentResult.TransactionId,
+            FailureReason = paymentResult.FailureReason,
+            CardLastFour = sagaData.CardNumber.Replace(" ", "").Replace("-", "")[^4..]
+        };
+
+        await _paymentRepository.AddAsync(payment, cancellationToken);
+
+        sagaData.PaymentId = payment.Id;
+        sagaData.TransactionId = paymentResult.TransactionId;
+        saga.Status = SagaStatus.Failed;
+        saga.ErrorMessage = paymentResult.FailureReason;
+        saga.StateData = JsonSerializer.Serialize(sagaData);
         await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
-        if (sagaData.IsUpgrade && sagaData.PriceDifference > 0)
-        {
-            var result = await _paymentGateway.ChargeAsync(
-                sagaData.CardNumber,
-                sagaData.PriceDifference,
-                "TRY",
-                cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        _logger.LogWarning(
+            "Saga {SagaId}: Persisted failed upgrade payment for subscription {SubscriptionId}",
+            saga.Id, subscription.Id);
+    }
+
+    private async Task FinalizePlanChangePhaseAsync(
+        SagaState saga,
+        ChangePlanSagaData sagaData,
+        Subscription subscription,
+        Plan oldPlan,
+        Plan newPlan,
+        PaymentResult? paymentResult,
+        bool sagaAlreadyCommitted,
+        CancellationToken cancellationToken)
+    {
+        if (paymentResult is not null)
+        {
             var payment = new Payment
             {
                 SubscriptionId = subscription.Id,
                 Amount = sagaData.PriceDifference,
                 Currency = "TRY",
-                Status = result.IsSuccess ? PaymentStatus.Succeeded : PaymentStatus.Failed,
-                TransactionId = result.TransactionId,
-                FailureReason = result.FailureReason,
+                Status = PaymentStatus.Succeeded,
+                TransactionId = paymentResult.TransactionId,
+                FailureReason = paymentResult.FailureReason,
                 CardLastFour = sagaData.CardNumber.Replace(" ", "").Replace("-", "")[^4..]
             };
 
             await _paymentRepository.AddAsync(payment, cancellationToken);
-
             sagaData.PaymentId = payment.Id;
-            sagaData.TransactionId = result.TransactionId;
-            saga.StateData = JsonSerializer.Serialize(sagaData);
-            await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
-            if (!result.IsSuccess)
-            {
-                _logger.LogWarning(
-                    "Saga {SagaId}: Upgrade payment failed — {Reason}",
-                    saga.Id, result.FailureReason);
-
-                await _compensatingActions.CompensateChangePlanAsync(
-                    saga, sagaData, cancellationToken);
-
-                throw new PaymentFailedException(result.FailureReason ?? "Payment declined");
-            }
-
-            _logger.LogInformation(
-                "Saga {SagaId}: Upgrade payment of {Amount} TRY succeeded",
-                saga.Id, sagaData.PriceDifference);
+            sagaData.TransactionId = paymentResult.TransactionId;
         }
         else
         {
@@ -209,51 +250,15 @@ public class ChangePlanSaga
             };
 
             await _paymentRepository.AddAsync(payment, cancellationToken);
-
             sagaData.PaymentId = payment.Id;
-            saga.StateData = JsonSerializer.Serialize(sagaData);
-            await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
-            _logger.LogInformation(
-                "Saga {SagaId}: Downgrade credit of {Amount} TRY recorded",
-                saga.Id, creditAmount);
         }
-    }
-
-    private async Task UpdateSubscriptionAsync(
-        SagaState saga,
-        ChangePlanSagaData sagaData,
-        Subscription subscription,
-        Guid newPlanId,
-        CancellationToken cancellationToken)
-    {
-        if (subscription.PlanId == newPlanId)
-            return;
 
         saga.CurrentStep = SagaStep.UpdateSubscription;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
-        subscription.PlanId = newPlanId;
+        subscription.PlanId = newPlan.Id;
+        subscription.Plan = newPlan;
         await _subscriptionRepository.UpdateAsync(subscription, cancellationToken);
 
-        var newPlan = await _planRepository.GetByIdAsync(newPlanId, cancellationToken);
-        subscription.Plan = newPlan!;
-
-        _logger.LogInformation(
-            "Saga {SagaId}: Updated subscription {SubscriptionId} to plan {NewPlanId}",
-            saga.Id, subscription.Id, newPlanId);
-    }
-
-    private async Task PublishChangeEventsAsync(
-        SagaState saga,
-        ChangePlanSagaData sagaData,
-        Subscription subscription,
-        Plan oldPlan,
-        Plan newPlan,
-        CancellationToken cancellationToken)
-    {
         saga.CurrentStep = SagaStep.PublishChangeEvents;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
 
         var now = DateTime.UtcNow;
 
@@ -273,27 +278,34 @@ public class ChangePlanSaga
             CreatedAt = now
         }, cancellationToken);
 
-        if (sagaData.PaymentId.HasValue)
-        {
-            var paymentEvent = new PaymentProcessedEvent(
-                sagaData.PaymentId.Value,
-                subscription.Id,
-                subscription.UserId,
-                sagaData.PriceDifference,
-                "TRY",
-                PaymentStatus.Succeeded.ToString(),
-                now);
+        var paymentEvent = new PaymentProcessedEvent(
+            sagaData.PaymentId!.Value,
+            subscription.Id,
+            subscription.UserId,
+            sagaData.PriceDifference,
+            "TRY",
+            PaymentStatus.Succeeded.ToString(),
+            now);
 
-            await _outboxRepository.AddAsync(new OutboxMessage
-            {
-                EventType = "subscription.payment.processed",
-                Payload = JsonSerializer.Serialize(paymentEvent),
-                CreatedAt = now
-            }, cancellationToken);
+        await _outboxRepository.AddAsync(new OutboxMessage
+        {
+            EventType = "subscription.payment.processed",
+            Payload = JsonSerializer.Serialize(paymentEvent),
+            CreatedAt = now
+        }, cancellationToken);
+
+        saga.Status = SagaStatus.Completed;
+        saga.StateData = JsonSerializer.Serialize(sagaData);
+
+        if (sagaAlreadyCommitted)
+        {
+            await _sagaRepository.UpdateAsync(saga, cancellationToken);
         }
 
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
         _logger.LogInformation(
-            "Saga {SagaId}: Published outbox events for plan change {OldTier} → {NewTier}",
+            "Saga {SagaId}: Committed subscription, payment and outbox phase for plan change {OldTier} to {NewTier}",
             saga.Id, oldPlan.Tier, newPlan.Tier);
     }
 }

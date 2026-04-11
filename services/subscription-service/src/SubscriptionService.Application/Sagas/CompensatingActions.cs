@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using SubscriptionService.Application.Interfaces;
 using SubscriptionService.Domain.Entities;
@@ -11,17 +10,20 @@ public class CompensatingActions
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IPaymentGateway _paymentGateway;
     private readonly ISagaRepository _sagaRepository;
+    private readonly ISubscriptionUnitOfWork _unitOfWork;
     private readonly ILogger<CompensatingActions> _logger;
 
     public CompensatingActions(
         ISubscriptionRepository subscriptionRepository,
         IPaymentGateway paymentGateway,
         ISagaRepository sagaRepository,
+        ISubscriptionUnitOfWork unitOfWork,
         ILogger<CompensatingActions> logger)
     {
         _subscriptionRepository = subscriptionRepository;
         _paymentGateway = paymentGateway;
         _sagaRepository = sagaRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -34,11 +36,12 @@ public class CompensatingActions
             "Compensating CreateSubscription saga {SagaId} at step {Step}",
             saga.Id, saga.CurrentStep);
 
-        saga.Status = SagaStatus.Compensating;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
         if (data.TransactionId is not null)
         {
+            saga.Status = SagaStatus.Compensating;
+            await _sagaRepository.UpdateAsync(saga, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             _logger.LogInformation(
                 "Refunding transaction {TransactionId} for saga {SagaId}",
                 data.TransactionId, saga.Id);
@@ -65,6 +68,7 @@ public class CompensatingActions
 
         saga.Status = SagaStatus.Failed;
         await _sagaRepository.UpdateAsync(saga, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogWarning("CreateSubscription saga {SagaId} compensation completed", saga.Id);
     }
@@ -78,11 +82,12 @@ public class CompensatingActions
             "Compensating ChangePlan saga {SagaId} at step {Step}",
             saga.Id, saga.CurrentStep);
 
-        saga.Status = SagaStatus.Compensating;
-        await _sagaRepository.UpdateAsync(saga, cancellationToken);
-
         if (data.TransactionId is not null)
         {
+            saga.Status = SagaStatus.Compensating;
+            await _sagaRepository.UpdateAsync(saga, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             _logger.LogInformation(
                 "Refunding transaction {TransactionId} for saga {SagaId}",
                 data.TransactionId, saga.Id);
@@ -93,6 +98,7 @@ public class CompensatingActions
 
         saga.Status = SagaStatus.Failed;
         await _sagaRepository.UpdateAsync(saga, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogWarning("ChangePlan saga {SagaId} compensation completed", saga.Id);
     }

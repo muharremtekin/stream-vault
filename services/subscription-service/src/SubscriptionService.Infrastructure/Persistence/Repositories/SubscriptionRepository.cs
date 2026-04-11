@@ -33,14 +33,13 @@ public class SubscriptionRepository : ISubscriptionRepository
     public async Task AddAsync(Subscription subscription, CancellationToken cancellationToken = default)
     {
         await _context.Subscriptions.AddAsync(subscription, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(Subscription subscription, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(Subscription subscription, CancellationToken cancellationToken = default)
     {
         subscription.UpdatedAt = DateTime.UtcNow;
         _context.Subscriptions.Update(subscription);
-        await _context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
     public async Task<List<Subscription>> GetExpiredSubscriptionsAsync(CancellationToken cancellationToken = default)
