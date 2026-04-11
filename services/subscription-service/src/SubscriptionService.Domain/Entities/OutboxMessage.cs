@@ -6,6 +6,7 @@ public class OutboxMessage
     public string EventType { get; set; } = string.Empty;
     public string Payload { get; set; } = "{}";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? NextAttemptAt { get; set; }
     public DateTime? ProcessedAt { get; set; }
     public int RetryCount { get; set; }
     public string? ErrorMessage { get; set; }

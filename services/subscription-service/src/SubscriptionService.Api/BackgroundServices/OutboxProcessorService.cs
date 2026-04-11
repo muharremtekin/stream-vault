@@ -11,7 +11,6 @@ public class OutboxProcessorService : BackgroundService
     private readonly ILogger<OutboxProcessorService> _logger;
     private readonly OutboxProcessorOptions _options;
 
-    // Metrics
     private static readonly Meter Meter = new("SubscriptionService.Outbox");
     private static readonly Counter<long> PublishedCounter = Meter.CreateCounter<long>("outbox.messages.published");
     private static readonly Counter<long> FailedCounter = Meter.CreateCounter<long>("outbox.messages.failed");
@@ -69,7 +68,6 @@ public class OutboxProcessorService : BackgroundService
             }
         }
 
-        // Graceful shutdown: drain remaining outbox messages before exit
         _logger.LogInformation("Shutdown requested. Processing remaining outbox messages...");
         using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(_options.ShutdownTimeoutSeconds));
         try
@@ -96,67 +94,75 @@ public class OutboxProcessorService : BackgroundService
     {
         using var scope = _serviceProvider.CreateScope();
         var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
+        var totalMessagesProcessed = 0;
 
-        var messages = await outboxRepository.GetUnprocessedAsync(_options.BatchSize, cancellationToken);
-        if (messages.Count == 0)
-            return;
-
-        _logger.LogDebug("Processing {Count} outbox messages.", messages.Count);
-
-        foreach (var message in messages)
+        while (true)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Dead-letter: max retry aşıldıysa işaretleyip geç
-            if (message.RetryCount >= _options.MaxRetryCount)
+            var messages = await outboxRepository.GetUnprocessedAsync(_options.BatchSize, cancellationToken);
+            if (messages.Count == 0)
             {
-                _logger.LogError(
-                    "Outbox message {MessageId} exceeded max retry count ({MaxRetry}). EventType: {EventType}. Moving to dead-letter.",
-                    message.Id, _options.MaxRetryCount, message.EventType);
-
-                await outboxRepository.MarkAsDeadLetterAsync(message.Id, cancellationToken);
-                DeadLetterCounter.Add(1);
-                continue;
+                break;
             }
 
-            // Exponential backoff: ilk deneme anında yayınla, sonrakilerde bekle
-            if (message.RetryCount > 0 && message.LastAttemptedAt.HasValue)
+            _logger.LogDebug("Processing {Count} outbox messages.", messages.Count);
+
+            foreach (var message in messages)
             {
-                var backoffDelay = TimeSpan.FromSeconds(Math.Min(Math.Pow(2, message.RetryCount), 60));
-                var nextAttempt = message.LastAttemptedAt.Value + backoffDelay;
-                if (DateTime.UtcNow < nextAttempt)
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (message.RetryCount >= _options.MaxRetryCount)
                 {
-                    _logger.LogDebug(
-                        "Outbox message {MessageId} is in backoff until {NextAttempt}. Skipping.",
-                        message.Id, nextAttempt);
+                    _logger.LogError(
+                        "Outbox message {MessageId} exceeded max retry count ({MaxRetry}). EventType: {EventType}. Moving to dead-letter.",
+                        message.Id, _options.MaxRetryCount, message.EventType);
+
+                    await outboxRepository.MarkAsDeadLetterAsync(message.Id, cancellationToken);
+                    DeadLetterCounter.Add(1);
+                    totalMessagesProcessed++;
                     continue;
+                }
+
+                try
+                {
+                    await _publisher.PublishAsync(
+                        Exchange,
+                        message.EventType,
+                        message.Payload,
+                        cancellationToken);
+
+                    await outboxRepository.MarkAsProcessedAsync(message.Id, cancellationToken);
+
+                    PublishedCounter.Add(1);
+                    totalMessagesProcessed++;
+                    _logger.LogInformation(
+                        "Published outbox message {MessageId} to '{Exchange}' with routing key '{RoutingKey}'.",
+                        message.Id, Exchange, message.EventType);
+                }
+                catch (Exception ex)
+                {
+                    FailedCounter.Add(1);
+                    totalMessagesProcessed++;
+                    _logger.LogWarning(ex,
+                        "Failed to publish outbox message {MessageId}. Retry {Retry}/{MaxRetry}.",
+                        message.Id, message.RetryCount + 1, _options.MaxRetryCount);
+
+                    await outboxRepository.IncrementRetryAsync(message.Id, ex.Message, cancellationToken);
                 }
             }
 
-            try
+            if (messages.Count < _options.BatchSize)
             {
-                await _publisher.PublishAsync(
-                    Exchange,
-                    message.EventType,
-                    message.Payload,
-                    cancellationToken);
-
-                await outboxRepository.MarkAsProcessedAsync(message.Id, cancellationToken);
-
-                PublishedCounter.Add(1);
-                _logger.LogInformation(
-                    "Published outbox message {MessageId} to '{Exchange}' with routing key '{RoutingKey}'.",
-                    message.Id, Exchange, message.EventType);
+                break;
             }
-            catch (Exception ex)
-            {
-                FailedCounter.Add(1);
-                _logger.LogWarning(ex,
-                    "Failed to publish outbox message {MessageId}. Retry {Retry}/{MaxRetry}.",
-                    message.Id, message.RetryCount + 1, _options.MaxRetryCount);
+        }
 
-                await outboxRepository.IncrementRetryAsync(message.Id, ex.Message, cancellationToken);
-            }
+        if (totalMessagesProcessed > 0)
+        {
+            _logger.LogDebug(
+                "Completed outbox processing cycle after handling {Count} due messages.",
+                totalMessagesProcessed);
         }
     }
 }

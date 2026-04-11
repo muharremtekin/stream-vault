@@ -31,6 +31,9 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
             .HasColumnName("created_at")
             .IsRequired();
 
+        builder.Property(o => o.NextAttemptAt)
+            .HasColumnName("next_attempt_at");
+
         builder.Property(o => o.ProcessedAt)
             .HasColumnName("processed_at");
 
@@ -55,5 +58,9 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
 
         builder.HasIndex(o => o.IsDeadLetter)
             .HasDatabaseName("idx_outbox_messages_is_dead_letter");
+
+        builder.HasIndex(o => new { o.NextAttemptAt, o.CreatedAt })
+            .HasDatabaseName("idx_outbox_messages_due_polling")
+            .HasFilter("\"processed_at\" IS NULL AND \"is_dead_letter\" = false");
     }
 }

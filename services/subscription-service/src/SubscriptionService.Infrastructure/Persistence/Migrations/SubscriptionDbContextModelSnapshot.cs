@@ -104,6 +104,10 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_attempted_at");
 
+                    b.Property<DateTime?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("text")
@@ -122,6 +126,10 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("IsDeadLetter")
                         .HasDatabaseName("idx_outbox_messages_is_dead_letter");
+
+                    b.HasIndex("NextAttemptAt", "CreatedAt")
+                        .HasDatabaseName("idx_outbox_messages_due_polling")
+                        .HasFilter("\"processed_at\" IS NULL AND \"is_dead_letter\" = false");
 
                     b.HasIndex("ProcessedAt")
                         .HasDatabaseName("idx_outbox_messages_processed_at");

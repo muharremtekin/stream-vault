@@ -126,6 +126,93 @@ public class OutboxProcessorServiceTests
         _outboxRepositoryMock.Verify(r => r.MarkAsProcessedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task ProcessMessages_DueRetryMessageReturnedByRepository_IsPublishedWithoutInMemoryBackoffSkip()
+    {
+        var message = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            EventType = "RetryReady",
+            Payload = "{}",
+            RetryCount = 2,
+            LastAttemptedAt = DateTime.UtcNow.AddMinutes(10),
+            NextAttemptAt = DateTime.UtcNow.AddMinutes(-1)
+        };
+
+        SetupScopedRepository();
+        _outboxRepositoryMock.Setup(r => r.GetUnprocessedAsync(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([message]);
+        _publisherMock.Setup(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _outboxRepositoryMock.Setup(r => r.MarkAsProcessedAsync(message.Id, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        using var cts = new CancellationTokenSource();
+        var service = CreateService();
+
+        var task = service.StartAsync(cts.Token);
+        await Task.Delay(200);
+        await cts.CancelAsync();
+        await task;
+
+        _publisherMock.Verify(p => p.PublishAsync(
+            It.IsAny<string>(),
+            message.EventType,
+            message.Payload,
+            It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        _outboxRepositoryMock.Verify(r => r.MarkAsProcessedAsync(message.Id, It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public async Task ProcessMessages_FullBatch_ContinuesFetchingDueMessagesWithinSameCycle()
+    {
+        var firstBatch = Enumerable.Range(0, 10)
+            .Select(i => new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                EventType = $"Event{i}",
+                Payload = "{}",
+                RetryCount = 0
+            })
+            .ToList();
+        var secondBatch = new List<OutboxMessage>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                EventType = "Event10",
+                Payload = "{}",
+                RetryCount = 0
+            }
+        };
+
+        SetupScopedRepository();
+        _outboxRepositoryMock.SetupSequence(r => r.GetUnprocessedAsync(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(firstBatch)
+            .ReturnsAsync(secondBatch)
+            .ReturnsAsync([])
+            .ReturnsAsync([]);
+        _publisherMock.Setup(p => p.PublishAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        _outboxRepositoryMock.Setup(r => r.MarkAsProcessedAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        using var cts = new CancellationTokenSource();
+        var service = CreateService();
+
+        var task = service.StartAsync(cts.Token);
+        await Task.Delay(200);
+        await cts.CancelAsync();
+        await task;
+
+        _outboxRepositoryMock.Verify(r => r.GetUnprocessedAsync(10, It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        _publisherMock.Verify(p => p.PublishAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<CancellationToken>()), Times.AtLeast(11));
+    }
+
     // ────────────────────────────────────────────────────────────────────────
     // 3. MaxRetry aşıldı → MarkAsDeadLetterAsync çağrılır, publish yapılmaz
     // ────────────────────────────────────────────────────────────────────────
