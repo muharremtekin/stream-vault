@@ -46,8 +46,8 @@ public class RegisterUserHandlerTests
             .Returns("access_token");
 
         _tokenServiceMock
-            .Setup(t => t.GenerateRefreshToken(It.IsAny<User>()))
-            .Returns("refresh_token");
+            .Setup(t => t.GenerateRefreshTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("refresh_token");
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -94,8 +94,8 @@ public class RegisterUserHandlerTests
             .Returns("token");
 
         _tokenServiceMock
-            .Setup(t => t.GenerateRefreshToken(It.IsAny<User>()))
-            .Returns("refresh");
+            .Setup(t => t.GenerateRefreshTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync("refresh");
 
         // Act
         await _handler.Handle(command, CancellationToken.None);

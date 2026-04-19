@@ -29,7 +29,8 @@ public class JwtTokenServiceTests : IDisposable
             { "Jwt:Secret", "StreamVault-Test-Secret-Key-Must-Be-At-Least-32-Characters!" },
             { "Jwt:Issuer", "StreamVault.UserService.Test" },
             { "Jwt:Audience", "StreamVault.Client.Test" },
-            { "Jwt:ExpiresInMinutes", "60" }
+            { "Jwt:ExpiresInMinutes", "60" },
+            { "Jwt:RefreshTokenExpirationDays", "3" }
         };
 
         _configuration = new ConfigurationBuilder()
@@ -89,7 +90,7 @@ public class JwtTokenServiceTests : IDisposable
     }
 
     [Fact]
-    public void GenerateRefreshToken_ShouldReturnNonEmptyToken()
+    public async Task GenerateRefreshToken_ShouldReturnNonEmptyToken()
     {
         // Arrange
         var user = new User
@@ -100,7 +101,7 @@ public class JwtTokenServiceTests : IDisposable
         };
 
         // Act
-        var refreshToken = _tokenService.GenerateRefreshToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
 
         // Assert
         Assert.NotNull(refreshToken);
@@ -108,7 +109,7 @@ public class JwtTokenServiceTests : IDisposable
     }
 
     [Fact]
-    public void GenerateRefreshToken_ShouldPersistTokenInDatabase()
+    public async Task GenerateRefreshToken_ShouldPersistTokenInDatabase()
     {
         // Arrange
         var user = new User
@@ -122,13 +123,57 @@ public class JwtTokenServiceTests : IDisposable
         _context.SaveChanges();
 
         // Act
-        var refreshToken = _tokenService.GenerateRefreshToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
 
         // Assert
         var storedToken = _context.RefreshTokens.FirstOrDefault(rt => rt.Token == refreshToken);
         Assert.NotNull(storedToken);
         Assert.Equal(user.Id, storedToken.UserId);
         Assert.False(storedToken.IsRevoked);
+        Assert.True(storedToken.ExpiresAt > DateTime.UtcNow.AddDays(2));
+        Assert.True(storedToken.ExpiresAt <= DateTime.UtcNow.AddDays(3).AddMinutes(1));
+    }
+
+    [Fact]
+    public async Task ConsumeRefreshTokenAsync_ShouldRevokeTokenAndReturnUserId()
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "consume@example.com",
+            Role = SubscriptionTier.Free
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
+
+        var consumedUserId = await _tokenService.ConsumeRefreshTokenAsync(refreshToken);
+
+        Assert.Equal(user.Id, consumedUserId);
+        Assert.True(_context.RefreshTokens.Single(rt => rt.Token == refreshToken).IsRevoked);
+    }
+
+    [Fact]
+    public async Task ConsumeRefreshTokenAsync_WithRevokedToken_ShouldReturnNull()
+    {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "revoked@example.com",
+            Role = SubscriptionTier.Free
+        };
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user);
+        await _tokenService.ConsumeRefreshTokenAsync(refreshToken);
+
+        var consumedAgain = await _tokenService.ConsumeRefreshTokenAsync(refreshToken);
+
+        Assert.Null(consumedAgain);
     }
 
     [Fact]
