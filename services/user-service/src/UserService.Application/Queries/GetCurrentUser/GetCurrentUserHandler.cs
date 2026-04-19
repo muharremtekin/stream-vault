@@ -16,7 +16,7 @@ public class GetCurrentUserHandler : IRequestHandler<GetCurrentUserQuery, UserDt
 
     public async Task<UserDto> Handle(GetCurrentUserQuery request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
+        var user = await _userRepository.GetSummaryByIdAsync(request.UserId, cancellationToken);
         if (user is null)
         {
             throw new UserNotFoundException(request.UserId);
@@ -27,7 +27,7 @@ public class GetCurrentUserHandler : IRequestHandler<GetCurrentUserQuery, UserDt
             Id = user.Id,
             Email = user.Email,
             Role = user.Role.ToString(),
-            ProfileCount = user.Profiles.Count
+            ProfileCount = user.ProfileCount
         };
     }
 }

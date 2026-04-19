@@ -20,8 +20,8 @@ public class AddToWatchlistHandler : IRequestHandler<AddToWatchlistCommand, Watc
 
     public async Task<WatchlistItemDto> Handle(AddToWatchlistCommand request, CancellationToken cancellationToken)
     {
-        var profile = await _profileRepository.GetByIdAsync(request.ProfileId, cancellationToken);
-        if (profile is null)
+        var profileExists = await _profileRepository.ExistsAsync(request.ProfileId, cancellationToken);
+        if (!profileExists)
         {
             throw new InvalidOperationException($"Profile with ID '{request.ProfileId}' was not found.");
         }

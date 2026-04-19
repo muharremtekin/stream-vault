@@ -16,6 +16,7 @@ public class WatchlistRepository : IWatchlistRepository
     public async Task<List<WatchlistItem>> GetByProfileIdAsync(Guid profileId, CancellationToken cancellationToken = default)
     {
         return await _context.WatchlistItems
+            .AsNoTracking()
             .Where(w => w.ProfileId == profileId)
             .OrderByDescending(w => w.AddedAt)
             .ToListAsync(cancellationToken);
@@ -29,13 +30,8 @@ public class WatchlistRepository : IWatchlistRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var item = await _context.WatchlistItems
-            .FirstOrDefaultAsync(w => w.Id == id, cancellationToken);
-
-        if (item is not null)
-        {
-            _context.WatchlistItems.Remove(item);
-            await _context.SaveChangesAsync(cancellationToken);
-        }
+        await _context.WatchlistItems
+            .Where(w => w.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
     }
 }

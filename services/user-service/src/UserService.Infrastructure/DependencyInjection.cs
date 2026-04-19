@@ -16,7 +16,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         // Entity Framework Core with PostgreSQL
-        services.AddDbContext<UserDbContext>(options =>
+        services.AddDbContextPool<UserDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 npgsqlOptions =>
