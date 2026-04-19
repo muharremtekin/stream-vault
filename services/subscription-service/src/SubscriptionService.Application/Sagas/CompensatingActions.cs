@@ -36,6 +36,9 @@ public class CompensatingActions
             "Compensating CreateSubscription saga {SagaId} at step {Step}",
             saga.Id, saga.CurrentStep);
 
+        // Drop any pending writes from the failed phase before starting compensation.
+        _unitOfWork.DiscardPendingChanges();
+
         if (data.TransactionId is not null)
         {
             saga.Status = SagaStatus.Compensating;
@@ -81,6 +84,9 @@ public class CompensatingActions
         _logger.LogWarning(
             "Compensating ChangePlan saga {SagaId} at step {Step}",
             saga.Id, saga.CurrentStep);
+
+        // Avoid flushing pending payment/subscription/outbox writes while opening compensation.
+        _unitOfWork.DiscardPendingChanges();
 
         if (data.TransactionId is not null)
         {

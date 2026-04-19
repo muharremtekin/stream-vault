@@ -24,6 +24,9 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex(p => p.SubscriptionId)
             .HasDatabaseName("idx_payments_subscription_id");
 
+        builder.HasIndex(p => new { p.SubscriptionId, p.CreatedAt })
+            .HasDatabaseName("idx_payments_subscription_created_at");
+
         builder.Property(p => p.Amount)
             .HasColumnName("amount")
             .HasColumnType("decimal(10,2)")

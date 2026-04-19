@@ -19,6 +19,9 @@ public class SubscriptionDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasSequence<long>("invoice_numbers")
+            .StartsAt(1)
+            .IncrementsBy(1);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SubscriptionDbContext).Assembly);
     }
 }

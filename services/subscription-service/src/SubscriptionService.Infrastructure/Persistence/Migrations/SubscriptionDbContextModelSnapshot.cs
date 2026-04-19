@@ -22,6 +22,8 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence<long>("invoice_numbers");
+
             modelBuilder.Entity("SubscriptionService.Domain.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -69,6 +71,9 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SubscriptionId")
                         .HasDatabaseName("idx_invoices_subscription_id");
+
+                    b.HasIndex("SubscriptionId", "IssuedAt")
+                        .HasDatabaseName("idx_invoices_subscription_issued_at");
 
                     b.ToTable("invoices", (string)null);
                 });
@@ -188,6 +193,9 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SubscriptionId")
                         .HasDatabaseName("idx_payments_subscription_id");
+
+                    b.HasIndex("SubscriptionId", "CreatedAt")
+                        .HasDatabaseName("idx_payments_subscription_created_at");
 
                     b.HasIndex("TransactionId")
                         .HasDatabaseName("idx_payments_transaction_id");
@@ -362,8 +370,14 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("idx_subscriptions_status");
 
+                    b.HasIndex("Status", "PeriodEnd")
+                        .HasDatabaseName("idx_subscriptions_status_period_end");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("idx_subscriptions_user_id");
+
+                    b.HasIndex("UserId", "Status")
+                        .HasDatabaseName("idx_subscriptions_user_status");
 
                     b.ToTable("subscriptions", (string)null);
                 });

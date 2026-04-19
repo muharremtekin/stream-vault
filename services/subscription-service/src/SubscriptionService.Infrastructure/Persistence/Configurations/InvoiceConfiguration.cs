@@ -24,6 +24,9 @@ public class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasIndex(i => i.SubscriptionId)
             .HasDatabaseName("idx_invoices_subscription_id");
 
+        builder.HasIndex(i => new { i.SubscriptionId, i.IssuedAt })
+            .HasDatabaseName("idx_invoices_subscription_issued_at");
+
         builder.Property(i => i.InvoiceNumber)
             .HasColumnName("invoice_number")
             .HasMaxLength(50)

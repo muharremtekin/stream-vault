@@ -184,8 +184,10 @@ public class SubscriptionSaga
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Saga {SagaId}: Committed pre-payment phase for subscription {SubscriptionId}",
-            saga.Id, subscription.Id);
+            "Saga {SagaId}: Committed pre-payment phase for subscription {SubscriptionId}. WriteOperations={WriteOperations}",
+            saga.Id,
+            subscription.Id,
+            2);
 
         return subscription;
     }
@@ -227,8 +229,10 @@ public class SubscriptionSaga
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogWarning(
-            "Saga {SagaId}: Persisted failed payment for subscription {SubscriptionId}",
-            saga.Id, subscription.Id);
+            "Saga {SagaId}: Persisted failed payment for subscription {SubscriptionId}. WriteOperations={WriteOperations}",
+            saga.Id,
+            subscription.Id,
+            3);
     }
 
     private async Task FinalizeSuccessfulSubscriptionPhaseAsync(
@@ -326,7 +330,9 @@ public class SubscriptionSaga
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Saga {SagaId}: Committed activation, invoice and outbox phase for subscription {SubscriptionId}",
-            saga.Id, subscription.Id);
+            "Saga {SagaId}: Committed activation, invoice and outbox phase for subscription {SubscriptionId}. WriteOperations={WriteOperations}",
+            saga.Id,
+            subscription.Id,
+            6);
     }
 }

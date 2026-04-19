@@ -15,4 +15,9 @@ public class SubscriptionUnitOfWork : ISubscriptionUnitOfWork
     {
         return _context.SaveChangesAsync(cancellationToken);
     }
+
+    public void DiscardPendingChanges()
+    {
+        _context.ChangeTracker.Clear();
+    }
 }

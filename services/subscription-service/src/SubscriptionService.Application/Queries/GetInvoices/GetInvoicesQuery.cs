@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
@@ -12,25 +11,25 @@ public class GetInvoicesHandler : IRequestHandler<GetInvoicesQuery, List<Invoice
 {
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IMapper _mapper;
 
     public GetInvoicesHandler(
         ISubscriptionRepository subscriptionRepository,
-        IInvoiceRepository invoiceRepository,
-        IMapper mapper)
+        IInvoiceRepository invoiceRepository)
     {
         _subscriptionRepository = subscriptionRepository;
         _invoiceRepository = invoiceRepository;
-        _mapper = mapper;
     }
 
     public async Task<List<InvoiceDto>> Handle(GetInvoicesQuery request, CancellationToken cancellationToken)
     {
-        var subscription = await _subscriptionRepository.GetActiveByUserIdAsync(request.UserId, cancellationToken);
-        if (subscription is null)
+        var subscriptionId = await _subscriptionRepository.GetActiveSubscriptionIdByUserIdAsync(
+            request.UserId,
+            cancellationToken);
+        if (!subscriptionId.HasValue)
             throw new SubscriptionNotFoundException(request.UserId);
 
-        var invoices = await _invoiceRepository.GetBySubscriptionIdAsync(subscription.Id, cancellationToken);
-        return _mapper.Map<List<InvoiceDto>>(invoices);
+        return await _invoiceRepository.GetDtosBySubscriptionIdAsync(
+            subscriptionId.Value,
+            cancellationToken);
     }
 }

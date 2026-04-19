@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
 using SubscriptionService.Domain.Entities;
 
@@ -26,13 +27,19 @@ public class PaymentRepository : IPaymentRepository
 
     public Task UpdateAsync(Payment payment, CancellationToken cancellationToken = default)
     {
-        _context.Payments.Update(payment);
+        var entry = _context.Entry(payment);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.Payments.Update(payment);
+        }
+
         return Task.CompletedTask;
     }
 
     public async Task<List<Payment>> GetBySubscriptionIdAsync(Guid subscriptionId, CancellationToken cancellationToken = default)
     {
         return await _context.Payments
+            .AsNoTracking()
             .Where(p => p.SubscriptionId == subscriptionId)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -41,11 +48,37 @@ public class PaymentRepository : IPaymentRepository
     public async Task<List<Payment>> GetByUserIdAsync(Guid userId, int limit = 20, int offset = 0, CancellationToken cancellationToken = default)
     {
         return await _context.Payments
-            .Include(p => p.Subscription)
+            .AsNoTracking()
             .Where(p => p.Subscription.UserId == userId)
             .OrderByDescending(p => p.CreatedAt)
             .Skip(offset)
             .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<PaymentDto>> GetHistoryByUserIdAsync(
+        Guid userId,
+        int limit = 20,
+        int offset = 0,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Payments
+            .AsNoTracking()
+            .Where(p => p.Subscription.UserId == userId)
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip(offset)
+            .Take(limit)
+            .Select(p => new PaymentDto
+            {
+                Id = p.Id,
+                SubscriptionId = p.SubscriptionId,
+                Amount = p.Amount,
+                Currency = p.Currency,
+                Status = p.Status.ToString(),
+                TransactionId = p.TransactionId,
+                CardLastFour = p.CardLastFour,
+                CreatedAt = p.CreatedAt
+            })
             .ToListAsync(cancellationToken);
     }
 }

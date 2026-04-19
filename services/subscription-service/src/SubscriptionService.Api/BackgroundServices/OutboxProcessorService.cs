@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Options;
 using SubscriptionService.Application.Interfaces;
@@ -15,6 +16,7 @@ public class OutboxProcessorService : BackgroundService
     private static readonly Counter<long> PublishedCounter = Meter.CreateCounter<long>("outbox.messages.published");
     private static readonly Counter<long> FailedCounter = Meter.CreateCounter<long>("outbox.messages.failed");
     private static readonly Counter<long> DeadLetterCounter = Meter.CreateCounter<long>("outbox.messages.dead_lettered");
+    private static readonly Histogram<double> BatchDurationMs = Meter.CreateHistogram<double>("outbox.batch.duration.ms");
 
     private const string Exchange = "subscription.events";
 
@@ -100,9 +102,11 @@ public class OutboxProcessorService : BackgroundService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var stopwatch = Stopwatch.StartNew();
             var messages = await outboxRepository.GetUnprocessedAsync(_options.BatchSize, cancellationToken);
             if (messages.Count == 0)
             {
+                stopwatch.Stop();
                 break;
             }
 
@@ -151,6 +155,14 @@ public class OutboxProcessorService : BackgroundService
                     await outboxRepository.IncrementRetryAsync(message.Id, ex.Message, cancellationToken);
                 }
             }
+
+            stopwatch.Stop();
+            BatchDurationMs.Record(stopwatch.Elapsed.TotalMilliseconds);
+
+            _logger.LogDebug(
+                "Processed outbox batch. DueMessages={DueMessages}, DurationMs={DurationMs}.",
+                messages.Count,
+                stopwatch.Elapsed.TotalMilliseconds);
 
             if (messages.Count < _options.BatchSize)
             {

@@ -1,3 +1,4 @@
+using SubscriptionService.Application.DTOs;
 using SubscriptionService.Domain.Entities;
 
 namespace SubscriptionService.Application.Interfaces;
@@ -9,4 +10,5 @@ public interface IPaymentRepository
     Task UpdateAsync(Payment payment, CancellationToken cancellationToken = default);
     Task<List<Payment>> GetBySubscriptionIdAsync(Guid subscriptionId, CancellationToken cancellationToken = default);
     Task<List<Payment>> GetByUserIdAsync(Guid userId, int limit = 20, int offset = 0, CancellationToken cancellationToken = default);
+    Task<List<PaymentDto>> GetHistoryByUserIdAsync(Guid userId, int limit = 20, int offset = 0, CancellationToken cancellationToken = default);
 }

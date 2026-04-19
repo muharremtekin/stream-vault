@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using SubscriptionService.Application.Commands.CancelSubscription;
+using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
 using SubscriptionService.Application.Sagas;
 using SubscriptionService.Domain.Entities;
@@ -92,13 +93,13 @@ public class CriticalWriteFlowIntegrationTests
         unitOfWork.Snapshots[0].SubscriptionStatus.Should().Be(SubscriptionStatus.PendingPayment);
         unitOfWork.Snapshots[0].OutboxMessages.Should().Be(0);
 
-        unitOfWork.Snapshots[1].SubscriptionStatus.Should().Be(SubscriptionStatus.Active);
-        unitOfWork.Snapshots[1].Payments.Should().Be(1);
+        unitOfWork.Snapshots[1].SubscriptionStatus.Should().Be(SubscriptionStatus.PendingPayment);
+        unitOfWork.Snapshots[1].Payments.Should().Be(0);
         unitOfWork.Snapshots[1].OutboxMessages.Should().Be(0);
         unitOfWork.Snapshots[1].SagaStatus.Should().Be(SagaStatus.Compensating);
 
         unitOfWork.Snapshots[2].SubscriptionStatus.Should().Be(SubscriptionStatus.Failed);
-        unitOfWork.Snapshots[2].Payments.Should().Be(1);
+        unitOfWork.Snapshots[2].Payments.Should().Be(0);
         unitOfWork.Snapshots[2].Invoices.Should().Be(0);
         unitOfWork.Snapshots[2].OutboxMessages.Should().Be(0);
         unitOfWork.Snapshots[2].SagaStatus.Should().Be(SagaStatus.Failed);
@@ -159,6 +160,72 @@ public class CriticalWriteFlowIntegrationTests
         unitOfWork.Snapshots[1].Payments.Should().Be(1);
         unitOfWork.Snapshots[1].OutboxMessages.Should().Be(2);
         unitOfWork.Snapshots[1].SagaStatus.Should().Be(SagaStatus.Completed);
+    }
+
+    [Fact]
+    public async Task ChangePlan_WhenFinalizePhaseFails_DoesNotLeakPendingWritesIntoCompensation()
+    {
+        var root = new InMemoryDatabaseRoot();
+        var dbName = Guid.NewGuid().ToString("N");
+        var options = CreateOptions(dbName, root);
+
+        await using var context = new SubscriptionDbContext(options);
+        var standardPlan = CreatePlan(Guid.NewGuid(), "Standard", PlanTier.Standard, 79.99m);
+        var premiumPlan = CreatePlan(Guid.NewGuid(), "Premium", PlanTier.Premium, 119.99m);
+        var subscription = new Subscription
+        {
+            Id = Guid.NewGuid(),
+            UserId = Guid.NewGuid(),
+            PlanId = standardPlan.Id,
+            Plan = standardPlan,
+            Status = SubscriptionStatus.Active,
+            PeriodStart = DateTime.UtcNow.AddDays(-5),
+            PeriodEnd = DateTime.UtcNow.AddDays(25),
+            AutoRenew = true
+        };
+
+        await context.Plans.AddRangeAsync(standardPlan, premiumPlan);
+        await context.Subscriptions.AddAsync(subscription);
+        await context.SaveChangesAsync();
+
+        var paymentGateway = new TestPaymentGateway(
+            new PaymentResult(true, "txn_change_plan_finalize_failure", null));
+        var unitOfWork = new RecordingSubscriptionUnitOfWork(
+            context,
+            saveCount => CaptureSnapshot(options, saveCount, subscription.Id));
+
+        var saga = CreateChangePlanSaga(
+            context,
+            unitOfWork,
+            paymentGateway,
+            new ThrowingOutboxRepository(new OutboxRepository(context), throwOnCall: 2));
+
+        var act = () => saga.ExecuteAsync(
+            subscription.Id,
+            premiumPlan.Id,
+            "4242424242424242",
+            CancellationToken.None);
+
+        await act.Should().ThrowAsync<PaymentFailedException>();
+
+        paymentGateway.Refunds.Should().ContainSingle(r =>
+            r.TransactionId == "txn_change_plan_finalize_failure" && r.Amount > 0);
+        unitOfWork.SaveCallCount.Should().Be(3);
+
+        unitOfWork.Snapshots[0].SubscriptionPlanId.Should().Be(standardPlan.Id);
+        unitOfWork.Snapshots[0].Payments.Should().Be(0);
+        unitOfWork.Snapshots[0].OutboxMessages.Should().Be(0);
+        unitOfWork.Snapshots[0].SagaStatus.Should().Be(SagaStatus.InProgress);
+
+        unitOfWork.Snapshots[1].SubscriptionPlanId.Should().Be(standardPlan.Id);
+        unitOfWork.Snapshots[1].Payments.Should().Be(0);
+        unitOfWork.Snapshots[1].OutboxMessages.Should().Be(0);
+        unitOfWork.Snapshots[1].SagaStatus.Should().Be(SagaStatus.Compensating);
+
+        unitOfWork.Snapshots[2].SubscriptionPlanId.Should().Be(standardPlan.Id);
+        unitOfWork.Snapshots[2].Payments.Should().Be(0);
+        unitOfWork.Snapshots[2].OutboxMessages.Should().Be(0);
+        unitOfWork.Snapshots[2].SagaStatus.Should().Be(SagaStatus.Failed);
     }
 
     [Fact]
@@ -238,7 +305,8 @@ public class CriticalWriteFlowIntegrationTests
     private static ChangePlanSaga CreateChangePlanSaga(
         SubscriptionDbContext context,
         RecordingSubscriptionUnitOfWork unitOfWork,
-        IPaymentGateway paymentGateway)
+        IPaymentGateway paymentGateway,
+        IOutboxRepository? outboxRepository = null)
     {
         var subscriptionRepository = new SubscriptionRepository(context);
         var sagaRepository = new SagaRepository(context);
@@ -255,7 +323,7 @@ public class CriticalWriteFlowIntegrationTests
             subscriptionRepository,
             new PaymentRepository(context),
             paymentGateway,
-            new OutboxRepository(context),
+            outboxRepository ?? new OutboxRepository(context),
             sagaRepository,
             unitOfWork,
             compensatingActions,
@@ -343,6 +411,11 @@ public class CriticalWriteFlowIntegrationTests
             Snapshots.Add(_snapshotFactory(SaveCallCount));
             return result;
         }
+
+        public void DiscardPendingChanges()
+        {
+            _context.ChangeTracker.Clear();
+        }
     }
 
     private sealed class TestPaymentGateway : IPaymentGateway
@@ -395,7 +468,58 @@ public class CriticalWriteFlowIntegrationTests
             CancellationToken cancellationToken = default)
             => _inner.GetBySubscriptionIdAsync(subscriptionId, cancellationToken);
 
+        public Task<List<InvoiceDto>> GetDtosBySubscriptionIdAsync(
+            Guid subscriptionId,
+            CancellationToken cancellationToken = default)
+            => _inner.GetDtosBySubscriptionIdAsync(subscriptionId, cancellationToken);
+
         public Task<string> GenerateInvoiceNumberAsync(CancellationToken cancellationToken = default)
             => throw new InvalidOperationException("DB error");
+    }
+
+    private sealed class ThrowingOutboxRepository : IOutboxRepository
+    {
+        private readonly IOutboxRepository _inner;
+        private readonly int _throwOnCall;
+        private int _addCallCount;
+
+        public ThrowingOutboxRepository(IOutboxRepository inner, int throwOnCall)
+        {
+            _inner = inner;
+            _throwOnCall = throwOnCall;
+        }
+
+        public Task AddAsync(OutboxMessage message, CancellationToken cancellationToken = default)
+        {
+            _addCallCount++;
+            if (_addCallCount == _throwOnCall)
+            {
+                throw new InvalidOperationException("DB error");
+            }
+
+            return _inner.AddAsync(message, cancellationToken);
+        }
+
+        public Task<List<OutboxMessage>> GetUnprocessedAsync(
+            int batchSize = 50,
+            CancellationToken cancellationToken = default)
+            => _inner.GetUnprocessedAsync(batchSize, cancellationToken);
+
+        public Task MarkAsProcessedAsync(Guid id, CancellationToken cancellationToken = default)
+            => _inner.MarkAsProcessedAsync(id, cancellationToken);
+
+        public Task IncrementRetryAsync(
+            Guid id,
+            string errorMessage,
+            CancellationToken cancellationToken = default)
+            => _inner.IncrementRetryAsync(id, errorMessage, cancellationToken);
+
+        public Task MarkAsDeadLetterAsync(Guid id, CancellationToken cancellationToken = default)
+            => _inner.MarkAsDeadLetterAsync(id, cancellationToken);
+
+        public Task<List<OutboxMessage>> GetDeadLetterMessagesAsync(
+            int batchSize = 50,
+            CancellationToken cancellationToken = default)
+            => _inner.GetDeadLetterMessagesAsync(batchSize, cancellationToken);
     }
 }

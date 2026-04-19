@@ -28,7 +28,15 @@ public class SagaRepository : ISagaRepository
     public Task UpdateAsync(SagaState saga, CancellationToken cancellationToken = default)
     {
         saga.UpdatedAt = DateTime.UtcNow;
-        _context.SagaStates.Update(saga);
+
+        var entry = _context.Entry(saga);
+        if (entry.State == EntityState.Detached)
+        {
+            _context.SagaStates.Update(saga);
+            return Task.CompletedTask;
+        }
+
+        entry.Property(s => s.UpdatedAt).IsModified = true;
         return Task.CompletedTask;
     }
 

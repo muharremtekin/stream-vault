@@ -94,6 +94,7 @@ public class CompensatingActionsTests
         await _compensatingActions.CompensateCreateSubscriptionAsync(saga, data, CancellationToken.None);
 
         saga.Status.Should().Be(SagaStatus.Failed);
+        _unitOfWork.Verify(u => u.DiscardPendingChanges(), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -112,6 +113,7 @@ public class CompensatingActionsTests
 
         _payGateway.Verify(g => g.RefundAsync("txn_upgrade", 25.50m, It.IsAny<CancellationToken>()), Times.Once);
         saga.Status.Should().Be(SagaStatus.Failed);
+        _unitOfWork.Verify(u => u.DiscardPendingChanges(), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 }

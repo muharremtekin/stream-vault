@@ -205,8 +205,10 @@ public class ChangePlanSaga
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogWarning(
-            "Saga {SagaId}: Persisted failed upgrade payment for subscription {SubscriptionId}",
-            saga.Id, subscription.Id);
+            "Saga {SagaId}: Persisted failed upgrade payment for subscription {SubscriptionId}. WriteOperations={WriteOperations}",
+            saga.Id,
+            subscription.Id,
+            2);
     }
 
     private async Task FinalizePlanChangePhaseAsync(
@@ -305,7 +307,10 @@ public class ChangePlanSaga
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Saga {SagaId}: Committed subscription, payment and outbox phase for plan change {OldTier} to {NewTier}",
-            saga.Id, oldPlan.Tier, newPlan.Tier);
+            "Saga {SagaId}: Committed subscription, payment and outbox phase for plan change {OldTier} to {NewTier}. WriteOperations={WriteOperations}",
+            saga.Id,
+            oldPlan.Tier,
+            newPlan.Tier,
+            5);
     }
 }
