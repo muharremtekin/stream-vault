@@ -4,6 +4,8 @@ namespace UserService.Application.Interfaces;
 
 public interface ITokenService
 {
+    int AccessTokenExpirationSeconds { get; }
+
     string GenerateAccessToken(User user);
 
     Task<string> GenerateRefreshTokenAsync(User user, CancellationToken cancellationToken = default);

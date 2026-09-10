@@ -70,6 +70,10 @@ public class LoginUserHandlerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync("refresh_token");
 
+        _tokenServiceMock
+            .SetupGet(t => t.AccessTokenExpirationSeconds)
+            .Returns(17 * 60);
+
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -77,6 +81,7 @@ public class LoginUserHandlerTests
         Assert.NotNull(result);
         Assert.Equal("access_token", result.AccessToken);
         Assert.Equal("refresh_token", result.RefreshToken);
+        Assert.Equal(17 * 60, result.ExpiresIn);
         Assert.Equal(user.Email, result.User.Email);
     }
 

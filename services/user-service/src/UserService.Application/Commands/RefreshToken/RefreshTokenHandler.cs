@@ -46,7 +46,7 @@ public class RefreshTokenHandler : IRequestHandler<RefreshTokenCommand, AuthResp
         {
             AccessToken = accessToken,
             RefreshToken = newRefreshToken,
-            ExpiresIn = 3600,
+            ExpiresIn = _tokenService.AccessTokenExpirationSeconds,
             User = new UserDto
             {
                 Id = user.Id,

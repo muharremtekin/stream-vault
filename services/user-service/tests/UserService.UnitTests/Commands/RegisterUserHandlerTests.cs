@@ -49,6 +49,10 @@ public class RegisterUserHandlerTests
             .Setup(t => t.GenerateRefreshTokenAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("refresh_token");
 
+        _tokenServiceMock
+            .SetupGet(t => t.AccessTokenExpirationSeconds)
+            .Returns(17 * 60);
+
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -56,6 +60,7 @@ public class RegisterUserHandlerTests
         Assert.NotNull(result);
         Assert.Equal("access_token", result.AccessToken);
         Assert.Equal("refresh_token", result.RefreshToken);
+        Assert.Equal(17 * 60, result.ExpiresIn);
         Assert.Equal("test@example.com", result.User.Email);
         _userRepositoryMock.Verify(r => r.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
     }

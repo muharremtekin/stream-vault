@@ -50,7 +50,7 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, AuthResp
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = 3600,
+            ExpiresIn = _tokenService.AccessTokenExpirationSeconds,
             User = new UserDto
             {
                 Id = user.Id,

@@ -51,7 +51,7 @@ public class LoginUserHandler : IRequestHandler<LoginUserCommand, AuthResponseDt
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = 3600,
+            ExpiresIn = _tokenService.AccessTokenExpirationSeconds,
             User = new UserDto
             {
                 Id = user.Id,

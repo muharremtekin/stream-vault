@@ -135,6 +135,34 @@ public class JwtTokenServiceTests : IDisposable
     }
 
     [Fact]
+    public void GenerateAccessToken_WithCustomExpiration_ShouldMatchReportedLifetime()
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            { "Jwt:Secret", "StreamVault-Test-Secret-Key-Must-Be-At-Least-32-Characters!" },
+            { "Jwt:Issuer", "StreamVault.UserService.Test" },
+            { "Jwt:Audience", "StreamVault.Client.Test" },
+            { "Jwt:ExpiresInMinutes", "17" }
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings)
+            .Build();
+        var service = new JwtTokenService(configuration, _context);
+        var beforeIssue = DateTime.UtcNow;
+
+        var token = service.GenerateAccessToken(new User
+        {
+            Id = Guid.NewGuid(),
+            Email = "expiration@example.com",
+            Role = SubscriptionTier.Free
+        });
+
+        var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        Assert.Equal(17 * 60, service.AccessTokenExpirationSeconds);
+        Assert.InRange(jwt.ValidTo, beforeIssue.AddMinutes(17).AddSeconds(-1), DateTime.UtcNow.AddMinutes(17).AddSeconds(1));
+    }
+
+    [Fact]
     public async Task ConsumeRefreshTokenAsync_ShouldRevokeTokenAndReturnUserId()
     {
         var user = new User

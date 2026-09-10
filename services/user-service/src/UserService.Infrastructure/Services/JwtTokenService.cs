@@ -21,6 +21,8 @@ public class JwtTokenService : ITokenService
     private readonly int _expiresInMinutes;
     private readonly int _refreshTokenExpirationDays;
 
+    public int AccessTokenExpirationSeconds => checked(_expiresInMinutes * 60);
+
     public JwtTokenService(IConfiguration configuration, UserDbContext context)
     {
         _context = context;
