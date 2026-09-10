@@ -5,7 +5,10 @@ import type { ContentType } from '@/lib/types/common';
  * Movie, Series, and WatchProgress (cross-referenced with catalog data).
  */
 export interface ContentCardItem {
+  /** Catalog identifier used for details and watchlist actions. */
   contentId: string;
+  /** Optional playback route when it differs from the catalog identifier. */
+  playbackHref?: string;
   title: string;
   thumbnailUrl?: string;
   releaseYear?: number;

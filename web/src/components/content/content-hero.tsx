@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useContent } from '@/lib/hooks/use-content';
 import { cn } from '@/lib/utils/cn';
+import { buildEpisodeContentId } from '@/lib/utils/episode-content-id';
 import type { Movie, Series } from '@/lib/types/catalog';
 import type { ContentType } from '@/lib/types/common';
 
@@ -61,7 +62,11 @@ export default function ContentHero({ id, contentType }: ContentHeroProps) {
       const firstSeason = series.seasons[0];
       if (firstSeason.episodes?.length > 0) {
         const firstEp = firstSeason.episodes[0];
-        const contentId = `${id}_s${firstSeason.seasonNumber}_e${firstEp.episodeNumber}`;
+        const contentId = buildEpisodeContentId(
+          id,
+          firstSeason.seasonNumber,
+          firstEp.episodeNumber,
+        );
         return `/watch/${contentId}?type=series&title=${encodeURIComponent(firstEp.title)}`;
       }
     }

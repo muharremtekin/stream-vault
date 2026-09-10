@@ -13,11 +13,8 @@ import { VideoUploader } from '@/components/admin/video-uploader';
 import { useAddEpisode } from '@/lib/hooks/use-admin';
 import { extractErrorMessage } from '@/lib/utils/error';
 import { cn } from '@/lib/utils/cn';
+import { buildEpisodeContentId } from '@/lib/utils/episode-content-id';
 import type { Series, Episode } from '@/lib/types/catalog';
-
-function buildEpisodeContentId(seriesId: string, seasonNumber: number, episodeNumber: number) {
-  return `${seriesId}_s${seasonNumber}_e${episodeNumber}`;
-}
 
 function VideoStatusBadge({ status }: { status: string }) {
   const t = useTranslations('admin.episodes');

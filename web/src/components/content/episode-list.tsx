@@ -7,6 +7,7 @@ import { Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 import { cn } from '@/lib/utils/cn';
+import { buildEpisodeContentId } from '@/lib/utils/episode-content-id';
 import type { Episode } from '@/lib/types/catalog';
 
 interface EpisodeListProps {
@@ -34,11 +35,12 @@ export default function EpisodeList({
     );
   }
 
-  const buildContentId = (epNum: number) =>
-    `${seriesId}_s${seasonNumber}_e${epNum}`;
-
   const handlePlay = (episode: Episode) => {
-    const contentId = buildContentId(episode.episodeNumber);
+    const contentId = buildEpisodeContentId(
+      seriesId,
+      seasonNumber,
+      episode.episodeNumber,
+    );
     const idx = episodes.findIndex((e) => e.episodeNumber === episode.episodeNumber);
     const next = idx >= 0 && idx < episodes.length - 1 ? episodes[idx + 1] : undefined;
 
@@ -48,7 +50,10 @@ export default function EpisodeList({
     });
 
     if (next) {
-      params.set('nextEpisodeId', buildContentId(next.episodeNumber));
+      params.set(
+        'nextEpisodeId',
+        buildEpisodeContentId(seriesId, seasonNumber, next.episodeNumber),
+      );
       params.set('nextEpisodeTitle', next.title);
       params.set('nextSeason', String(seasonNumber));
       params.set('nextEpisodeNum', String(next.episodeNumber));
