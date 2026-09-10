@@ -12,6 +12,7 @@ namespace CatalogService.UnitTests.Commands;
 public class UpdateVideoStatusHandlerTests
 {
     private readonly Mock<IMovieRepository> _movieRepositoryMock;
+    private readonly Mock<ISeriesRepository> _seriesRepositoryMock;
     private readonly Mock<IOutboxRepository> _outboxRepositoryMock;
     private readonly Mock<ILogger<UpdateVideoStatusHandler>> _loggerMock;
     private readonly UpdateVideoStatusHandler _handler;
@@ -19,9 +20,14 @@ public class UpdateVideoStatusHandlerTests
     public UpdateVideoStatusHandlerTests()
     {
         _movieRepositoryMock = new Mock<IMovieRepository>();
+        _seriesRepositoryMock = new Mock<ISeriesRepository>();
         _outboxRepositoryMock = new Mock<IOutboxRepository>();
         _loggerMock = new Mock<ILogger<UpdateVideoStatusHandler>>();
-        _handler = new UpdateVideoStatusHandler(_movieRepositoryMock.Object, _outboxRepositoryMock.Object, _loggerMock.Object);
+        _handler = new UpdateVideoStatusHandler(
+            _movieRepositoryMock.Object,
+            _seriesRepositoryMock.Object,
+            _outboxRepositoryMock.Object,
+            _loggerMock.Object);
     }
 
     private static Movie CreateMovie(VideoStatus status = VideoStatus.NotUploaded) => new()
@@ -242,13 +248,21 @@ public class UpdateVideoStatusHandlerTests
     public void Constructor_NullRepository_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new UpdateVideoStatusHandler(null!, _outboxRepositoryMock.Object, _loggerMock.Object));
+            new UpdateVideoStatusHandler(
+                null!,
+                _seriesRepositoryMock.Object,
+                _outboxRepositoryMock.Object,
+                _loggerMock.Object));
     }
 
     [Fact]
     public void Constructor_NullLogger_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() =>
-            new UpdateVideoStatusHandler(_movieRepositoryMock.Object, _outboxRepositoryMock.Object, null!));
+            new UpdateVideoStatusHandler(
+                _movieRepositoryMock.Object,
+                _seriesRepositoryMock.Object,
+                _outboxRepositoryMock.Object,
+                null!));
     }
 }

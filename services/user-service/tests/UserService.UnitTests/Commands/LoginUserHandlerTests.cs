@@ -1,5 +1,6 @@
 using Moq;
 using UserService.Application.Commands.LoginUser;
+using UserService.Application.DTOs;
 using UserService.Application.Interfaces;
 using UserService.Domain.Entities;
 using UserService.Domain.Enums;
@@ -31,19 +32,19 @@ public class LoginUserHandlerTests
     public async Task Handle_WithValidCredentials_ShouldReturnAuthResponse()
     {
         // Arrange
-        var user = new User
+        var user = new UserReadModel
         {
             Id = Guid.NewGuid(),
             Email = "test@example.com",
             PasswordHash = "hashed_password",
             Role = SubscriptionTier.Free,
-            Profiles = new List<Profile>()
+            ProfileCount = 0
         };
 
         var command = new LoginUserCommand("test@example.com", "P@ssword123!");
 
         _userRepositoryMock
-            .Setup(r => r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetSummaryByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
         _passwordHasherMock
@@ -51,12 +52,27 @@ public class LoginUserHandlerTests
             .Returns(true);
 
         _tokenServiceMock
-            .Setup(t => t.GenerateAccessToken(user))
+            .Setup(t => t.GenerateAccessToken(
+                It.Is<User>(u =>
+                    u.Id == user.Id &&
+                    u.Email == user.Email &&
+                    u.PasswordHash == user.PasswordHash &&
+                    u.Role == user.Role)))
             .Returns("access_token");
 
         _tokenServiceMock
-            .Setup(t => t.GenerateRefreshToken(user))
-            .Returns("refresh_token");
+            .Setup(t => t.GenerateRefreshTokenAsync(
+                It.Is<User>(u =>
+                    u.Id == user.Id &&
+                    u.Email == user.Email &&
+                    u.PasswordHash == user.PasswordHash &&
+                    u.Role == user.Role),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync("refresh_token");
+
+        _tokenServiceMock
+            .SetupGet(t => t.AccessTokenExpirationSeconds)
+            .Returns(17 * 60);
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -65,6 +81,7 @@ public class LoginUserHandlerTests
         Assert.NotNull(result);
         Assert.Equal("access_token", result.AccessToken);
         Assert.Equal("refresh_token", result.RefreshToken);
+        Assert.Equal(17 * 60, result.ExpiresIn);
         Assert.Equal(user.Email, result.User.Email);
     }
 
@@ -75,8 +92,8 @@ public class LoginUserHandlerTests
         var command = new LoginUserCommand("nonexistent@example.com", "P@ssword123!");
 
         _userRepositoryMock
-            .Setup(r => r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((User?)null);
+            .Setup(r => r.GetSummaryByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((UserReadModel?)null);
 
         // Act & Assert
         await Assert.ThrowsAsync<UserNotFoundException>(
@@ -87,7 +104,7 @@ public class LoginUserHandlerTests
     public async Task Handle_WithInvalidPassword_ShouldThrowUserNotFoundException()
     {
         // Arrange
-        var user = new User
+        var user = new UserReadModel
         {
             Id = Guid.NewGuid(),
             Email = "test@example.com",
@@ -98,7 +115,7 @@ public class LoginUserHandlerTests
         var command = new LoginUserCommand("test@example.com", "WrongPassword!");
 
         _userRepositoryMock
-            .Setup(r => r.GetByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetSummaryByEmailAsync(command.Email, It.IsAny<CancellationToken>()))
             .ReturnsAsync(user);
 
         _passwordHasherMock

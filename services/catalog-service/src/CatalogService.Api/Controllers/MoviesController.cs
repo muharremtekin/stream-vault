@@ -4,6 +4,7 @@ using CatalogService.Application.DTOs;
 using CatalogService.Application.Interfaces;
 using CatalogService.Application.Queries.GetMovies;
 using CatalogService.Application.Queries.GetStreamingInfo;
+using CatalogService.Application.Validation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -55,11 +56,15 @@ public class MoviesController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(MovieDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMovieById(
         string id,
         CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(id))
+            return BadRequest(new { message = "Invalid movie ID format." });
+
         var movie = await _movieRepository.GetByIdAsync(id, cancellationToken);
 
         if (movie is null)
@@ -92,11 +97,15 @@ public class MoviesController : ControllerBase
     /// </summary>
     [HttpGet("{id}/streaming-info")]
     [ProducesResponseType(typeof(StreamingInfoDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetStreamingInfo(
         string id,
         CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(id))
+            return BadRequest(new { message = "Invalid movie ID format." });
+
         var query = new GetStreamingInfoQuery { MovieId = id };
         var result = await _mediator.Send(query, cancellationToken);
 

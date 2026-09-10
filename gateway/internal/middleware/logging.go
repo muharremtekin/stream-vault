@@ -2,11 +2,41 @@ package middleware
 
 import (
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
 	"go.opentelemetry.io/otel/trace"
 )
+
+var sensitiveQueryParameters = map[string]struct{}{
+	"access_token":  {},
+	"api_key":       {},
+	"password":      {},
+	"refresh_token": {},
+	"secret":        {},
+	"token":         {},
+}
+
+func redactSensitiveQuery(rawQuery string) string {
+	if rawQuery == "" {
+		return ""
+	}
+
+	values, err := url.ParseQuery(rawQuery)
+	if err != nil {
+		return "[invalid query]"
+	}
+
+	for key := range values {
+		if _, sensitive := sensitiveQueryParameters[strings.ToLower(key)]; sensitive {
+			values.Set(key, "[REDACTED]")
+		}
+	}
+
+	return values.Encode()
+}
 
 // responseRecorder wraps http.ResponseWriter to capture the status code and
 // bytes written for logging.
@@ -76,7 +106,7 @@ func Logging() func(http.Handler) http.Handler {
 			event.
 				Str("method", r.Method).
 				Str("path", r.URL.Path).
-				Str("query", r.URL.RawQuery).
+				Str("query", redactSensitiveQuery(r.URL.RawQuery)).
 				Int("status", rec.statusCode).
 				Dur("latency", duration).
 				Int("response_bytes", rec.bytesWritten).

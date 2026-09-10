@@ -73,7 +73,7 @@ type ResilienceConfig struct {
 	Retry                RetryConfig                        `mapstructure:"retry"`
 	DefaultTimeout       time.Duration                      `mapstructure:"default_timeout"`
 	DefaultMaxConcurrent int                                `mapstructure:"default_max_concurrent"`
-	Services             map[string]ServiceResilienceConfig  `mapstructure:"services"`
+	Services             map[string]ServiceResilienceConfig `mapstructure:"services"`
 }
 
 // RetryConfig holds upstream HTTP retry policy settings.
@@ -152,6 +152,16 @@ func Load(configPath string) (*Config, error) {
 	// Read from environment variables.
 	v.SetEnvPrefix("GATEWAY")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	serviceURLBindings := map[string]string{
+		"services.user-service.url":         "GATEWAY_USER_SERVICE_URL",
+		"services.catalog-service.url":      "GATEWAY_CATALOG_SERVICE_URL",
+		"services.subscription-service.url": "GATEWAY_SUBSCRIPTION_SERVICE_URL",
+	}
+	for key, environmentVariable := range serviceURLBindings {
+		if err := v.BindEnv(key, environmentVariable); err != nil {
+			return nil, fmt.Errorf("binding %s: %w", environmentVariable, err)
+		}
+	}
 	v.AutomaticEnv()
 
 	var cfg Config

@@ -16,12 +16,14 @@ public class ContentRatingRepository : IContentRatingRepository
     public async Task<ContentRating?> GetAsync(Guid userId, string contentId, CancellationToken cancellationToken = default)
     {
         return await _context.ContentRatings
+            .AsNoTracking()
             .FirstOrDefaultAsync(r => r.UserId == userId && r.ContentId == contentId, cancellationToken);
     }
 
     public async Task<List<ContentRating>> GetByUserIdAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default)
     {
         return await _context.ContentRatings
+            .AsNoTracking()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.RatedAt)
             .Skip((page - 1) * pageSize)
@@ -36,6 +38,7 @@ public class ContentRatingRepository : IContentRatingRepository
 
         if (existing is not null)
         {
+            rating.Id = existing.Id;
             existing.Rating = rating.Rating;
             existing.RatedAt = rating.RatedAt;
         }
@@ -50,6 +53,7 @@ public class ContentRatingRepository : IContentRatingRepository
     public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.ContentRatings
+            .AsNoTracking()
             .CountAsync(r => r.UserId == userId, cancellationToken);
     }
 }

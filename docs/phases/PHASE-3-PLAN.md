@@ -1172,7 +1172,7 @@ Invoice
 ├── Id: Guid
 ├── SubscriptionId: Guid
 ├── PaymentId: Guid
-├── InvoiceNumber: string                # "INV-2026-000001"
+├── InvoiceNumber: string                # "INV-20260419-000001"
 ├── Amount: decimal
 ├── Currency: string
 ├── PeriodStart: DateTime
@@ -1433,7 +1433,7 @@ GET /api/subscriptions/me/invoices
   Response: 200 [
     {
       "id": "guid",
-      "invoiceNumber": "INV-2026-000042",
+      "invoiceNumber": "INV-20260419-000042",
       "amount": 79.99,
       "currency": "TRY",
       "periodStart": "2026-02-13T00:00:00Z",

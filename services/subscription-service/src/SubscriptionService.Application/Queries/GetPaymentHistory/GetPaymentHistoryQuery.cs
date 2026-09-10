@@ -1,4 +1,3 @@
-using AutoMapper;
 using MediatR;
 using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
@@ -14,18 +13,18 @@ public record GetPaymentHistoryQuery(
 public class GetPaymentHistoryHandler : IRequestHandler<GetPaymentHistoryQuery, List<PaymentDto>>
 {
     private readonly IPaymentRepository _paymentRepository;
-    private readonly IMapper _mapper;
 
-    public GetPaymentHistoryHandler(IPaymentRepository paymentRepository, IMapper mapper)
+    public GetPaymentHistoryHandler(IPaymentRepository paymentRepository)
     {
         _paymentRepository = paymentRepository;
-        _mapper = mapper;
     }
 
     public async Task<List<PaymentDto>> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken)
     {
-        var payments = await _paymentRepository.GetByUserIdAsync(
-            request.UserId, request.Limit, request.Offset, cancellationToken);
-        return _mapper.Map<List<PaymentDto>>(payments);
+        return await _paymentRepository.GetHistoryByUserIdAsync(
+            request.UserId,
+            request.Limit,
+            request.Offset,
+            cancellationToken);
     }
 }

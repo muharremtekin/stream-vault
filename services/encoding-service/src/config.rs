@@ -124,5 +124,15 @@ pub fn load() -> anyhow::Result<Config> {
         )
         .build()?;
 
-    cfg.try_deserialize().map_err(Into::into)
+    let cfg: Config = cfg.try_deserialize()?;
+    if cfg.encoding.max_concurrent_jobs == 0 {
+        anyhow::bail!("encoding.max_concurrent_jobs must be at least 1");
+    }
+    if cfg.encoding.max_concurrent_jobs > u16::MAX as usize {
+        anyhow::bail!(
+            "encoding.max_concurrent_jobs must not exceed {}",
+            u16::MAX
+        );
+    }
+    Ok(cfg)
 }

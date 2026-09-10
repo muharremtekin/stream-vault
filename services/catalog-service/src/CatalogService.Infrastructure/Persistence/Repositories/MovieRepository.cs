@@ -1,4 +1,5 @@
 using CatalogService.Application.Interfaces;
+using CatalogService.Application.Validation;
 using CatalogService.Domain.Entities;
 using MongoDB.Driver;
 
@@ -57,6 +58,9 @@ public class MovieRepository : IMovieRepository
 
     public async Task<Movie?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(id))
+            return null;
+
         var filter = Builders<Movie>.Filter.Eq(m => m.Id, id);
         return await _context.Movies.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }

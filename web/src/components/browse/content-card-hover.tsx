@@ -39,6 +39,7 @@ export default function ContentCardHover({ item, cardRef, onClose }: ContentCard
   const contentPath = item.contentType === 'Series'
     ? `/series/${item.contentId}`
     : `/movie/${item.contentId}`;
+  const playbackPath = item.playbackHref ?? `/watch/${item.contentId}`;
 
   useEffect(() => {
     setAlign(resolveAlignment(cardRef));
@@ -85,7 +86,7 @@ export default function ContentCardHover({ item, cardRef, onClose }: ContentCard
           <Button
             size="sm"
             variant="primary"
-            onClick={() => router.push(`/watch/${item.contentId}`)}
+            onClick={() => router.push(playbackPath)}
             aria-label={t('play')}
           >
             <Play className="h-4 w-4" />

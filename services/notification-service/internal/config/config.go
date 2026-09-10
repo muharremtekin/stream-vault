@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const MinJWTSecretBytes = 32
+
 type Config struct {
 	Server    ServerConfig    `mapstructure:"server"`
 	Consul    ConsulConfig    `mapstructure:"consul"`
@@ -143,6 +145,12 @@ func validate(cfg *Config) error {
 	}
 	if cfg.MongoDB.Database == "" {
 		return fmt.Errorf("mongodb.database must not be empty")
+	}
+	if strings.TrimSpace(cfg.JWT.Secret) == "" {
+		return fmt.Errorf("jwt.secret must not be empty")
+	}
+	if len([]byte(cfg.JWT.Secret)) < MinJWTSecretBytes {
+		return fmt.Errorf("jwt.secret must be at least %d bytes", MinJWTSecretBytes)
 	}
 	return nil
 }

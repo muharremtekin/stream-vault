@@ -210,7 +210,12 @@ async fn main() -> anyhow::Result<()> {
     );
 
     // RabbitMQ consumer
-    let mut consumer = JobConsumer::new(cfg.rabbitmq.clone(), Arc::new(orchestrator), shutdown_rx);
+    let mut consumer = JobConsumer::new(
+        cfg.rabbitmq.clone(),
+        cfg.encoding.max_concurrent_jobs,
+        Arc::new(orchestrator),
+        shutdown_rx,
+    );
 
     let consumer_handle = tokio::spawn(async move {
         consumer.start().await;

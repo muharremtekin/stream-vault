@@ -471,23 +471,6 @@
       "arguments": {}
     }
   ],
-  "users": [
-    {
-      "name": "streamvault",
-      "password_hash": "huoJBc1z8gJ0NurvF2zdSsoFSCZfTqArloTbB+hD73jKxJSS",
-      "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "tags": ["administrator"]
-    }
-  ],
-  "permissions": [
-    {
-      "user": "streamvault",
-      "vhost": "/",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    }
-  ],
   "policies": [],
   "parameters": [],
   "global_parameters": []

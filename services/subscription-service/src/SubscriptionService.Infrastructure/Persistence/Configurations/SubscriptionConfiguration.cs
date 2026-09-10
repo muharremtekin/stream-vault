@@ -37,6 +37,12 @@ public class SubscriptionConfiguration : IEntityTypeConfiguration<Subscription>
         builder.HasIndex(s => s.Status)
             .HasDatabaseName("idx_subscriptions_status");
 
+        builder.HasIndex(s => new { s.UserId, s.Status })
+            .HasDatabaseName("idx_subscriptions_user_status");
+
+        builder.HasIndex(s => new { s.Status, s.PeriodEnd })
+            .HasDatabaseName("idx_subscriptions_status_period_end");
+
         builder.Property(s => s.PeriodStart)
             .HasColumnName("period_start")
             .IsRequired();

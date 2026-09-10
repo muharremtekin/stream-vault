@@ -19,6 +19,7 @@ public class SubscriptionSagaTests
     private readonly Mock<IInvoiceRepository> _invoiceRepo = new();
     private readonly Mock<IOutboxRepository> _outboxRepo = new();
     private readonly Mock<ISagaRepository> _sagaRepo = new();
+    private readonly Mock<ISubscriptionUnitOfWork> _unitOfWork = new();
     private readonly CompensatingActions _compensatingActions;
     private readonly SubscriptionSaga _saga;
 
@@ -41,10 +42,14 @@ public class SubscriptionSagaTests
             MaxQuality = "1080p"
         };
 
+        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
         _compensatingActions = new CompensatingActions(
             _subRepo.Object,
             _payGateway.Object,
             _sagaRepo.Object,
+            _unitOfWork.Object,
             Mock.Of<ILogger<CompensatingActions>>());
 
         _saga = new SubscriptionSaga(
@@ -55,6 +60,7 @@ public class SubscriptionSagaTests
             _invoiceRepo.Object,
             _outboxRepo.Object,
             _sagaRepo.Object,
+            _unitOfWork.Object,
             _compensatingActions,
             Mock.Of<ILogger<SubscriptionSaga>>());
 
@@ -73,7 +79,7 @@ public class SubscriptionSagaTests
             .ReturnsAsync(new PaymentResult(true, "txn_123", null));
 
         _invoiceRepo.Setup(r => r.GenerateInvoiceNumberAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync("INV-2026-0001");
+            .ReturnsAsync("INV-20260419-000001");
     }
 
     [Fact]
@@ -106,7 +112,7 @@ public class SubscriptionSagaTests
         await _saga.ExecuteAsync(_userId, _planId, CardNumber, CancellationToken.None);
 
         _invoiceRepo.Verify(r => r.AddAsync(
-            It.Is<Invoice>(i => i.InvoiceNumber == "INV-2026-0001"),
+            It.Is<Invoice>(i => i.InvoiceNumber == "INV-20260419-000001"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -132,6 +138,7 @@ public class SubscriptionSagaTests
         _sagaRepo.Verify(r => r.UpdateAsync(
             It.Is<SagaState>(s => s.Status == SagaStatus.Completed),
             It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
     [Fact]
@@ -213,5 +220,6 @@ public class SubscriptionSagaTests
         _sagaRepo.Verify(r => r.UpdateAsync(
             It.Is<SagaState>(s => s.Status == SagaStatus.Failed),
             It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(3));
     }
 }

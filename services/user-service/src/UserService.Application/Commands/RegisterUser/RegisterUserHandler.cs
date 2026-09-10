@@ -44,13 +44,13 @@ public class RegisterUserHandler : IRequestHandler<RegisterUserCommand, AuthResp
         await _userRepository.AddAsync(user, cancellationToken);
 
         var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshToken = _tokenService.GenerateRefreshToken(user);
+        var refreshToken = await _tokenService.GenerateRefreshTokenAsync(user, cancellationToken);
 
         return new AuthResponseDto
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            ExpiresIn = 3600,
+            ExpiresIn = _tokenService.AccessTokenExpirationSeconds,
             User = new UserDto
             {
                 Id = user.Id,

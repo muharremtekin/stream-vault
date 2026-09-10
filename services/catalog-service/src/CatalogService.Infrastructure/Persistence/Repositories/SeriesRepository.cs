@@ -1,4 +1,5 @@
 using CatalogService.Application.Interfaces;
+using CatalogService.Application.Validation;
 using CatalogService.Domain.Entities;
 using MongoDB.Driver;
 
@@ -56,6 +57,9 @@ public class SeriesRepository : ISeriesRepository
 
     public async Task<Series?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(id))
+            return null;
+
         var filter = Builders<Series>.Filter.Eq(s => s.Id, id);
         return await _context.Series.Find(filter).FirstOrDefaultAsync(cancellationToken);
     }

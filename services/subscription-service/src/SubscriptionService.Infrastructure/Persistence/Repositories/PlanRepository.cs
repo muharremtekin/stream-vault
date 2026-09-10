@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
 using SubscriptionService.Domain.Entities;
 using SubscriptionService.Domain.Enums;
@@ -23,8 +24,29 @@ public class PlanRepository : IPlanRepository
     public async Task<List<Plan>> GetAllActiveAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Plans
+            .AsNoTracking()
             .Where(p => p.IsActive)
             .OrderBy(p => p.PriceMonthly)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<PlanDto>> GetAllActiveDtosAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Plans
+            .AsNoTracking()
+            .Where(p => p.IsActive)
+            .OrderBy(p => p.PriceMonthly)
+            .Select(p => new PlanDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Tier = p.Tier.ToString(),
+                PriceMonthly = p.PriceMonthly,
+                MaxScreens = p.MaxScreens,
+                MaxQuality = p.MaxQuality,
+                Features = p.Features,
+                IsActive = p.IsActive
+            })
             .ToListAsync(cancellationToken);
     }
 

@@ -14,15 +14,18 @@ public class CancelSubscriptionHandler
 {
     private readonly ISubscriptionRepository _subscriptionRepository;
     private readonly IOutboxRepository _outboxRepository;
+    private readonly ISubscriptionUnitOfWork _unitOfWork;
     private readonly ILogger<CancelSubscriptionHandler> _logger;
 
     public CancelSubscriptionHandler(
         ISubscriptionRepository subscriptionRepository,
         IOutboxRepository outboxRepository,
+        ISubscriptionUnitOfWork unitOfWork,
         ILogger<CancelSubscriptionHandler> logger)
     {
         _subscriptionRepository = subscriptionRepository;
         _outboxRepository = outboxRepository;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
@@ -58,6 +61,8 @@ public class CancelSubscriptionHandler
             Payload = JsonSerializer.Serialize(cancelledEvent),
             CreatedAt = now
         }, cancellationToken);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
             "Subscription {SubscriptionId} cancelled for user {UserId}. Active until {PeriodEnd}",

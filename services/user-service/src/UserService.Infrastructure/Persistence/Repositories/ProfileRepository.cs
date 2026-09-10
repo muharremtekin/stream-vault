@@ -16,6 +16,7 @@ public class ProfileRepository : IProfileRepository
     public async Task<List<Profile>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Profiles
+            .AsNoTracking()
             .Where(p => p.UserId == userId)
             .OrderBy(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
@@ -24,7 +25,15 @@ public class ProfileRepository : IProfileRepository
     public async Task<Profile?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Profiles
+            .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Profiles
+            .AsNoTracking()
+            .AnyAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task AddAsync(Profile profile, CancellationToken cancellationToken = default)
@@ -36,6 +45,7 @@ public class ProfileRepository : IProfileRepository
     public async Task<int> CountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _context.Profiles
+            .AsNoTracking()
             .CountAsync(p => p.UserId == userId, cancellationToken);
     }
 }

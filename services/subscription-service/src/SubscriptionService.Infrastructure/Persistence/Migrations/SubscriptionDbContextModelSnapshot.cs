@@ -22,6 +22,8 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence<long>("invoice_numbers");
+
             modelBuilder.Entity("SubscriptionService.Domain.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -70,6 +72,9 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
                     b.HasIndex("SubscriptionId")
                         .HasDatabaseName("idx_invoices_subscription_id");
 
+                    b.HasIndex("SubscriptionId", "IssuedAt")
+                        .HasDatabaseName("idx_invoices_subscription_issued_at");
+
                     b.ToTable("invoices", (string)null);
                 });
 
@@ -94,6 +99,20 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("event_type");
 
+                    b.Property<bool>("IsDeadLetter")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_dead_letter");
+
+                    b.Property<DateTime?>("LastAttemptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_attempted_at");
+
+                    b.Property<DateTime?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
                     b.Property<string>("Payload")
                         .IsRequired()
                         .HasColumnType("text")
@@ -109,6 +128,13 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_outbox_messages");
+
+                    b.HasIndex("IsDeadLetter")
+                        .HasDatabaseName("idx_outbox_messages_is_dead_letter");
+
+                    b.HasIndex("NextAttemptAt", "CreatedAt")
+                        .HasDatabaseName("idx_outbox_messages_due_polling")
+                        .HasFilter("\"processed_at\" IS NULL AND \"is_dead_letter\" = false");
 
                     b.HasIndex("ProcessedAt")
                         .HasDatabaseName("idx_outbox_messages_processed_at");
@@ -167,6 +193,9 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("SubscriptionId")
                         .HasDatabaseName("idx_payments_subscription_id");
+
+                    b.HasIndex("SubscriptionId", "CreatedAt")
+                        .HasDatabaseName("idx_payments_subscription_created_at");
 
                     b.HasIndex("TransactionId")
                         .HasDatabaseName("idx_payments_transaction_id");
@@ -341,8 +370,14 @@ namespace SubscriptionService.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status")
                         .HasDatabaseName("idx_subscriptions_status");
 
+                    b.HasIndex("Status", "PeriodEnd")
+                        .HasDatabaseName("idx_subscriptions_status_period_end");
+
                     b.HasIndex("UserId")
                         .HasDatabaseName("idx_subscriptions_user_id");
+
+                    b.HasIndex("UserId", "Status")
+                        .HasDatabaseName("idx_subscriptions_user_status");
 
                     b.ToTable("subscriptions", (string)null);
                 });

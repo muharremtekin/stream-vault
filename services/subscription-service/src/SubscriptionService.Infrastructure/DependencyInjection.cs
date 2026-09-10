@@ -15,7 +15,7 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<SubscriptionDbContext>(options =>
+        services.AddDbContextPool<SubscriptionDbContext>(options =>
             options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
                 npgsqlOptions =>
@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<ISagaRepository, SagaRepository>();
         services.AddScoped<IOutboxRepository, OutboxRepository>();
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+        services.AddScoped<ISubscriptionUnitOfWork, SubscriptionUnitOfWork>();
         services.AddScoped<IPaymentGateway, MockPaymentGateway>();
 
         services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();

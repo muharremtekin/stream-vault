@@ -23,8 +23,8 @@ public class CreateProfileHandler : IRequestHandler<CreateProfileCommand, Profil
 
     public async Task<ProfileDto> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
-        if (user is null)
+        var userExists = await _userRepository.ExistsByIdAsync(request.UserId, cancellationToken);
+        if (!userExists)
         {
             throw new UserNotFoundException(request.UserId);
         }

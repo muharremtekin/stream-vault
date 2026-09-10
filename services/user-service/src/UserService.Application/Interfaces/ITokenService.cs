@@ -4,13 +4,11 @@ namespace UserService.Application.Interfaces;
 
 public interface ITokenService
 {
+    int AccessTokenExpirationSeconds { get; }
+
     string GenerateAccessToken(User user);
 
-    string GenerateRefreshToken(User user);
+    Task<string> GenerateRefreshTokenAsync(User user, CancellationToken cancellationToken = default);
 
-    Task<bool> ValidateRefreshToken(string token, CancellationToken cancellationToken = default);
-
-    Task<Guid?> GetUserIdFromRefreshToken(string token, CancellationToken cancellationToken = default);
-
-    Task RevokeRefreshToken(string token, CancellationToken cancellationToken = default);
+    Task<Guid?> ConsumeRefreshTokenAsync(string token, CancellationToken cancellationToken = default);
 }

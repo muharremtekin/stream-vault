@@ -14,14 +14,19 @@ public class CompensatingActionsTests
     private readonly Mock<ISubscriptionRepository> _subRepo = new();
     private readonly Mock<IPaymentGateway> _payGateway = new();
     private readonly Mock<ISagaRepository> _sagaRepo = new();
+    private readonly Mock<ISubscriptionUnitOfWork> _unitOfWork = new();
     private readonly CompensatingActions _compensatingActions;
 
     public CompensatingActionsTests()
     {
+        _unitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
         _compensatingActions = new CompensatingActions(
             _subRepo.Object,
             _payGateway.Object,
             _sagaRepo.Object,
+            _unitOfWork.Object,
             Mock.Of<ILogger<CompensatingActions>>());
     }
 
@@ -89,6 +94,8 @@ public class CompensatingActionsTests
         await _compensatingActions.CompensateCreateSubscriptionAsync(saga, data, CancellationToken.None);
 
         saga.Status.Should().Be(SagaStatus.Failed);
+        _unitOfWork.Verify(u => u.DiscardPendingChanges(), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -106,5 +113,7 @@ public class CompensatingActionsTests
 
         _payGateway.Verify(g => g.RefundAsync("txn_upgrade", 25.50m, It.IsAny<CancellationToken>()), Times.Once);
         saga.Status.Should().Be(SagaStatus.Failed);
+        _unitOfWork.Verify(u => u.DiscardPendingChanges(), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 }
