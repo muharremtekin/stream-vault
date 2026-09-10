@@ -14,6 +14,8 @@ using SubscriptionService.Api.Middleware;
 using SubscriptionService.Application.Interfaces;
 using SubscriptionService.Infrastructure;
 using SubscriptionService.Infrastructure.Persistence;
+using SubscriptionService.Infrastructure.Discovery;
+using SubscriptionService.Api.Health;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -94,10 +96,9 @@ builder.Services.AddHealthChecks()
         builder.Configuration.GetConnectionString("DefaultConnection")!,
         name: "postgresql",
         tags: new[] { "ready" })
-    .AddRabbitMQ(
-        new Uri(builder.Configuration["RabbitMQ:ConnectionString"] ?? "amqp://guest:guest@localhost:5672/"),
-        name: "rabbitmq",
-        tags: new[] { "ready" });
+	.AddCheck<RabbitMqHealthCheck>(
+		name: "rabbitmq",
+		tags: new[] { "ready" });
 
 // Background services
 builder.Services.Configure<OutboxProcessorOptions>(
@@ -179,24 +180,20 @@ if (builder.Configuration.GetSection("Consul").Exists())
     var lifetime = app.Lifetime;
     var consulClient = app.Services.GetRequiredService<IConsulClient>();
 
-    var serviceName = builder.Configuration.GetValue<string>("Consul:ServiceName")
-        ?? builder.Configuration.GetValue<string>("ServiceRegistration:Name")
-        ?? "subscription-service";
+    var registrationSettings = ConsulRegistrationSettings.FromConfiguration(
+        builder.Configuration, "subscription-service", 5007);
+    var serviceName = registrationSettings.Name;
     var serviceId = $"{serviceName}-{Guid.NewGuid():N}";
-    var servicePort = builder.Configuration.GetValue<int>("Consul:ServicePort",
-        builder.Configuration.GetValue<int>("ServiceRegistration:Port", 5007));
-    var serviceHost = builder.Configuration.GetValue<string>("Service:Host") ?? "localhost";
-
     var registration = new AgentServiceRegistration
     {
         ID = serviceId,
-        Name = serviceName,
-        Address = serviceHost,
-        Port = servicePort,
+        Name = registrationSettings.Name,
+        Address = registrationSettings.Host,
+        Port = registrationSettings.Port,
         Tags = new[] { "subscription", "billing", "api", "v1" },
         Check = new AgentServiceCheck
         {
-            HTTP = $"http://{serviceHost}:{servicePort}/health/ready",
+            HTTP = registrationSettings.HealthCheckAddress,
             Interval = TimeSpan.FromSeconds(10),
             Timeout = TimeSpan.FromSeconds(5),
             DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(60)
@@ -210,7 +207,7 @@ if (builder.Configuration.GetSection("Consul").Exists())
             await consulClient.Agent.ServiceRegister(registration);
             app.Logger.LogInformation(
                 "Registered service '{ServiceName}' (ID: {ServiceId}) with Consul at {Address}:{Port}.",
-                serviceName, serviceId, serviceHost, servicePort);
+                serviceName, serviceId, registrationSettings.Host, registrationSettings.Port);
         }
         catch (Exception ex)
         {

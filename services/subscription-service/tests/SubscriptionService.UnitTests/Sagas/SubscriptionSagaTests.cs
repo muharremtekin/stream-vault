@@ -79,7 +79,7 @@ public class SubscriptionSagaTests
             .ReturnsAsync(new PaymentResult(true, "txn_123", null));
 
         _invoiceRepo.Setup(r => r.GenerateInvoiceNumberAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync("INV-2026-0001");
+            .ReturnsAsync("INV-20260419-000001");
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class SubscriptionSagaTests
         await _saga.ExecuteAsync(_userId, _planId, CardNumber, CancellationToken.None);
 
         _invoiceRepo.Verify(r => r.AddAsync(
-            It.Is<Invoice>(i => i.InvoiceNumber == "INV-2026-0001"),
+            It.Is<Invoice>(i => i.InvoiceNumber == "INV-20260419-000001"),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 

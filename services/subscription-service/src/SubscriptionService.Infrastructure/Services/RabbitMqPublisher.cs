@@ -73,9 +73,6 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IAsyncDisposable
     {
         try
         {
-            if (_connection is null || !_connection.IsOpen)
-                return false;
-
             var channel = await GetChannelAsync();
             return channel.IsOpen;
         }

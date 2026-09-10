@@ -1,3 +1,6 @@
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using SubscriptionService.Application.DTOs;
 using SubscriptionService.Application.Interfaces;
@@ -7,6 +10,7 @@ namespace SubscriptionService.Infrastructure.Persistence.Repositories;
 
 public class InvoiceRepository : IInvoiceRepository
 {
+    private static readonly ConcurrentDictionary<int, InvoiceSequenceCounter> FallbackCounters = new();
     private readonly SubscriptionDbContext _context;
 
     public InvoiceRepository(SubscriptionDbContext context)
@@ -67,10 +71,22 @@ public class InvoiceRepository : IInvoiceRepository
                 .SqlQuery<long>($"SELECT nextval('invoice_numbers')")
                 .SingleAsync(cancellationToken);
 
-            return $"INV-{today:yyyyMMdd}-{nextValue:D6}";
+            return FormatInvoiceNumber(today, nextValue);
         }
 
-        var nextValueFallback = await _context.Invoices.CountAsync(cancellationToken) + 1;
-        return $"INV-{today:yyyyMMdd}-{nextValueFallback:D6}";
+        // Keep non-relational providers usable in tests without falling back to a table scan.
+        var dayKey = int.Parse(today.ToString("yyyyMMdd", CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
+        var counter = FallbackCounters.GetOrAdd(dayKey, _ => new InvoiceSequenceCounter());
+        var nextValueFallback = Interlocked.Increment(ref counter.Value);
+
+        return FormatInvoiceNumber(today, nextValueFallback);
+    }
+
+    private static string FormatInvoiceNumber(DateTime date, long sequenceValue)
+        => FormattableString.Invariant($"INV-{date:yyyyMMdd}-{sequenceValue:D6}");
+
+    private sealed class InvoiceSequenceCounter
+    {
+        public long Value;
     }
 }
