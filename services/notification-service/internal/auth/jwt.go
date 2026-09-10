@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -22,6 +23,10 @@ type WSAuthResult struct {
 // ValidateWSToken extracts and validates the JWT token from a WebSocket upgrade
 // request's query parameter (?token=...). Returns the user identity on success.
 func ValidateWSToken(r *http.Request, secret, issuer string) (*WSAuthResult, error) {
+	if strings.TrimSpace(secret) == "" {
+		return nil, fmt.Errorf("JWT secret is not configured")
+	}
+
 	tokenString := r.URL.Query().Get("token")
 	if tokenString == "" {
 		return nil, fmt.Errorf("missing token query parameter")

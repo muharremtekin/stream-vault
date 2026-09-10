@@ -1,6 +1,9 @@
 package metrics
 
 import (
+	"bufio"
+	"fmt"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -95,6 +98,15 @@ func (rr *responseRecorder) WriteHeader(code int) {
 
 func (rr *responseRecorder) Unwrap() http.ResponseWriter {
 	return rr.ResponseWriter
+}
+
+// Hijack preserves WebSocket upgrade support through the metrics wrapper.
+func (rr *responseRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	hijacker, ok := rr.ResponseWriter.(http.Hijacker)
+	if !ok {
+		return nil, nil, fmt.Errorf("underlying response writer does not implement http.Hijacker")
+	}
+	return hijacker.Hijack()
 }
 
 // Middleware returns HTTP middleware that records RED metrics for every request.
