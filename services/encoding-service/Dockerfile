@@ -36,7 +36,16 @@ RUN --mount=type=cache,target=/build/target \
     cp target/release/encoding-service /build/encoding-service-bin
 
 # ============================================================
-# Stage 2: Minimal runtime with FFmpeg
+# Stage 2: Test target (opt-in with --target test)
+# ============================================================
+FROM builder AS test
+
+RUN --mount=type=cache,target=/build/target \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo test --release --locked
+
+# ============================================================
+# Stage 3: Minimal runtime with FFmpeg
 # ============================================================
 FROM alpine:3.21
 

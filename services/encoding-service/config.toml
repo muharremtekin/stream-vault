@@ -23,7 +23,9 @@ jobs_queue = "encoding.jobs"
 exchange = "encoding"
 completed_routing_key = "job.completed"
 failed_routing_key = "job.failed"
+# The consumer raises this to max_concurrent_jobs when necessary.
 prefetch = 2
+# Number of retries after the initial attempt. 0 means exactly one attempt.
 max_retries = 3
 retry_delay_secs = 5
 
@@ -34,6 +36,7 @@ url = "redis://localhost:6379/1"
 temp_dir = "/tmp/encoding"
 ffmpeg_path = "/usr/bin/ffmpeg"
 ffprobe_path = "/usr/bin/ffprobe"
+# Maximum number of encoding pipelines allowed to run at once (must be >= 1).
 max_concurrent_jobs = 2
 
 [logging]
