@@ -93,6 +93,9 @@ A microservices-based streaming platform backend built with .NET 8, Go, Rust, an
 git clone <repo-url>
 cd stream-vault
 
+# Create local configuration, then fill every required blank secret.
+cp .env.example .env
+
 # Start core services (without Elasticsearch or Observability)
 docker compose up --build -d
 
@@ -123,7 +126,7 @@ Once running, all services will be accessible:
 | Subscription Service | http://localhost:5007 | |
 | Notification Service | http://localhost:5008 | WebSocket: `ws://localhost:5008/ws/notifications` |
 | Consul UI | http://localhost:8500 | |
-| RabbitMQ Management | http://localhost:15672 | guest / guest |
+| RabbitMQ Management | http://localhost:15672 | Credentials from `RABBITMQ_USER` / `RABBITMQ_PASS` |
 | MinIO Console | http://localhost:9001 | minioadmin / minioadmin |
 | Elasticsearch | http://localhost:9200 | `elasticsearch` profile |
 | Grafana | http://localhost:3000 | admin / streamvault (`observability` profile) |
@@ -1261,9 +1264,21 @@ stream-vault/
 - **Multi-level health checks** (live/ready/startup on all services, Gateway aggregation)
 - **Graceful shutdown** with signal handling (SIGTERM, in-flight request completion, Consul deregistration)
 
+## Runtime Configuration
+
+- `JWT_SECRET` is shared by the gateway, User Service, and Notification Service and must be at least 32 bytes. `JWT_EXPIRES_IN_MINUTES` controls both the JWT `exp` value and the `expiresIn` response field.
+- User, Catalog, and Subscription registration consistently use `ServiceRegistration:Name` and `ServiceRegistration:Port`; `Service:Host` supplies the advertised host. Compose derives ASP.NET listening, Consul registration, Gateway upstream, readiness-check, and container health-check ports from the matching `*_SERVICE_PORT` value.
+- `ENCODING_MAX_CONCURRENT_JOBS` must be between 1 and 65535. The consumer automatically raises RabbitMQ prefetch to at least this value, so increasing concurrency is not capped by the file default. `ENCODING_MAX_RETRIES` counts retries after the initial attempt, so `0` means one attempt and the default `3` means up to four total attempts. Before this correction, the default happened to make only three total attempts.
+- `CATALOG_DATABASE_NAME` defaults to the canonical `streamvault_catalog` name used by Mongo initialization and Catalog Service.
+- `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_WS_URL` are public browser configuration. Compose passes them as Docker build arguments because Next.js embeds them into client bundles at build time; rebuild the web image after changing either value, and never put a secret in a `NEXT_PUBLIC_*` value.
+
+Initialization scripts run only when their database volume is empty. Existing Mongo installations that contain the legacy `stream_vault_catalog` database can set `CATALOG_DATABASE_NAME=stream_vault_catalog` until data is migrated manually. Existing PostgreSQL installations keep their original bootstrap role: either keep `POSTGRES_USER` unchanged or have a DBA create/grant the replacement role and update application credentials. No volume deletion or automatic data migration is performed.
+
 ## RabbitMQ Topology
 
-All topology is pre-configured via `infrastructure/rabbitmq/definitions.json`. The system uses 6 exchanges and 13 queues for event-driven communication between services.
+Topology is stored in `infrastructure/rabbitmq/definitions.json` and imported by the one-shot `rabbitmq-init` service after the broker creates the env-configured default user. The file is mounted as a Compose config, so changing its contents recreates the init container and reapplies topology on the next `docker compose up`. User records, password hashes, and permissions are intentionally absent from the repository definitions. Applications wait for the topology import to complete before starting.
+
+On a clean volume, RabbitMQ creates `RABBITMQ_USER` with `RABBITMQ_PASS` and full default-vhost permissions. On an existing volume, RabbitMQ preserves existing users and ignores changed default-user env values. To rotate credentials, use an authorized `rabbitmqctl change_password <user> <new-password>` operation inside the broker, update `.env`, then recreate the broker, init, and application containers without deleting the volume. If the env password does not match the existing user, `rabbitmq-init` fails instead of starting applications against an uninitialized topology.
 
 ### Exchanges
 
@@ -2044,7 +2059,7 @@ k6 run --out experimental-prometheus-rw resilience/load-test/k6-scripts/load.js
 
 | Problem | Solution |
 |---------|----------|
-| Queues not created | Check `definitions.json` is loaded (verify via Management UI http://localhost:15672). Restart rabbitmq if needed |
+| Queues not created | Check `docker compose ps rabbitmq-init` and its logs, then verify the definitions in the Management UI. An existing volume whose password differs from `.env` requires an explicit credential rotation; do not delete the volume. |
 | Events not consumed | Check consumer service logs for connection errors, verify queue bindings in Management UI |
 | Outbox messages pending | Check RabbitMQ connectivity, verify outbox processor background service is running (check service logs for "outbox" entries) |
 

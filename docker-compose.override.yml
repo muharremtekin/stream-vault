@@ -10,13 +10,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5001:8080"
+      - "5001:${USER_SERVICE_PORT:-8080}"
 
   catalog-service:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     ports:
-      - "5002:5100"
+      - "5002:${CATALOG_SERVICE_PORT:-5100}"
 
   streaming-service:
     environment:
@@ -51,7 +51,7 @@ services:
 
   subscription-service:
     ports:
-      - "5007:5007"
+      - "5007:${SUBSCRIPTION_SERVICE_PORT:-5007}"
 
   notification-service:
     environment:

@@ -1,6 +1,6 @@
 // StreamVault Catalog Database Initialization
 
-db = db.getSiblingDB('streamvault_catalog');
+db = db.getSiblingDB(process.env.MONGO_INITDB_DATABASE || 'streamvault_catalog');
 
 // Create collections
 db.createCollection('movies');

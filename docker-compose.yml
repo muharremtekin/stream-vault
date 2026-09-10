@@ -12,9 +12,10 @@ services:
     ports: ["5432:5432"]
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/postgres/init.sh:/docker-entrypoint-initdb.d/10-streamvault-init.sh:ro
+      - ./infrastructure/postgres/init.sql:/opt/streamvault/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U streamvault"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -28,7 +29,7 @@ services:
     image: mongo:7
     restart: unless-stopped
     environment:
-      MONGO_INITDB_DATABASE: streamvault_catalog
+      MONGO_INITDB_DATABASE: ${CATALOG_DATABASE_NAME:-streamvault_catalog}
     ports: ["27017:27017"]
     volumes:
       - mongo_data:/data/db
@@ -71,6 +72,7 @@ services:
       - "8600:8600/udp" # DNS
     command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
     volumes:
+      - ./infrastructure/consul/server.hcl:/consul/config/server.hcl:ro
       - consul_data:/consul/data
     healthcheck:
       test: ["CMD", "consul", "members", "-status=alive"]
@@ -96,7 +98,6 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./infrastructure/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
-      - ./infrastructure/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 10s
@@ -107,6 +108,30 @@ services:
         limits:
           cpus: "0.5"
           memory: 384M
+
+  rabbitmq-init:
+    image: curlimages/curl:8.5.0
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      RABBITMQ_USER: ${RABBITMQ_USER:-streamvault}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    configs:
+      - source: rabbitmq_definitions
+        target: /definitions.json
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        test -n "$${RABBITMQ_USER}" &&
+        test -n "$${RABBITMQ_PASS}" &&
+        curl --fail --silent --show-error
+        --retry 20 --retry-delay 1 --retry-connrefused
+        --user "$${RABBITMQ_USER}:$${RABBITMQ_PASS}"
+        --header "content-type: application/json"
+        --data-binary @/definitions.json
+        http://rabbitmq:15672/api/definitions
+    restart: "no"
 
   minio:
     image: minio/minio:RELEASE.2025-09-07T16-13-09Z
@@ -190,6 +215,9 @@ services:
       - GATEWAY_CONSUL_ADDRESS=consul:8500
       - GATEWAY_RATELIMIT_REDIS_URL=redis://redis:6379/0
       - GATEWAY_OTEL_ENDPOINT=jaeger:4317
+      - GATEWAY_USER_SERVICE_URL=http://user-service:${USER_SERVICE_PORT:-8080}
+      - GATEWAY_CATALOG_SERVICE_URL=http://catalog-service:${CATALOG_SERVICE_PORT:-5100}
+      - GATEWAY_SUBSCRIPTION_SERVICE_URL=http://subscription-service:${SUBSCRIPTION_SERVICE_PORT:-5007}
     depends_on:
       consul:
         condition: service_healthy
@@ -212,14 +240,16 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:${USER_SERVICE_PORT:-8080}
+      - SERVICE_PORT=${USER_SERVICE_PORT:-8080}
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_users;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
       - Jwt__Secret=${JWT_SECRET}
       - Jwt__Issuer=StreamVault.UserService
-      - Jwt__AccessTokenExpirationMinutes=60
+      - Jwt__ExpiresInMinutes=${JWT_EXPIRES_IN_MINUTES:-60}
       - Jwt__RefreshTokenExpirationDays=30
       - Consul__Address=http://consul:8500
-      - ServiceRegistration__Name=user-service
-      - ServiceRegistration__Port=8080
+      - ServiceRegistration__Name=${USER_SERVICE_NAME:-user-service}
+      - ServiceRegistration__Port=${USER_SERVICE_PORT:-8080}
       - Service__Host=user-service
       - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - OpenTelemetry__Endpoint=http://jaeger:4317
@@ -230,8 +260,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:8080/health/live || exit 1"]
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:$${SERVICE_PORT}/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -247,13 +279,14 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:${CATALOG_SERVICE_PORT:-5100}
+      - SERVICE_PORT=${CATALOG_SERVICE_PORT:-5100}
       - MongoDB__ConnectionString=mongodb://mongo:27017
-      - MongoDB__DatabaseName=streamvault_catalog
+      - MongoDB__DatabaseName=${CATALOG_DATABASE_NAME:-streamvault_catalog}
       - Consul__Address=http://consul:8500
-      - ServiceRegistration__Name=catalog-service
-      - ServiceRegistration__Port=5100
+      - ServiceRegistration__Name=${CATALOG_SERVICE_NAME:-catalog-service}
+      - ServiceRegistration__Port=${CATALOG_SERVICE_PORT:-5100}
       - Service__Host=catalog-service
-      - Service__Port=5100
       - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - RabbitMQ__QueueName=encoding.results.catalog
       - OpenTelemetry__Endpoint=http://jaeger:4317
@@ -264,8 +297,10 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:5100/health/live || exit 1"]
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:$${SERVICE_PORT}/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -296,6 +331,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       consul:
         condition: service_healthy
       minio-init:
@@ -323,13 +360,17 @@ services:
       - ENCODING_MINIO__ACCESS_KEY=${MINIO_ACCESS_KEY}
       - ENCODING_MINIO__SECRET_KEY=${MINIO_SECRET_KEY}
       - ENCODING_RABBITMQ__URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/%2f
+      - ENCODING_RABBITMQ__MAX_RETRIES=${ENCODING_MAX_RETRIES:-3}
       - ENCODING_REDIS__URL=redis://redis:6379/1
+      - ENCODING_ENCODING__MAX_CONCURRENT_JOBS=${ENCODING_MAX_CONCURRENT_JOBS:-2}
       - ENCODING_TELEMETRY__ENDPOINT=http://jaeger:4318
     depends_on:
       minio:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       consul:
@@ -364,6 +405,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       consul:
@@ -398,6 +441,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       consul:
@@ -419,12 +464,13 @@ services:
     restart: unless-stopped
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:5007
+      - ASPNETCORE_URLS=http://+:${SUBSCRIPTION_SERVICE_PORT:-5007}
+      - SERVICE_PORT=${SUBSCRIPTION_SERVICE_PORT:-5007}
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=streamvault_subscriptions;Username=${POSTGRES_USER:-streamvault};Password=${POSTGRES_PASSWORD}
       - RabbitMQ__ConnectionString=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - Consul__Address=http://consul:8500
-      - ServiceRegistration__Name=subscription-service
-      - ServiceRegistration__Port=5007
+      - ServiceRegistration__Name=${SUBSCRIPTION_SERVICE_NAME:-subscription-service}
+      - ServiceRegistration__Port=${SUBSCRIPTION_SERVICE_PORT:-5007}
       - Service__Host=subscription-service
       - OpenTelemetry__Endpoint=http://jaeger:4317
     depends_on:
@@ -432,10 +478,12 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       consul:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:5007/health/live || exit 1"]
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:$${SERVICE_PORT}/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -454,12 +502,15 @@ services:
       - NOTIFICATION_MONGODB_DATABASE=streamvault_notifications
       - NOTIFICATION_RABBITMQ_URL=amqp://${RABBITMQ_USER:-streamvault}:${RABBITMQ_PASS}@rabbitmq:5672/
       - NOTIFICATION_CONSUL_ADDRESS=consul:8500
+      - NOTIFICATION_JWT_SECRET=${JWT_SECRET}
       - NOTIFICATION_OTEL_ENDPOINT=jaeger:4317
     depends_on:
       mongo:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      rabbitmq-init:
+        condition: service_completed_successfully
       consul:
         condition: service_healthy
     healthcheck:
@@ -476,12 +527,16 @@ services:
 
   # --- Frontend ---
   web:
-    build: ./web
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8081}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:8081}
     restart: unless-stopped
     ports: ["3001:3001"]
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8081
-      - NEXT_PUBLIC_WS_URL=ws://localhost:8081
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8081}
+      - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-ws://localhost:8081}
     depends_on:
       gateway:
         condition: service_healthy
@@ -648,3 +703,7 @@ volumes:
   prometheus_data:
   grafana_data:
   loki_data:
+
+configs:
+  rabbitmq_definitions:
+    file: ./infrastructure/rabbitmq/definitions.json
