@@ -4,6 +4,7 @@ using CatalogService.Application.Commands.CreateSeries;
 using CatalogService.Application.DTOs;
 using CatalogService.Application.Interfaces;
 using CatalogService.Application.Queries.GetContentById;
+using CatalogService.Application.Validation;
 using CatalogService.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -61,11 +62,15 @@ public class SeriesController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SeriesDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSeriesById(
         string id,
         CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(id))
+            return BadRequest(new { message = "Invalid series ID format." });
+
         var series = await _seriesRepository.GetByIdAsync(id, cancellationToken);
 
         if (series is null)
@@ -106,6 +111,9 @@ public class SeriesController : ControllerBase
         [FromBody] AddEpisodeRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (!CatalogObjectId.IsValid(seriesId))
+            return BadRequest(new { message = "Invalid series ID format." });
+
         var command = new AddEpisodeCommand
         {
             SeriesId = seriesId,

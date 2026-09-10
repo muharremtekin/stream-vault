@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\CatalogService.Api\CatalogService.Api.csproj" />
     <ProjectReference Include="..\..\src\CatalogService.Application\CatalogService.Application.csproj" />
     <ProjectReference Include="..\..\src\CatalogService.Domain\CatalogService.Domain.csproj" />
     <ProjectReference Include="..\..\src\CatalogService.Infrastructure\CatalogService.Infrastructure.csproj" />

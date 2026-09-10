@@ -12,6 +12,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Formatting.Compact;
+using CatalogService.Infrastructure.Discovery;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -150,21 +151,20 @@ if (builder.Configuration.GetSection("Consul").Exists())
 {
     var lifetime = app.Lifetime;
     var consulClient = app.Services.GetRequiredService<IConsulClient>();
-    var serviceName = "catalog-service";
+    var registrationSettings = ConsulRegistrationSettings.FromConfiguration(
+        builder.Configuration, "catalog-service", 5100);
+    var serviceName = registrationSettings.Name;
     var serviceId = $"{serviceName}-{Guid.NewGuid():N}";
-    var servicePort = builder.Configuration.GetValue<int>("Service:Port", 5100);
-    var serviceHost = builder.Configuration.GetValue<string>("Service:Host") ?? "localhost";
-
     var registration = new AgentServiceRegistration
     {
         ID = serviceId,
-        Name = serviceName,
-        Address = serviceHost,
-        Port = servicePort,
+        Name = registrationSettings.Name,
+        Address = registrationSettings.Host,
+        Port = registrationSettings.Port,
         Tags = new[] { "catalog", "api", "v1" },
         Check = new AgentServiceCheck
         {
-            HTTP = $"http://{serviceHost}:{servicePort}/health/ready",
+            HTTP = registrationSettings.HealthCheckAddress,
             Interval = TimeSpan.FromSeconds(10),
             Timeout = TimeSpan.FromSeconds(5),
             DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(60)
@@ -178,7 +178,7 @@ if (builder.Configuration.GetSection("Consul").Exists())
             await consulClient.Agent.ServiceRegister(registration);
             app.Logger.LogInformation(
                 "Registered service '{ServiceName}' (ID: {ServiceId}) with Consul at {Address}:{Port}.",
-                serviceName, serviceId, serviceHost, servicePort);
+                serviceName, serviceId, registrationSettings.Host, registrationSettings.Port);
         }
         catch (Exception ex)
         {
